@@ -38,9 +38,11 @@ extern "C" {
 #ifdef BL702_ENABLE
 #include <bl702_glb.h>
 #include <bl702_hbn.h>
+#elif BL702L_ENABLE
+#include <bl702l_glb.h>
+#include <bl702l_hbn.h>
 #elif defined(BL602_ENABLE)
 #include <wifi_mgmr_ext.h>
-
 #endif
 #include <bl_irq.h>
 #include <bl_rtc.h>
@@ -97,6 +99,8 @@ extern "C" unsigned int sleep(unsigned int seconds)
     vTaskDelay(xDelay);
     return 0;
 }
+
+#ifndef BL702L_ENABLE
 
 extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
@@ -185,6 +189,19 @@ extern "C" void vAssertCalled(void)
     while (true)
         ;
 }
+#endif
+
+#ifdef BL702L_ENABLE
+extern "C" void user_vAssertCalled(void)
+{
+    void * ra = (void *) __builtin_return_address(0);
+
+    taskDISABLE_INTERRUPTS();
+    ChipLogProgress(NotSpecified, "vAssertCalled, ra= %p", ra);
+    while (true)
+        ;
+}
+#endif
 
 // ================================================================================
 // Main Code
@@ -201,6 +218,11 @@ static HeapRegion_t xHeapRegions[] = {
     { NULL, 0 } /* Terminates the array. */
 };
 #elif defined(BL702_ENABLE)
+static constexpr HeapRegion_t xHeapRegions[] = {
+    { &_heap_start, (size_t) &_heap_size }, // set on runtime
+    { NULL, 0 }                             /* Terminates the array. */
+};
+#elif defined(BL702L_ENABLE)
 static constexpr HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
@@ -272,6 +294,8 @@ extern "C" void do_psram_test()
 extern "C" void setup_heap()
 {
 #ifdef BL702_ENABLE
+    bl_sys_em_config();
+#elif defined(BL702L_ENABLE)
     bl_sys_em_config();
 #endif
     vPortDefineHeapRegions(xHeapRegions);
