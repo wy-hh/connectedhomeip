@@ -8,7 +8,7 @@ __CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
 MEMORY
 {
   flash  (rxai!w) : ORIGIN = 0x23000000, LENGTH = (2M)
-  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 80K - __EM_SIZE)
+  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 280K - __EM_SIZE)
   hbnram    (wxa) : ORIGIN = 0x40010000, LENGTH = (4K)
   psram     (wxa) : ORIGIN = 0x26000000, LENGTH = (2M)
 }
@@ -76,16 +76,6 @@ SECTIONS
     __init_array_end = .;
   } >flash
 
-  .bleromro :
-  {
-    KEEP(*(.bleromro))
-  } >flash
-
-  .bleromrw (NOLOAD) :
-  {
-    KEEP(*(.bleromrw))
-  } >tcm_ocram
-
   .hbn : ALIGN(4)
   {
     PROVIDE( _hbn_load = LOADADDR(.hbn) );
@@ -121,6 +111,13 @@ SECTIONS
     *(.sclock_rlt_const.*)
   } >tcm_ocram AT >flash
 
+  .romdata : ALIGN(16)
+  {
+    PROVIDE( _rom_data_run = . );
+    PROVIDE( __global_pointer$ = . + 0x800 );
+    . = . + 0xc98;
+  } >tcm_ocram
+
   .data : ALIGN(4)
   {
     PROVIDE( _data_load = LOADADDR(.data) );
@@ -132,12 +129,6 @@ SECTIONS
     *(.gnu.linkonce.d.*)
 
     . = ALIGN(8);
-    /*always put freertos under global_pointer with the following order. No change!*/
-    PROVIDE( __global_pointer$ = . + 0x7F0 );
-    KEEP(*libbl702l_freertos.a:*(.sdata.*))
-    KEEP(*libbl702l_freertos.a:*(.sbss.*))
-    KEEP(*libbl702l_freertos.a:*(.bss.*))
-    KEEP(*libbl702l_freertos.a:*(COMMON))
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
 
@@ -200,8 +191,81 @@ SECTIONS
 
   .psram (NOLOAD) :
   {
-    *(.wifi_ram*)
+    PROVIDE( __bss_psram_start = ADDR(.bss_psram) );
+    PROVIDE( __bss_psram_end = ADDR(.bss_psram) + SIZEOF(.bss_psram) );
+
+    PROVIDE ( __psram_bss_init_start = . );
+    /** put the bss data in psram between __psram_bss_init_start and __psram_bss_init_end will bet reset to 0 after psram init*/
+    . = ALIGN(8);
+    KEEP(*lighting-common.*.cpp.o(.bss.*ttributeData*))
+    . = ALIGN(8);
+    KEEP(*lighting-common.*.cpp.o(.bss.*bindingTable*))
+    . = ALIGN(8);
+    KEEP(*lighting-common.*.cpp.o(.bss.appResponseData*))
+    . = ALIGN(8);
+    KEEP(*lighting-common.*.cpp.o(.bss.*NetworkCommissioning*))
+    
+    . = ALIGN(8);
+    KEEP(*dnssd.Advertiser_ImplMinimalMdns.cpp.o(.bss.*gAdvertiser*))
+    . = ALIGN(8);
+    KEEP(*dnssd.MinimalMdnsServer.cpp.o(.bss.*GlobalMinimalMdnsServer*_instance))
+    . = ALIGN(8);
+    KEEP(*dnssd.Resolver_ImplMinimalMdns.cpp.o(.bss.*gResolver*))
+
+    /*. = ALIGN(8);*/
+    /*KEEP(*libCHIPAppServer.Server.cpp.o(.bss.*sServer*))*/
+
+    . = ALIGN(8);
+    KEEP(*bridge-common.*.cpp.o(.bss.*))
+    /* . = ALIGN(8); */
+    /* # KEEP(*bridge-common.*.cpp.o(.bss.*bindingTable*)) */
+    /* # . = ALIGN(8); */
+    /* # KEEP(*bridge-common.*.cpp.o(.bss.appResponseData*)) */
+    /* # . = ALIGN(8); */
+    /* # KEEP(*bridge-common.*.cpp.o(.bss.*NetworkCommissioning*)) */
+
+    . = ALIGN(8);
+    KEEP(*libopenthread-cli-*.cli.cpp.o(.bss.*sInterpreterRaw*))
+
+    . = ALIGN(8);
+    KEEP(*libopenthread-cli-*.cli_dataset.cpp.o(.bss.*sDataset*))
+
+    . = ALIGN(8);
+    KEEP(*libopenthread-ftd.instance.cpp.o(.bss.*gInstanceRaw*))
+
+    . = ALIGN(8);
+    KEEP(*commands.Dns.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*commands.BLE.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*commands.Device.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*commands.Base64.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*commands.Base64.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*shell_core.Engine.cpp.o(.bss.*theEngineRoot*)) 
+
+    . = ALIGN(8);
+    /* KEEP(*shell_common.globals.cpp.o(.bss.*))               */
+
+    . = ALIGN(8);
+    KEEP(*lwip.memp.c.o(.bss.lwip_PBUF_POOL))
+    . = ALIGN(8);
+    KEEP(*sdk_lwip.dns.c.o(.bss.dns_table))
+
+    . = ALIGN(8);
+    KEEP(*virt_net_spi.c.o(.bss.tx_buffer))
+  
+    PROVIDE ( __psram_bss_init_end = . );
     . = ALIGN(16);
+
+    *(.wifi_ram*)
   } > psram
 
   . = ALIGN(8);

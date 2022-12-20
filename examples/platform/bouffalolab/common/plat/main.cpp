@@ -176,32 +176,21 @@ extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBu
 #if (configUSE_TICK_HOOK != 0)
 extern "C" void vApplicationTickHook(void) {}
 #endif
+#endif
 
-void vApplicationSleep(TickType_t xExpectedIdleTime) {}
+extern "C" void vApplicationSleep(TickType_t xExpectedIdleTime) {}
+
+extern "C" void vAssertCalled(void)
+{
+    void * ra = (void *) __builtin_return_address(0);
+
+    taskDISABLE_INTERRUPTS();
+    ChipLogProgress(NotSpecified, "vAssertCalled, ra= %p", ra);
+    while (true)
+        ;
+}
 
 extern "C" void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
-void vAssertCalled(void)
-{
-    void * ra = (void *) __builtin_return_address(0);
-
-    taskDISABLE_INTERRUPTS();
-    ChipLogProgress(NotSpecified, "vAssertCalled, ra= %p", ra);
-    while (true)
-        ;
-}
-#endif
-
-#ifdef BL702L_ENABLE
-extern "C" void user_vAssertCalled(void)
-{
-    void * ra = (void *) __builtin_return_address(0);
-
-    taskDISABLE_INTERRUPTS();
-    ChipLogProgress(NotSpecified, "vAssertCalled, ra= %p", ra);
-    while (true)
-        ;
-}
-#endif
 
 // ================================================================================
 // Main Code

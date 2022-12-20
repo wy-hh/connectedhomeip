@@ -218,8 +218,8 @@ SECTIONS
   PROVIDE(__LD_CONFIG_EM_SEL = __EM_SIZE);
 
   /* rom driver */
-  INCLUDE romdriver.ld
+  INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/romdriver.ld
 
   /* rom data & code */
-  INCLUDE rom_map.ld
+  INCLUDE ../..//third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/rom_map.ld
 }
