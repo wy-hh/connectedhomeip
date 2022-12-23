@@ -663,8 +663,7 @@ void AppTask::TimerEventHandler(app_event_t event)
             else
             {
 
-#ifdef BL706_NIGHT_LIGHT
-
+#ifndef LED_BTN_RESET
                 if (GetAppTask().mButtonPressedTime)
                 {
                     uint32_t resetCnt = 0;
@@ -692,7 +691,6 @@ void AppTask::TimerEventHandler(app_event_t event)
                     }
                 }
 #else
-#ifdef LED_BTN_RESET
                 if (ButtonPressed())
                 {
                     if (!GetAppTask().mIsFactoryResetIndicat &&
@@ -706,7 +704,6 @@ void AppTask::TimerEventHandler(app_event_t event)
                 {
                     GetAppTask().PostEvent(APP_EVENT_BTN_FACTORY_RESET_CANCEL);
                 }
-#endif
 #endif
             }
         }
@@ -776,6 +773,7 @@ bool AppTask::ButtonPressed(void)
 void AppTask::ButtonEventHandler(void * arg)
 {
     uint32_t presstime;
+
     if (ButtonPressed())
     {
         hosal_gpio_irq_set(&gpio_key, HOSAL_IRQ_TRIG_NEG_LEVEL, GetAppTask().ButtonEventHandler, NULL);

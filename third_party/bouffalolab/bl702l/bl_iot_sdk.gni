@@ -71,9 +71,14 @@ template("bl_iot_sdk") {
   }
 
   source_set("${sdk_target_name}_soc") {
-    defines = [ "CFG_CPP_ENABLE" ]
+    defines = ["CFG_CPP_ENABLE", "CFG_USE_ROM_CODE", "SYS_APP_TASK_STACK_SIZE=1024", "SYS_APP_TASK_PRIORITY=15"]
+
+    include_dirs = [
+      "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l_rf/include"
+    ]
 
     sources = [
+#      "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/bfl_main.c",
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/evb/src/boot/gcc/start.S",
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/evb/src/debug.c",
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/evb/src/strntoumax.c",
@@ -82,7 +87,18 @@ template("bl_iot_sdk") {
 
     libs = [ "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l_rf/lib/libbl702l_rf.a" ]
 
-    cflags_c = [ "-Wno-format-truncation" ]
+    cflags_c = [ "-Wno-format-truncation", "-Wno-unused-variable" ]
+
+    configs += [ 
+      ":${sdk_target_name}_config",
+      ":${sdk_target_name}_config_BSP_Driver",
+      ":${sdk_target_name}_config_bl702l_rom_a0",
+      ":${sdk_target_name}_config_hosal",
+      ":${sdk_target_name}_config_fs",
+      ":${sdk_target_name}_config_stage",
+      ":${sdk_target_name}_config_utils"
+    ]
+
   }
 
   config("${sdk_target_name}_config_BSP_Driver") {

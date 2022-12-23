@@ -8,9 +8,9 @@ __CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
 MEMORY
 {
   flash  (rxai!w) : ORIGIN = 0x23000000, LENGTH = (2M)
-  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 280K - __EM_SIZE)
+  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 80K - __EM_SIZE)
   hbnram    (wxa) : ORIGIN = 0x40010000, LENGTH = (4K)
-  psram     (wxa) : ORIGIN = 0x26000000, LENGTH = (2M)
+  psram     (wxa) : ORIGIN = 0x24000000, LENGTH = (2M)
 }
 
 SECTIONS
@@ -162,18 +162,6 @@ SECTIONS
     PROVIDE ( __boot2_flashCfg_end = . );
   } >tcm_ocram
 
-  .bss (NOLOAD) :
-  {
-    PROVIDE( __bss_start = ADDR(.bss) );
-    PROVIDE( __bss_end = ADDR(.bss) + SIZEOF(.bss) );
-
-    *(.sbss*)
-    *(.gnu.linkonce.sb.*)
-    *(.bss .bss.*)
-    *(.gnu.linkonce.b.*)
-    *(COMMON)
-  } >tcm_ocram
-
   .stack (NOLOAD) : ALIGN(8)
   {
     PROVIDE ( _sp_base = . );
@@ -182,14 +170,7 @@ SECTIONS
     __freertos_irq_stack_top = .;
   } >tcm_ocram
 
-  . = ALIGN(8);
-  PROVIDE( _heap_start = . );
-  PROVIDE( _heap_size = ORIGIN(tcm_ocram) + LENGTH(tcm_ocram) - _heap_start );
-
-  PROVIDE( _heap2_start = 0 );
-  PROVIDE( _heap2_size = 0 );
-
-  .psram (NOLOAD) :
+  .bss_psram (NOLOAD) :
   {
     PROVIDE( __bss_psram_start = ADDR(.bss_psram) );
     PROVIDE( __bss_psram_end = ADDR(.bss_psram) + SIZEOF(.bss_psram) );
@@ -252,10 +233,25 @@ SECTIONS
     KEEP(*shell_core.Engine.cpp.o(.bss.*theEngineRoot*)) 
 
     . = ALIGN(8);
-    /* KEEP(*shell_common.globals.cpp.o(.bss.*))               */
+    KEEP(*sdk_openthread_port.ot_radio.c.o(.bss.otRadio_buffPool)) 
 
     . = ALIGN(8);
-    KEEP(*lwip.memp.c.o(.bss.lwip_PBUF_POOL))
+    KEEP(*BL702L.PlatformManagerImpl.cpp.o(.bss._ZN4chip11DeviceLayer19PlatformManagerImpl9sInstanceE)) 
+
+    . = ALIGN(8);
+    KEEP(*BL702L.ThreadStackManagerImpl.cpp.o(.bss._ZN4chip11DeviceLayer22ThreadStackManagerImpl9sInstanceE)) 
+
+    . = ALIGN(8);
+    KEEP(*libCHIPAppServer.Server.cpp.o(.bss._ZN4chip6Server7sServerE)) 
+
+    . = ALIGN(8);
+    KEEP(*libaccess.ExampleAccessControlDelegate.cpp.o(.bss.*)) 
+
+    . = ALIGN(8);
+    KEEP(*libTransportLayer.SessionManager.cpp.o(.bss.*)) 
+
+    . = ALIGN(8);
+    KEEP(*lwip.memp.c.o(.bss.*))
     . = ALIGN(8);
     KEEP(*sdk_lwip.dns.c.o(.bss.dns_table))
 
@@ -272,6 +268,24 @@ SECTIONS
   PROVIDE( _heap3_start = . );
   PROVIDE( _heap3_size = ORIGIN(psram) + LENGTH(psram) - _heap3_start );
 
+  .bss (NOLOAD) :
+  {
+    PROVIDE( __bss_start = ADDR(.bss) );
+    PROVIDE( __bss_end = ADDR(.bss) + SIZEOF(.bss) );
+
+    *(.sbss*)
+    *(.gnu.linkonce.sb.*)
+    *(.bss .bss.*)
+    *(.gnu.linkonce.b.*)
+    *(COMMON)
+  } >tcm_ocram
+
+  . = ALIGN(8);
+  PROVIDE( _heap_start = . );
+  PROVIDE( _heap_size = ORIGIN(tcm_ocram) + LENGTH(tcm_ocram) - _heap_start );
+
+  PROVIDE( _heap2_start = 0 );
+  PROVIDE( _heap2_size = 0 );
 
   /* cli */
   PROVIDE( _ld_bl_static_cli_cmds_start = _bl_static_cli_cmds_start );
@@ -305,5 +319,5 @@ SECTIONS
   INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/romdriver.ld
 
   /* rom data & code */
-  INCLUDE ../..//third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/rom_map.ld
+  INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/rom_map.ld
 }

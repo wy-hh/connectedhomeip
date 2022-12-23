@@ -31,6 +31,8 @@
 
 #include <openthread_port.h>
 #include <utils_list.h>
+#include <ot_utils_ext.h>
+
 
 namespace chip {
 namespace DeviceLayer {
@@ -38,6 +40,7 @@ namespace DeviceLayer {
 using namespace ::chip::DeviceLayer::Internal;
 
 ThreadStackManagerImpl ThreadStackManagerImpl::sInstance;
+extern "C" void (*ot_otrNotifyEvent_ptr)(ot_system_event_t sevent);
 
 CHIP_ERROR ThreadStackManagerImpl::_InitThreadStack(void)
 {
@@ -50,7 +53,10 @@ CHIP_ERROR ThreadStackManagerImpl::InitThreadStack(otInstance * otInst)
     otRadio_opt_t opt;
     
     opt.byte = 0;
-    opt.bf.isLinkMetricEnable = true;
+    opt.bf.isCoexEnable = true;
+
+    ot_utils_init();
+    ot_otrNotifyEvent_ptr = otrNotifyEvent;
 
     ot_alarmInit();
     ot_radioInit(opt);
@@ -120,6 +126,7 @@ extern "C" void otPlatFree(void * aPtr)
     free(aPtr);
 }
 
+#ifdef BL702_ENABLE
 extern "C" uint32_t otrEnterCrit(void) 
 {
     if (xPortIsInsideInterrupt()) {
@@ -140,6 +147,7 @@ extern "C" void otrExitCrit(uint32_t tag)
         taskEXIT_CRITICAL();
     }
 }
+#endif
 
 extern "C" ot_system_event_t otrGetNotifyEvent(void) 
 {
