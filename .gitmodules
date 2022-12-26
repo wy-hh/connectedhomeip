@@ -285,3 +285,6 @@
 	url = https://git.gitlab.arm.com/iot/open-iot-sdk/storage.git
 	branch = main
 	platforms = openiotsdk
+[submodule "bouffalolab_sdk"]
+	path = third_party/bouffalolab/repo
+	url = https://git.bouffalolab.com/aqara/bl_iot_sdk_bl702l.git
