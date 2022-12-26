@@ -31,8 +31,14 @@
 
 #include <openthread_port.h>
 #include <utils_list.h>
-#include <ot_utils_ext.h>
 
+#ifdef __cplusplus
+extern "C" {
+#include <ot_utils_ext.h>
+}
+#else
+#include <ot_utils_ext.h>
+#endif
 
 namespace chip {
 namespace DeviceLayer {
