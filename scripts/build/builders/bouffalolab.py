@@ -22,22 +22,29 @@ from .gn import GnBuilder
 
 class BouffalolabApp(Enum):
     LIGHT = auto()
+    CONTACT_SENSOR = auto()
 
     def ExampleName(self):
         if self == BouffalolabApp.LIGHT:
             return 'lighting-app'
+        elif self == BouffalolabApp.CONTACT_SENSOR:
+            return 'contact-sensor-app'
         else:
             raise Exception('Unknown app type: %r' % self)
 
     def AppNamePrefix(self, chip_name):
         if self == BouffalolabApp.LIGHT:
             return ('chip-%s-lighting-example' % chip_name)
+        elif self == BouffalolabApp.CONTACT_SENSOR:
+            return ('chip-%s-contact-sensor-example' % chip_name)
         else:
             raise Exception('Unknown app type: %r' % self)
 
     def FlashBundleName(self):
         if self == BouffalolabApp.LIGHT:
             return 'lighting_app.flashbundle.txt'
+        elif self == BouffalolabApp.CONTACT_SENSOR:
+            return 'contact_sensor_app.flashbundle.txt'
         else:
             raise Exception('Unknown app type: %r' % self)
 
@@ -90,13 +97,16 @@ class BouffalolabBuilder(GnBuilder):
         elif "BL70" in module_type:
             bouffalo_chip = 'bl702'
         else:
-            raise Exception("module_type %s is not supported" % module_type);
-        
+            raise Exception("Module_type %s is not supported" % module_type);
+
         super(BouffalolabBuilder, self).__init__(
             root=os.path.join(root, 'examples',
                               app.ExampleName(), 'bouffalolab', bouffalo_chip),
             runner=runner
         )
+
+        if app == BouffalolabApp.CONTACT_SENSOR and module_type != 'BL704L':
+            raise Exception("Only module_type BL704L supports %s" % (app.ExampleName()));
 
         self.argsOpt = []
         self.chip_name = bouffalo_chip

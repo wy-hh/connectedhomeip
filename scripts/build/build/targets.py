@@ -483,6 +483,7 @@ def BuildBouffalolabTarget():
     # Apps
     target.AppendFixedTargets([
         TargetPart('light', app=BouffalolabApp.LIGHT),
+        TargetPart('contact-sensor', app=BouffalolabApp.CONTACT_SENSOR),
     ])
 
     target.AppendModifier('shell', enable_shell=True)
