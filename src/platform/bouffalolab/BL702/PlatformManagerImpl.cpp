@@ -25,6 +25,7 @@
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.ipp>
 
 #include <lwip/tcpip.h>
+
 #include <openthread_port.h>
 #include <utils_list.h>
 extern "C" {
