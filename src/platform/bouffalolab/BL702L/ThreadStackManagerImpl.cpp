@@ -56,21 +56,11 @@ CHIP_ERROR ThreadStackManagerImpl::_InitThreadStack(void)
 CHIP_ERROR ThreadStackManagerImpl::InitThreadStack(otInstance * otInst)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    otRadio_opt_t opt;
-    
-    opt.byte = 0;
-    opt.bf.isCoexEnable = true;
-
-    ot_utils_init();
-    ot_otrNotifyEvent_ptr = otrNotifyEvent;
-
-    ot_alarmInit();
-    ot_radioInit(opt);
 
     // Initialize the generic implementation base classes.
     err = GenericThreadStackManagerImpl_FreeRTOS<ThreadStackManagerImpl>::DoInit();
     SuccessOrExit(err);
-    err = GenericThreadStackManagerImpl_OpenThread_LwIP<ThreadStackManagerImpl>::DoInit(otInst);
+    err = GenericThreadStackManagerImpl_OpenThread_LwIP<ThreadStackManagerImpl>::DoInit(otInstanceInitSingle());
     SuccessOrExit(err);
 
     mbedtls_platform_set_calloc_free(pvPortCalloc, vPortFree);
@@ -131,29 +121,6 @@ extern "C" void otPlatFree(void * aPtr)
 {
     free(aPtr);
 }
-
-#ifdef BL702_ENABLE
-extern "C" uint32_t otrEnterCrit(void) 
-{
-    if (xPortIsInsideInterrupt()) {
-        return taskENTER_CRITICAL_FROM_ISR();
-    }
-    else {
-        taskENTER_CRITICAL();
-        return 0;
-    }
-}
-
-extern "C" void otrExitCrit(uint32_t tag) 
-{
-    if (xPortIsInsideInterrupt()) {
-        taskEXIT_CRITICAL_FROM_ISR(tag);
-    }
-    else {
-        taskEXIT_CRITICAL();
-    }
-}
-#endif
 
 extern "C" ot_system_event_t otrGetNotifyEvent(void) 
 {

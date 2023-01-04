@@ -69,7 +69,7 @@ template("bl_iot_sdk") {
   }
 
   source_set("${sdk_target_name}_soc") {
-    defines = ["CFG_CPP_ENABLE", "CFG_USE_ROM_CODE", "SYS_APP_TASK_STACK_SIZE=1024", "SYS_APP_TASK_PRIORITY=15"]
+    defines = [ "CFG_CPP_ENABLE" ]
 
     include_dirs = [
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l_rf/include"
@@ -232,7 +232,6 @@ template("bl_iot_sdk") {
       "-Wno-old-style-declaration",
       "-Wno-stringop-overflow",
       "-Wno-format-truncation",
-
       "-Wno-shadow",
     ]
     configs += [ 
@@ -417,7 +416,6 @@ template("bl_iot_sdk") {
     ]
   }
 
-
   config("${sdk_target_name}_config_mbedtls") {
     include_dirs = [
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/include",
@@ -465,6 +463,7 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/cipher_wrap.c",
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/constant_time.c",
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/ctr_drbg.c",
+      "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/cmac.c",
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/ecdh.c",
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/ecdsa.c",
       "${bl_iot_sdk_root}/components/security/mbedtls_lts/mbedtls/library/ecp.c",
@@ -557,9 +556,10 @@ template("bl_iot_sdk") {
 
     include_dirs = [
       "${bl_iot_sdk_root}/components/network/ble/blestack/src/common",
+      "${bl_iot_sdk_root}/components/network/ble/blestack/src/common/include",
+      "${bl_iot_sdk_root}/components/network/ble/blestack/src/common/include/misc",
       "${bl_iot_sdk_root}/components/network/ble/blestack/src/bl_hci_wrapper",
       "${bl_iot_sdk_root}/components/network/ble/blestack/src/common/tinycrypt/include/tinycrypt",
-      "${bl_iot_sdk_root}/components/network/ble/blestack/src/common/include/misc",
     ]
 
     sources = [
