@@ -41,7 +41,8 @@ declare_args() {
   # OTA periodic query timeout in seconds
   ota_periodic_query_timeout = 86400
 
-  config_cache_size = 8192
+  # config_cache_size = 8192
+  config_cache_size = 16384
 
   enable_heap_monitoring = false
 

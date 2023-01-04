@@ -40,11 +40,6 @@
 #include "OTAConfig.h"
 #endif // OTA_ENABLED
 
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <NetworkCommissioningDriver.h>
-#include <app/clusters/network-commissioning/network-commissioning.h>
-#include <route_hook/bl_route_hook.h>
-#endif
 #include <PlatformManagerImpl.h>
 
 #if HEAP_MONITORING
@@ -156,14 +151,6 @@ void PlatformManagerImpl::PlatformInit(void)
         ChipLogError(NotSpecified, "ConnectivityMgr().SetThreadDeviceType() failed");
         appError(ret);
     }
-
-#elif CHIP_DEVICE_CONFIG_ENABLE_WIFI
-
-    ret = sWiFiNetworkCommissioningInstance.Init();
-    if (CHIP_NO_ERROR != ret)
-    {
-        ChipLogError(NotSpecified, "sWiFiNetworkCommissioningInstance.Init() failed");
-    }
 #endif
 
     chip::DeviceLayer::PlatformMgr().LockChipStack();
@@ -212,8 +199,6 @@ void PlatformManagerImpl::PlatformInit(void)
 #if PW_RPC_ENABLED
     chip::rpc::Init();
 #endif
-
-    GetAppTask().PostEvent(AppTask::APP_EVENT_TIMER);
 
     vTaskResume(GetAppTask().sAppTaskHandle);
 }
@@ -278,13 +263,11 @@ void AppTask::AppTaskMain(void * pvParameter)
     }
     vTaskSuspend(NULL);
 
-#ifndef LED_BTN_RESET
     GetAppTask().mButtonPressedTime = chip::System::SystemClock().GetMonotonicMilliseconds64().count() + 1;
     if (ConnectivityMgr().IsThreadProvisioned())
     {
         GetAppTask().PostEvent(APP_EVENT_SYS_PROVISIONED);
     }
-#endif
 
     GetAppTask().mIsConnected = false;
 
@@ -304,7 +287,12 @@ void AppTask::AppTaskMain(void * pvParameter)
                 IdentifyHandleOp(appEvent);
             }
 
-            if (APP_EVENT_FACTORY_RESET & appEvent)
+            if (APP_EVENT_BTN_PRESS_SHORT & appEvent) 
+            {
+
+            }
+
+            if (APP_EVENT_BTN_PRESS_FACTORY_RESET & appEvent)
             {
                 DeviceLayer::ConfigurationMgr().InitiateFactoryReset();
             }
@@ -364,29 +352,26 @@ void AppTask::IdentifyStopHandler(Identify *)
 
 void AppTask::IdentifyHandleOp(app_event_t event)
 {
-    static uint32_t identifyState = 0;
 
     if (APP_EVENT_IDENTIFY_START & event)
     {
-        identifyState = 1;
         ChipLogProgress(NotSpecified, "identify start");
     }
 
-    if ((APP_EVENT_IDENTIFY_IDENTIFY & event) && identifyState)
+    if ((APP_EVENT_IDENTIFY_IDENTIFY & event))
     {
         ChipLogProgress(NotSpecified, "identify");
     }
 
     if (APP_EVENT_IDENTIFY_STOP & event)
     {
-        identifyState = 0;
         ChipLogProgress(NotSpecified, "identify stop");
     }
 }
 
 void AppTask::ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction)
 {
-    GetAppTask().PostEvent(APP_EVENT_FACTORY_RESET);
+    GetAppTask().PostEvent(APP_EVENT_BTN_PRESS_FACTORY_RESET);
 }
 
 hosal_gpio_dev_t gpio_key = { .port = LED_BTN_RESET, .config = INPUT_HIGH_IMPEDANCE, .priv = NULL };
@@ -416,7 +401,6 @@ void AppTask::ButtonEventHandler(void * arg)
         hosal_gpio_irq_set(&gpio_key, HOSAL_IRQ_TRIG_NEG_LEVEL, GetAppTask().ButtonEventHandler, NULL);
 
         GetAppTask().mButtonPressedTime = chip::System::SystemClock().GetMonotonicMilliseconds64().count();
-        GetAppTask().PostEvent(APP_EVENT_BTN_FACTORY_RESET_PRESS);
     }
     else
     {
@@ -424,19 +408,18 @@ void AppTask::ButtonEventHandler(void * arg)
 
         if (GetAppTask().mButtonPressedTime)
         {
-
             presstime = chip::System::SystemClock().GetMonotonicMilliseconds64().count() - GetAppTask().mButtonPressedTime;
             if (presstime >= APP_BUTTON_PRESS_LONG)
             {
-                GetAppTask().PostEvent(APP_EVENT_FACTORY_RESET);
+                GetAppTask().PostEvent(APP_EVENT_BTN_PRESS_FACTORY_RESET);
             }
             else if (presstime <= APP_BUTTON_PRESS_SHORT && presstime >= APP_BUTTON_PRESS_JITTER)
             {
-                GetAppTask().PostEvent(APP_EVENT_BTN_SHORT);
+                GetAppTask().PostEvent(APP_EVENT_BTN_PRESS_SHORT);
             }
             else
             {
-                GetAppTask().PostEvent(APP_EVENT_BTN_FACTORY_RESET_CANCEL);
+                GetAppTask().PostEvent(APP_EVENT_BTN_PRESS_FACTORY_RESET_CANCEL);
             }
         }
 
