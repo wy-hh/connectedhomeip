@@ -30,6 +30,8 @@
 #include <utils_list.h>
 extern "C" {
 #include <bl_sec.h>
+#include <rom_thread_port_ext.h>
+extern void (*ot_otrNotifyEvent_ptr)(ot_system_event_t sevent);
 }
 
 namespace chip {
@@ -63,8 +65,12 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     opt.byte = 0;
     opt.bf.isCoexEnable = true;
 
+    ot_otrNotifyEvent_ptr = otrNotifyEvent;
+
     ot_alarmInit();
     ot_radioInit(opt);
+
+    rom_thread_port_hook_init();
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
 
