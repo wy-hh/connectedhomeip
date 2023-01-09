@@ -32,12 +32,11 @@ extern "C" {
 #include <bl_sec.h>
 #include <rom_thread_port_ext.h>
 extern void (*ot_otrNotifyEvent_ptr)(ot_system_event_t sevent);
+extern void bl_rand_stream(unsigned char *, int);
 }
 
 namespace chip {
 namespace DeviceLayer {
-
-extern "C" void bl_rand_stream(unsigned char *, int);
 
 PlatformManagerImpl PlatformManagerImpl::sInstance;
 

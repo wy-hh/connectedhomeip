@@ -289,7 +289,7 @@ void AppTask::AppTaskMain(void * pvParameter)
 
             if (APP_EVENT_BTN_PRESS_SHORT & appEvent) 
             {
-
+                ChipLogProgress(NotSpecified, "APP_EVENT_BTN_PRESS_SHORT, heap %d left\r\n", xPortGetFreeHeapSize());
             }
 
             if (APP_EVENT_BTN_PRESS_FACTORY_RESET & appEvent)

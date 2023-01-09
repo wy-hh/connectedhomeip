@@ -203,6 +203,15 @@ extern "C" void __attribute__((weak)) user_vAssertCalled(void)
     vAssertCalled();
 }
 
+extern "C" void user_vApplicationMallocFailedHook(void)
+{
+    ChipLogProgress(NotSpecified, "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
+    while (true)
+    {
+        /*empty here*/
+    }
+}
+
 #else
 extern "C" void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
 #endif
@@ -299,9 +308,8 @@ extern "C" void do_psram_test()
 
 void  exception_entry_app(uint32_t mcause, uint32_t mepc, uint32_t mtval, uintptr_t *regs, uintptr_t *tasksp)
 {
-    static const char dbg_str[] = "Exception Entry--->>>\r\n mcause %08lx, mepc %08lx, mtval %08lx, ra %08lx\r\n" ;
-
-    printf(dbg_str, mcause, mepc, mtval, (uint32_t)(tasksp[1]));
+    printf("Exception Entry--->>>\r\n mcause %08lx, mepc %08lx, mtval %08lx, ra %08lx\r\n", 
+        mcause, mepc, mtval, (uint32_t)(tasksp[1]));
 
     while (1) {
         /*dead loop now*/
@@ -335,6 +343,7 @@ extern "C" void setup_heap()
     rom_lmac154_hook_init();
 
     exception_entry_ptr = exception_entry_app;
+    vApplicationMallocFailedHook = user_vApplicationMallocFailedHook;
 #endif
 
 #ifdef CFG_USE_PSRAM
