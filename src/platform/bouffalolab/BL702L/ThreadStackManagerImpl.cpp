@@ -32,13 +32,9 @@
 #include <openthread_port.h>
 #include <utils_list.h>
 
-#ifdef __cplusplus
 extern "C" {
 #include <ot_utils_ext.h>
 }
-#else
-#include <ot_utils_ext.h>
-#endif
 
 namespace chip {
 namespace DeviceLayer {
@@ -46,7 +42,6 @@ namespace DeviceLayer {
 using namespace ::chip::DeviceLayer::Internal;
 
 ThreadStackManagerImpl ThreadStackManagerImpl::sInstance;
-extern "C" void (*ot_otrNotifyEvent_ptr)(ot_system_event_t sevent);
 
 CHIP_ERROR ThreadStackManagerImpl::_InitThreadStack(void)
 {
