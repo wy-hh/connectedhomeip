@@ -296,11 +296,12 @@ extern "C" void do_psram_test()
 #endif
 
 #ifdef BL702L_ENABLE
+
 void  exception_entry_app(uint32_t mcause, uint32_t mepc, uint32_t mtval, uintptr_t *regs, uintptr_t *tasksp)
 {
-    static const char dbg_str[] = "Exception Entry--->>>\r\n mcause %08lx, mepc %08lx, mtval %08lx\r\n" ;
+    static const char dbg_str[] = "Exception Entry--->>>\r\n mcause %08lx, mepc %08lx, mtval %08lx, ra %08lx\r\n" ;
 
-    printf(dbg_str, mcause, mepc, mtval);
+    printf(dbg_str, mcause, mepc, mtval, (uint32_t)(tasksp[1]));
 
     while (1) {
         /*dead loop now*/
