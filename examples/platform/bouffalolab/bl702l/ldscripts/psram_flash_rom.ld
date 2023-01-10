@@ -8,7 +8,8 @@ __CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
 MEMORY
 {
   flash  (rxai!w) : ORIGIN = 0x23000000, LENGTH = (2M)
-  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 80K - __EM_SIZE)
+  tcmdata (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE)
+  ocram (wxa) : ORIGIN = 0x4201C000 + 16K, LENGTH = (80K - __EM_SIZE)
   hbnram    (wxa) : ORIGIN = 0x40010000, LENGTH = (4K)
   psram     (wxa) : ORIGIN = 0x24000000, LENGTH = (2M)
 }
@@ -109,14 +110,26 @@ SECTIONS
     *(.tcm_const.*)
     *(.sclock_rlt_code.*)
     *(.sclock_rlt_const.*)
-  } >tcm_ocram AT >flash
+  } >ocram AT >flash
 
   .romdata : ALIGN(16)
   {
     PROVIDE( _rom_data_run = . );
     PROVIDE( __global_pointer$ = . + 0x800 );
     . = . + 0xc98;
-  } >tcm_ocram
+  } >ocram
+
+
+  .tcmdata : ALIGN(4)
+  {
+    PROVIDE ( __tcm_data_start = . );
+    
+    KEEP(*bl_flash.c.o(.bss.__spn))
+
+    KEEP(*sdk_openthread_port.ot_radio.c.o(.bss.otRadio_buffPool)) 
+
+    PROVIDE ( __tcm_data_end   = . );
+  } >tcmdata
 
   .data : ALIGN(4)
   {
@@ -124,22 +137,25 @@ SECTIONS
     PROVIDE( _data_run = ADDR(.data) );
     PROVIDE( _data_run_end = ADDR(.data) + SIZEOF(.data) );
 
+
+    . = ALIGN(4);
     *(.pds_code.*)
     *(.data .data.*)
     *(.gnu.linkonce.d.*)
 
-    . = ALIGN(8);
+    . = ALIGN(4);
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
 
     . = ALIGN(8);
     *(.srodata.cst16)
+    . = ALIGN(4);
     *(.srodata.cst8)
     *(.srodata.cst4)
     *(.srodata.cst2)
     *(.srodata .srodata.*)
     
-    . = ALIGN(8);
+    . = ALIGN(4);
     *(._k_queue.static.*)
     *(._k_sem.static.*)
     *(._k_mutex.static.*)
@@ -149,7 +165,7 @@ SECTIONS
     _bt_l2cap_fixed_chan_list_start = .;
     KEEP(*(SORT_BY_NAME("._bt_l2cap_fixed_chan.static.*")))
     _bt_l2cap_fixed_chan_list_end = .;
-  } >tcm_ocram AT >flash
+  } >ocram AT >flash
 
   .boot2 (NOLOAD) :
   {
@@ -160,7 +176,7 @@ SECTIONS
     PROVIDE ( __boot2_flashCfg_start = . );
     *(.bss.boot2_flashCfg)
     PROVIDE ( __boot2_flashCfg_end = . );
-  } >tcm_ocram
+  } >ocram
 
   .stack (NOLOAD) : ALIGN(8)
   {
@@ -168,7 +184,7 @@ SECTIONS
     . = . + __stack_size;
     PROVIDE( _sp_main = . );
     __freertos_irq_stack_top = .;
-  } >tcm_ocram
+  } >ocram
 
   .bss_psram (NOLOAD) :
   {
@@ -233,9 +249,6 @@ SECTIONS
     KEEP(*shell_core.Engine.cpp.o(.bss.*theEngineRoot*)) 
 
     . = ALIGN(8);
-    KEEP(*sdk_openthread_port.ot_radio.c.o(.bss.otRadio_buffPool)) 
-
-    . = ALIGN(8);
     KEEP(*BL702L.PlatformManagerImpl.cpp.o(.bss._ZN4chip11DeviceLayer19PlatformManagerImpl9sInstanceE)) 
 
     . = ALIGN(8);
@@ -278,11 +291,11 @@ SECTIONS
     *(.bss .bss.*)
     *(.gnu.linkonce.b.*)
     *(COMMON)
-  } >tcm_ocram
+  } >ocram
 
   . = ALIGN(8);
   PROVIDE( _heap_start = . );
-  PROVIDE( _heap_size = ORIGIN(tcm_ocram) + LENGTH(tcm_ocram) - _heap_start );
+  PROVIDE( _heap_size = ORIGIN(ocram) + LENGTH(ocram) - _heap_start );
 
   PROVIDE( _heap2_start = 0 );
   PROVIDE( _heap2_size = 0 );
@@ -302,8 +315,8 @@ SECTIONS
   /* ram information */
   PROVIDE( _ld_ram_size0 = LENGTH(flash) );
   PROVIDE( _ld_ram_addr0 = ORIGIN(flash) );
-  PROVIDE( _ld_ram_size1 = LENGTH(tcm_ocram) );
-  PROVIDE( _ld_ram_addr1 = ORIGIN(tcm_ocram) );
+  PROVIDE( _ld_ram_size1 = LENGTH(ocram) );
+  PROVIDE( _ld_ram_addr1 = ORIGIN(ocram) );
   PROVIDE( _ld_ram_size2 = LENGTH(hbnram) );
   PROVIDE( _ld_ram_addr2 = ORIGIN(hbnram) );
   PROVIDE( _ld_ram_size3 = SIZEOF(.stack) );
