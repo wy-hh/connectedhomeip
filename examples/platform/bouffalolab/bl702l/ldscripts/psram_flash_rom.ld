@@ -128,6 +128,12 @@ SECTIONS
 
     KEEP(*sdk_openthread_port.ot_radio.c.o(.bss.otRadio_buffPool)) 
 
+    KEEP(*Logging.cpp.o(.bss._ZN4chip7Logging8Platform12formattedMsgE)) 
+
+    KEEP(*log.c.o(.bss.str.*)) 
+
+    KEEP(*bl_sec.c.o(.bss.trng_buffer)) 
+
     PROVIDE ( __tcm_data_end   = . );
   } >tcmdata
 
