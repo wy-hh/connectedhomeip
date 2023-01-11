@@ -80,6 +80,7 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/evb/src/debug.c",
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/evb/src/strntoumax.c",
       "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/evb/src/vprint.c",
+      "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l/heap_5_tcmdata.c",
     ]
 
     libs = [ "${bl_iot_sdk_root}/components/platform/soc/bl702l/bl702l_rf/lib/libbl702l_rf.a" ]
@@ -294,7 +295,6 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_config_bl702l_rom_a0",
     ]
     cflags_c = [ "-Wno-builtin-declaration-mismatch" ]
-    public_configs = [ ":${sdk_target_name}_config" ]
   }
 
   config("${sdk_target_name}_config_stage") {

@@ -125,6 +125,10 @@ SECTIONS
     PROVIDE ( __tcm_data_start = . );
     
     KEEP(*bl_flash.c.o(.bss.__spn))
+    KEEP(*bl_sec.c.o(.bss.trng_buffer)) 
+
+    KEEP(*heap_5_tcmdata.o*(.bss.*)) 
+    /*KEEP(*heap_5_tcmdata.o*(.sbss.*)) */
 
     KEEP(*sdk_openthread_port.ot_radio.c.o(.bss.otRadio_buffPool)) 
 
@@ -132,10 +136,12 @@ SECTIONS
 
     KEEP(*log.c.o(.bss.str.*)) 
 
-    KEEP(*bl_sec.c.o(.bss.trng_buffer)) 
-
     PROVIDE ( __tcm_data_end   = . );
   } >tcmdata
+
+  . = ALIGN(4);
+  PROVIDE( _heap2_start = . );
+  PROVIDE( _heap2_size = ORIGIN(tcmdata) + LENGTH(tcmdata) - _heap2_start );
 
   .data : ALIGN(4)
   {
@@ -302,9 +308,6 @@ SECTIONS
   . = ALIGN(8);
   PROVIDE( _heap_start = . );
   PROVIDE( _heap_size = ORIGIN(ocram) + LENGTH(ocram) - _heap_start );
-
-  PROVIDE( _heap2_start = 0 );
-  PROVIDE( _heap2_size = 0 );
 
   /* cli */
   PROVIDE( _ld_bl_static_cli_cmds_start = _bl_static_cli_cmds_start );

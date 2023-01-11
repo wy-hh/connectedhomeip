@@ -58,7 +58,7 @@ CHIP_ERROR ThreadStackManagerImpl::InitThreadStack(otInstance * otInst)
     err = GenericThreadStackManagerImpl_OpenThread_LwIP<ThreadStackManagerImpl>::DoInit(otInstanceInitSingle());
     SuccessOrExit(err);
 
-    mbedtls_platform_set_calloc_free(pvPortCalloc, vPortFree);
+    mbedtls_platform_set_calloc_free(pvPortCallocTcmdata, vPortFreeTcmdata);
 
 exit:
     return err;

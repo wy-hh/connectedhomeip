@@ -240,6 +240,13 @@ static constexpr HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
 };
+
+extern "C" uint8_t _heap2_start;
+extern "C" size_t _heap2_size; // @suppress("Type cannot be resolved")
+static constexpr HeapRegion_t xTcmdataHeapRegions[] = {
+    { &_heap2_start, (size_t) &_heap2_size }, // set on runtime
+    { NULL, 0 }                             /* Terminates the array. */
+};
 #endif
 
 #ifdef CFG_USE_PSRAM
@@ -351,6 +358,10 @@ extern "C" void setup_heap()
     do_psram_test();
     vPortDefineHeapRegionsPsram(xPsramHeapRegions);
 #endif
+
+#if defined(BL702L_ENABLE) 
+    vPortDefineHeapRegionsTcmdata(xTcmdataHeapRegions);
+#endif
 }
 
 extern "C" size_t get_heap_size(void)
@@ -367,9 +378,22 @@ extern "C" void app_init(void)
     ChipLogProgress(NotSpecified, "==================================================");
 
 #ifdef CFG_USE_PSRAM
+#if defined(BL702L_ENABLE) 
+    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, 
+                    &_heap_start, &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap2_size,
+                    &_heap2_start, &_heap2_start + (unsigned int) &_heap2_size, (unsigned int) &_heap3_size,
+                    &_heap3_start, &_heap3_start + (unsigned int) &_heap3_size);
+
+
+    ChipLogProgress(NotSpecified, "tcmdata heap %d", xPortGetFreeHeapSizeTcmdata());
+
+
+#else
     ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, 
                     &_heap_start, &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size,
                     &_heap3_start, &_heap3_start + (unsigned int) &_heap3_size);
+#endif
+
 #else
     ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
                     &_heap_start + (unsigned int) &_heap_size);

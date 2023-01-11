@@ -268,11 +268,15 @@ void AppTask::AppTaskMain(void * pvParameter)
     {
         GetAppTask().PostEvent(APP_EVENT_SYS_PROVISIONED);
     }
-
+    
     GetAppTask().mIsConnected = false;
 
+#if defined(BL702L_ENABLE) 
+    ChipLogProgress(NotSpecified, "App Task started, with heap %d, %d, %d\r\n", xPortGetFreeHeapSize(),
+        xPortGetFreeHeapSizeTcmdata(), xPortGetFreeHeapSizePsram());
+#else
     ChipLogProgress(NotSpecified, "App Task started, with heap %d left\r\n", xPortGetFreeHeapSize());
-
+#endif
     while (true)
     {
         appEvent                 = APP_EVENT_NONE;
