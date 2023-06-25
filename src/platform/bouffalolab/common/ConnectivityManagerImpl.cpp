@@ -36,7 +36,7 @@
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
-#include <platform/internal/GenericConnectivityManagerImpl_BLE.ipp>
+#include <platform/internal/GenericConnectivityManagerImpl_BLE.ipp>sdfsdf
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD

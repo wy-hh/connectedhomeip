@@ -253,7 +253,12 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
 
     ConfigurationMgr().LogDeviceConfig();
 
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
     PrintOnboardingCodes(chip::RendezvousInformationFlag(chip::RendezvousInformationFlag::kBLE));
+#else
+    PrintOnboardingCodes(chip::RendezvousInformationFlag(chip::RendezvousInformationFlag::kOnNetwork));
+#endif
+
     PlatformMgr().AddEventHandler(ChipEventHandler, 0);
 
 #if PW_RPC_ENABLED

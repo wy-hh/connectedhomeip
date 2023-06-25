@@ -24,8 +24,10 @@
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.ipp>
 
 #include <lwip/tcpip.h>
-
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <openthread_port.h>
+#endif
+
 #include <utils_list.h>
 extern "C" {
 #include <bl_sec.h>
@@ -53,17 +55,22 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 {
     CHIP_ERROR err;
     TaskHandle_t backup_eventLoopTask;
-    otRadio_opt_t opt;
 
     // Initialize the configuration system.
     err = Internal::BLConfig::Init();
     SuccessOrExit(err);
 
-    opt.byte            = 0;
-    opt.bf.isCoexEnable = true;
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    {
+        otRadio_opt_t opt;
 
-    ot_alarmInit();
-    ot_radioInit(opt);
+        opt.byte            = 0;
+        opt.bf.isCoexEnable = true;
+
+        ot_alarmInit();
+        ot_radioInit(opt);
+    }
+#endif
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
 

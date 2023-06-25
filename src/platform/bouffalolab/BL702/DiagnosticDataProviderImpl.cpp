@@ -56,6 +56,7 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** 
 {
     NetworkInterface * ifp = new NetworkInterface();
 
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     const char * threadNetworkName = otThreadGetNetworkName(ThreadStackMgrImpl().OTInstance());
     ifp->name                      = Span<const char>(threadNetworkName, strlen(threadNetworkName));
     ifp->isOperational             = true;
@@ -65,6 +66,7 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** 
     uint8_t macBuffer[ConfigurationManager::kPrimaryMACAddressLength];
     ConfigurationMgr().GetPrimary802154MACAddress(macBuffer);
     ifp->hardwareAddress = ByteSpan(macBuffer, ConfigurationManager::kPrimaryMACAddressLength);
+#endif
 
     *netifpp = ifp;
 

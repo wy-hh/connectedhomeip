@@ -44,25 +44,22 @@ class BouffalolabApp(Enum):
 
 class BouffalolabBoard(Enum):
     BL602_IoT_Matter_V1 = auto()
-    BL602_IOT_DVK_3S = auto()
     BL602_NIGHT_LIGHT = auto()
     XT_ZB6_DevKit = auto()
-    BL706_IoT_DVK = auto()
     BL706_NIGHT_LIGHT = auto()
+    BL706_ETH = auto()
 
     def GnArgName(self):
         if self == BouffalolabBoard.BL602_IoT_Matter_V1:
             return 'BL602-IoT-Matter-V1'
-        elif self == BouffalolabBoard.BL602_IOT_DVK_3S:
-            return 'BL602-IOT-DVK-3S'
         elif self == BouffalolabBoard.BL602_NIGHT_LIGHT:
             return 'BL602-NIGHT-LIGHT'
         elif self == BouffalolabBoard.XT_ZB6_DevKit:
             return 'XT-ZB6-DevKit'
-        elif self == BouffalolabBoard.BL706_IoT_DVK:
-            return 'BL706-IoT-DVK'
         elif self == BouffalolabBoard.BL706_NIGHT_LIGHT:
             return 'BL706-NIGHT-LIGHT'
+        elif self == BouffalolabBoard.BL706_ETH:
+            return 'BL706-ETH'
         else:
             raise Exception('Unknown board #: %r' % self)
 
@@ -73,7 +70,7 @@ class BouffalolabBuilder(GnBuilder):
                  root,
                  runner,
                  app: BouffalolabApp = BouffalolabApp.LIGHT,
-                 board: BouffalolabBoard = BouffalolabBoard.BL706_IoT_DVK,
+                 board: BouffalolabBoard = BouffalolabBoard.XT_ZB6_DevKit,
                  enable_rpcs: bool = False,
                  module_type: str = "BL706C-22",
                  baudrate=2000000,
@@ -104,10 +101,20 @@ class BouffalolabBuilder(GnBuilder):
 
         if bouffalo_chip == "bl702":
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
+            if board == BouffalolabBoard.BL706_ETH:
+                self.argsOpt.append('chip_enable_ble=false')
+                self.argsOpt.append('chip_enable_openthread=false')
+            else:
+                self.argsOpt.append('chip_enable_openthread=true')
+        else:
+            self.argsOpt.append('chip_enable_ble=true')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":
                 raise Exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
+            if board == BouffalolabBoard.BL706_ETH:
+                raise Exception('Board %s does NOT support USB CDC' % self.board.GnArgName())
+
             self.argsOpt.append('enable_cdc_module=true')
 
         if enable_rpcs:
