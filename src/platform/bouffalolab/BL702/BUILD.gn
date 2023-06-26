@@ -84,6 +84,9 @@ static_library("BL702") {
     }
   }
   else {
+    sources += [
+      "ConfigurationManagerImpl.cpp",
+    ]
     deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
   }
   

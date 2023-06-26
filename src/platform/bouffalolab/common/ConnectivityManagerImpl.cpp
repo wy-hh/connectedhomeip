@@ -133,6 +133,7 @@ CHIP_ERROR ConnectivityManagerImpl::_Init()
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     GenericConnectivityManagerImpl_Thread<ConnectivityManagerImpl>::_Init();
 #elif defined (BL702)
+
     netif_add(&eth_mac, NULL, NULL, NULL, NULL, eth_init, ethernet_input);
     
     ethernet_init(ethernet_callback);
