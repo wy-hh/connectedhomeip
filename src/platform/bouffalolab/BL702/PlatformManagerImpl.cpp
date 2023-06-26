@@ -70,6 +70,8 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
         ot_alarmInit();
         ot_radioInit(opt);
     }
+#else
+    
 #endif
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());

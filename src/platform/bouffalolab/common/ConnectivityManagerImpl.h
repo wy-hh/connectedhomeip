@@ -67,6 +67,7 @@ class ConnectivityManagerImpl final : public ConnectivityManager,
     // Allow the ConnectivityManager interface class to delegate method calls to
     // the implementation methods provided by this class.
     friend class ConnectivityManager;
+    friend void netif_status_callback(struct netif *netif);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 public:
@@ -76,7 +77,10 @@ public:
     void WifiStationStateChange(void);
     void OnStationConnected(void);
     void ChangeWiFiStationState(WiFiStationState newState);
-    void OnIPv6AddressAvailable();
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || (defined(BL702) && !CHIP_DEVICE_CONFIG_ENABLE_THREAD)
+    static void OnIPv6AddressAvailable(void);
 #endif
 
 private:

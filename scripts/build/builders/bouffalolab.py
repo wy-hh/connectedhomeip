@@ -102,12 +102,12 @@ class BouffalolabBuilder(GnBuilder):
         if bouffalo_chip == "bl702":
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
             if board == BouffalolabBoard.BL706_ETH:
-                self.argsOpt.append('chip_enable_ble=false')
+                self.argsOpt.append('chip_config_network_layer_ble=false')
                 self.argsOpt.append('chip_enable_openthread=false')
             else:
                 self.argsOpt.append('chip_enable_openthread=true')
         else:
-            self.argsOpt.append('chip_enable_ble=true')
+            self.argsOpt.append('chip_config_network_layer_ble=true')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":
@@ -166,7 +166,7 @@ class BouffalolabBuilder(GnBuilder):
         if not os.path.isfile(ota_images_firmware):
             return
 
-        os.system("python " + ota_images_flash_tool + " --build")
+        os.system("python " + ota_images_flash_tool + " --build > /dev/null")
 
         if not os.path.isfile(ota_images_image):
             return

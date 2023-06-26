@@ -42,6 +42,8 @@
 #include <platform/ThreadStackManager.h>
 #include <platform/bouffalolab/common/ThreadStackManagerImpl.h>
 #include <utils_list.h>
+#elif defined (BL702)
+#include <route_hook/bl_route_hook.h>
 #endif
 
 #ifdef OTA_ENABLED
@@ -129,14 +131,17 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
         break;
 #endif
 
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || (defined (BL702) || !CHIP_DEVICE_CONFIG_ENABLE_THREAD)
     case DeviceEventType::kWiFiConnectivityChange:
 
         ChipLogProgress(NotSpecified, "Wi-Fi state changed to %s.",
                         ConnectivityMgr().IsWiFiStationConnected() ? "connected" : "disconnected");
 
         chip::app::DnssdServer::Instance().StartServer();
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI 
         NetworkCommissioning::BLWiFiDriver::GetInstance().SaveConfiguration();
+#endif
         if (!GetAppTask().mIsConnected && ConnectivityMgr().IsWiFiStationConnected())
         {
             GetAppTask().PostEvent(AppTask::APP_EVENT_SYS_PROVISIONED);

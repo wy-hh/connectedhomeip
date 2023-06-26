@@ -377,12 +377,16 @@ template("bl_iot_sdk") {
   }
 
   source_set("${sdk_target_name}_ethernet") {
+
+    defines = [
+      "DISABLE_PRINT=1",
+    ]
     sources = [
       "${bl_iot_sdk_root}/components/platform/soc/bl702/bl702_ethernet/Src/eth_bd.c",
     ]
+
     configs += [
       ":${sdk_target_name}_config_BSP_Driver",
-      ":${sdk_target_name}_config_ethernet",
       ":${sdk_target_name}_config_hosal",
       ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config_freertos",
@@ -390,6 +394,7 @@ template("bl_iot_sdk") {
     ]
     public_configs = [
       ":${sdk_target_name}_config",
+      ":${sdk_target_name}_config_ethernet",
     ]
   }
 
