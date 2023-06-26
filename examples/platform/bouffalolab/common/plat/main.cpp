@@ -133,10 +133,10 @@ extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuff
 
     /* Pass out a pointer to the StaticTask_t structure in which the Idle task's
     state will be stored. */
-    *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
+    *ppxIdleTaskTCBBuffer = (StaticTask_t *)pvPortMalloc(sizeof(StaticTask_t));
 
     /* Pass out the array that will be used as the Idle task's stack. */
-    *ppxIdleTaskStackBuffer = uxIdleTaskStack;
+    *ppxIdleTaskStackBuffer = (StackType_t *)pvPortMalloc(sizeof(StackType_t) * configMINIMAL_STACK_SIZE);
 
     /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
     Note that, as the array is necessarily of type StackType_t,
@@ -153,15 +153,13 @@ extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBu
     /* If the buffers to be provided to the Timer task are declared inside this
     function then they must be declared static - otherwise they will be allocated on
     the stack and so not exists after this function exits. */
-    static StaticTask_t xTimerTaskTCB;
-    static StackType_t uxTimerTaskStack[configTIMER_TASK_STACK_DEPTH];
 
     /* Pass out a pointer to the StaticTask_t structure in which the Timer
     task's state will be stored. */
-    *ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
+    *ppxTimerTaskTCBBuffer = (StaticTask_t *)pvPortMalloc(sizeof(StaticTask_t));
 
     /* Pass out the array that will be used as the Timer task's stack. */
-    *ppxTimerTaskStackBuffer = uxTimerTaskStack;
+    *ppxTimerTaskStackBuffer = (StackType_t *)pvPortMalloc(sizeof(StackType_t) * configTIMER_TASK_STACK_DEPTH);
 
     /* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.
     Note that, as the array is necessarily of type StackType_t,
@@ -277,10 +275,37 @@ extern "C" void do_psram_test()
 
 extern "C" void setup_heap()
 {
+    bl_sys_init();
+
 #ifdef BL702_ENABLE
     bl_sys_em_config();
+#elif defined(BL702L_ENABLE)
+    bl_sys_em_config();
+
+    // Initialize rom data
+    extern uint8_t _rom_data_run;
+    extern uint8_t _rom_data_load;
+    extern uint8_t _rom_data_size;
+    memcpy((void *) &_rom_data_run, (void *) &_rom_data_load, (size_t) &_rom_data_size);
 #endif
+
     vPortDefineHeapRegions(xHeapRegions);
+
+    bl_sys_early_init();
+
+#ifdef BL702L_ENABLE
+    rom_freertos_init(256, 400);
+    rom_hal_init();
+    rom_lmac154_hook_init();
+
+    exception_entry_ptr = exception_entry_app;
+#endif
+
+#ifdef CFG_USE_PSRAM
+    bl_psram_init();
+    do_psram_test();
+    vPortDefineHeapRegionsPsram(xPsramHeapRegions);
+#endif
 }
 
 extern "C" size_t get_heap_size(void)
@@ -290,41 +315,34 @@ extern "C" size_t get_heap_size(void)
 
 extern "C" void app_init(void)
 {
-    bl_sys_init();
-
-    bl_sys_early_init();
-
     hosal_uart_init(&uart_stdio);
 
     ChipLogProgress(NotSpecified, "==================================================");
     ChipLogProgress(NotSpecified, "bouffalolab chip-lighting-example, built at " __DATE__ " " __TIME__);
     ChipLogProgress(NotSpecified, "==================================================");
 
-    blog_init();
-    bl_irq_init();
-    bl_sec_init();
-#ifdef BL702_ENABLE
-    bl_timer_init();
-#endif
 #ifdef CFG_USE_PSRAM
-    bl_psram_init();
-    do_psram_test();
+    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
+                    &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
+                    &_heap3_start + (unsigned int) &_heap3_size);
+#else
+    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
+                    &_heap_start + (unsigned int) &_heap_size);
 #endif
 
-    // bl_rtc_init();
+    blog_init();
+    bl_irq_init();
+    bl_rtc_init();
+    bl_sec_init();
+#if defined(BL702_ENABLE)
+    bl_timer_init();
+#endif
+
     hal_boot2_init();
 
     /* board config is set after system is init*/
     hal_board_cfg(0);
-    //    hosal_dma_init();
 
-#ifdef CFG_USE_PSRAM
-    vPortDefineHeapRegionsPsram(xPsramHeapRegions);
-    ChipLogProgress(NotSpecified, "Heap %u@%p, %u@%p", (unsigned int) &_heap_size, &_heap_start, (unsigned int) &_heap3_size,
-                    &_heap3_start);
-#else
-    ChipLogProgress(NotSpecified, "Heap %u@%p", (unsigned int) &_heap_size, &_heap_start);
-#endif
 #ifdef BL602_ENABLE
     wifi_td_diagnosis_init();
 #endif
