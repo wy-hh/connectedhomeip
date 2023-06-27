@@ -48,6 +48,7 @@ class BouffalolabBoard(Enum):
     XT_ZB6_DevKit = auto()
     BL706_NIGHT_LIGHT = auto()
     BL706_ETH = auto()
+    BL706_WIFI = auto()
     BL704L_DVK = auto()
 
     def GnArgName(self):
@@ -61,6 +62,8 @@ class BouffalolabBoard(Enum):
             return 'BL706-NIGHT-LIGHT'
         elif self == BouffalolabBoard.BL706_ETH:
             return 'BL706-ETH'
+        elif self == BouffalolabBoard.BL706_WIFI:
+            return 'BL706-WIFI'
         elif self == BouffalolabBoard.BL704L_DVK:
             return 'BL704L-DVK'
         else:
@@ -115,10 +118,13 @@ class BouffalolabBuilder(GnBuilder):
             if board == BouffalolabBoard.BL706_ETH:
                 self.argsOpt.append('chip_config_network_layer_ble=false')
                 self.argsOpt.append('chip_enable_openthread=false')
+                self.argsOpt.append('chip_enable_wifi=false')
+            elif board == BouffalolabBoard.BL706_WIFI:
+                self.argsOpt.append('chip_enable_openthread=false')
+                self.argsOpt.append('chip_enable_wifi=true')
             else:
                 self.argsOpt.append('chip_enable_openthread=true')
-        else:
-            self.argsOpt.append('chip_config_network_layer_ble=true')
+                self.argsOpt.append('chip_enable_wifi=false')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":

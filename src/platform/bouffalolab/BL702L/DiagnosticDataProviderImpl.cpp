@@ -56,39 +56,5 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetBootReason(BootReasonType & bootReason
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** netifpp)
-{
-    NetworkInterface * ifp = new NetworkInterface();
-
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-
-    const char * threadNetworkName = otThreadGetNetworkName(ThreadStackMgrImpl().OTInstance());
-    ifp->name                      = Span<const char>(threadNetworkName, strlen(threadNetworkName));
-    ifp->isOperational             = true;
-    ifp->offPremiseServicesReachableIPv4.SetNull();
-    ifp->offPremiseServicesReachableIPv6.SetNull();
-    ifp->type = InterfaceTypeEnum::EMBER_ZCL_INTERFACE_TYPE_ENUM_THREAD;
-    uint8_t macBuffer[ConfigurationManager::kPrimaryMACAddressLength];
-    ConfigurationMgr().GetPrimary802154MACAddress(macBuffer);
-    ifp->hardwareAddress = ByteSpan(macBuffer, ConfigurationManager::kPrimaryMACAddressLength);
-
-#else
-    /* TODO */
-#endif
-
-    *netifpp = ifp;
-    return CHIP_NO_ERROR;
-}
-
-void DiagnosticDataProviderImpl::ReleaseNetworkInterfaces(NetworkInterface * netifp)
-{
-    while (netifp)
-    {
-        NetworkInterface * del = netifp;
-        netifp                 = netifp->Next;
-        delete del;
-    }
-}
-
 } // namespace DeviceLayer
 } // namespace chip

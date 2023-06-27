@@ -59,8 +59,6 @@
 #include <string.h>
 #include <task.h>
 
-#define zero(S) memset(&S, 0, sizeof(S))
-
 using namespace ::chip;
 using namespace ::chip::Dnssd;
 using namespace ::chip::Inet;
@@ -70,11 +68,6 @@ using namespace ::chip::DeviceLayer::Internal;
 
 namespace chip {
 namespace DeviceLayer {
-
-CHIP_ERROR ConnectivityManagerImpl::InitWiFi()
-{
-    return CHIP_NO_ERROR;
-}
 
 void ConnectivityManagerImpl::OnWiFiStationDisconnected()
 {

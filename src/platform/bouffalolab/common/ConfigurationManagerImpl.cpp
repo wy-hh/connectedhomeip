@@ -29,11 +29,6 @@
 
 extern "C" {
 #include <bl_sys.h>
-#ifdef BL602
-#include <bl_efuse.h>
-#elif defined (BL702)
-#include <bl_wireless.h>
-#endif
 }
 
 namespace chip {

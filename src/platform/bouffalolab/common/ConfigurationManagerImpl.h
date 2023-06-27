@@ -64,7 +64,7 @@ private:
     CHIP_ERROR GetPrimaryWiFiMACAddress(uint8_t * buf) override;
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI && !CHIP_DEVICE_CONFIG_ENABLE_OPENTHREAD
+#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI && !CHIP_DEVICE_CONFIG_ENABLE_THREAD
     CHIP_ERROR GetPrimaryMACAddress(MutableByteSpan buf) override;
 #endif
 

@@ -25,11 +25,11 @@
 #include <FreeRTOS.h>
 
 #if defined (BL602)
-
+#include <wifi_mgmr_ext.h>
 #elif defined (BL702)
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
-#else
+#elif !CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif
 #endif
@@ -236,7 +236,7 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** 
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #if defined (BL602)
-
+    struct netif * netif = wifi_mgmr_sta_netif_get();
 #else
     struct netif * netif = wifiInterface_getStaNetif();
 #endif

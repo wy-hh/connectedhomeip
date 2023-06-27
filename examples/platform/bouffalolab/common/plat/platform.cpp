@@ -42,7 +42,7 @@
 #include <platform/bouffalolab/common/ThreadStackManagerImpl.h>
 #include <utils_list.h>
 #else
-#include <route_hook/bl_route_hook.h>
+#include <bl_route_hook.h>
 #endif
 
 #ifdef OTA_ENABLED
