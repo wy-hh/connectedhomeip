@@ -144,8 +144,6 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
         if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
         {
-            ChipLogProgress(NotSpecified, "Initializing route hook...");
-            bl_route_hook_init();
 
 #ifdef OTA_ENABLED
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
@@ -157,8 +155,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
     case DeviceEventType::kInternetConnectivityChange:
         if (event->InternetConnectivityChange.IPv4 == kConnectivity_Established)
         {
-            ChipLogProgress(NotSpecified, "IPv4 Server ready...");
-            chip::app::DnssdServer::Instance().StartServer();
+            ChipLogProgress(NotSpecified, "IPv4 connectivity ready...");
         }
         else if (event->InternetConnectivityChange.IPv4 == kConnectivity_Lost)
         {
@@ -166,12 +163,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
         }
         if (event->InternetConnectivityChange.IPv6 == kConnectivity_Established)
         {
-            ChipLogProgress(NotSpecified, "IPv6 Server ready...");
-            chip::app::DnssdServer::Instance().StartServer();
-#ifdef OTA_ENABLED
-            chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
-                                                        OTAConfig::InitOTARequestorHandler, nullptr);
-#endif
+            ChipLogProgress(NotSpecified, "IPv6 connectivity ready...");
         }
         else if (event->InternetConnectivityChange.IPv6 == kConnectivity_Lost)
         {
@@ -280,6 +272,10 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
 
 #if PW_RPC_ENABLED
     chip::rpc::Init();
+#endif
+
+#if !CHIP_ENABLE_OPENTHREAD
+    bl_route_hook_init();
 #endif
 
     vTaskResume(GetAppTask().sAppTaskHandle);

@@ -326,8 +326,6 @@ void ConnectivityManagerImpl::OnConnectivityChanged(struct netif * interface)
 
 void ConnectivityManagerImpl::OnIPv4AddressAvailable()
 {
-    ChipLogProgress(DeviceLayer, "IPv4 addr available.");
-
     ChipDeviceEvent event;
     event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
     event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV4_Assigned;
@@ -336,8 +334,6 @@ void ConnectivityManagerImpl::OnIPv4AddressAvailable()
 
 void ConnectivityManagerImpl::OnIPv6AddressAvailable()
 {
-    ChipLogProgress(DeviceLayer, "IPv6 addr available.");
-
     ChipDeviceEvent event;
     event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
     event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV6_Assigned;
