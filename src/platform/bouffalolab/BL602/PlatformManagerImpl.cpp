@@ -20,7 +20,6 @@
 
 #include <platform/PlatformManager.h>
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
-#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.ipp>
 
 #include <lwip/tcpip.h>
@@ -47,117 +46,12 @@ static wifi_conf_t conf = {
 
 static int app_entropy_source(void * data, unsigned char * output, size_t len, size_t * olen)
 {
-
     bl_rand_stream(reinterpret_cast<uint8_t *>(output), static_cast<int>(len));
     *olen = len;
 
     return 0;
 }
 
-static void WifiStaDisconect(void)
-{
-    NetworkCommissioning::BLWiFiDriver::GetInstance().SetLastDisconnectReason(NULL);
-
-    uint16_t reason = NetworkCommissioning::BLWiFiDriver::GetInstance().GetLastDisconnectReason();
-    uint8_t associationFailureCause =
-        chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCauseEnum::kUnknown);
-    WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
-
-    if (ConnectivityManagerImpl::mWiFiStationState == ConnectivityManager::kWiFiStationState_Disconnecting)
-    {
-        return;
-    }
-
-    ChipLogError(DeviceLayer, "WiFi station disconnect, reason %d.", reason);
-
-    switch (reason)
-    {
-    case WLAN_FW_TX_ASSOC_FRAME_ALLOCATE_FAIILURE:
-    case WLAN_FW_ASSOCIATE_FAIILURE:
-    case WLAN_FW_4WAY_HANDSHAKE_ERROR_PSK_TIMEOUT_FAILURE:
-        associationFailureCause =
-            chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCauseEnum::kAssociationFailed);
-        if (delegate)
-        {
-            delegate->OnAssociationFailureDetected(associationFailureCause, reason);
-        }
-        break;
-    case WLAN_FW_TX_AUTH_FRAME_ALLOCATE_FAIILURE:
-    case WLAN_FW_AUTHENTICATION_FAIILURE:
-    case WLAN_FW_AUTH_ALGO_FAIILURE:
-    case WLAN_FW_DEAUTH_BY_AP_WHEN_NOT_CONNECTION:
-    case WLAN_FW_DEAUTH_BY_AP_WHEN_CONNECTION:
-    case WLAN_FW_4WAY_HANDSHAKE_TX_DEAUTH_FRAME_TRANSMIT_FAILURE:
-    case WLAN_FW_4WAY_HANDSHAKE_TX_DEAUTH_FRAME_ALLOCATE_FAIILURE:
-    case WLAN_FW_AUTH_OR_ASSOC_RESPONSE_TIMEOUT_FAILURE:
-    case WLAN_FW_DISCONNECT_BY_USER_WITH_DEAUTH:
-    case WLAN_FW_DISCONNECT_BY_USER_NO_DEAUTH:
-        associationFailureCause =
-            chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCauseEnum::kAuthenticationFailed);
-        if (delegate)
-        {
-            delegate->OnAssociationFailureDetected(associationFailureCause, reason);
-        }
-        break;
-    case WLAN_FW_SCAN_NO_BSSID_AND_CHANNEL:
-        associationFailureCause =
-            chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCauseEnum::kSsidNotFound);
-        if (delegate)
-        {
-            delegate->OnAssociationFailureDetected(associationFailureCause, reason);
-        }
-        break;
-    case WLAN_FW_BEACON_LOSS:
-    case WLAN_FW_JOIN_NETWORK_SECURITY_NOMATCH:
-    case WLAN_FW_JOIN_NETWORK_WEPLEN_ERROR:
-    case WLAN_FW_DISCONNECT_BY_FW_PS_TX_NULLFRAME_FAILURE:
-    case WLAN_FW_CREATE_CHANNEL_CTX_FAILURE_WHEN_JOIN_NETWORK:
-    case WLAN_FW_ADD_STA_FAILURE:
-    case WLAN_FW_JOIN_NETWORK_FAILURE:
-        break;
-
-    default:
-        if (delegate)
-        {
-            delegate->OnAssociationFailureDetected(associationFailureCause, reason);
-        }
-        break;
-    }
-
-    if (delegate)
-    {
-        delegate->OnDisconnectionDetected(reason);
-        delegate->OnConnectionStatusChanged(
-            chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::ConnectionStatusEnum::kNotConnected));
-    }
-
-    ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Disconnecting);
-}
-
-static void WifiStaConnected(void)
-{
-    char ap_ssid[64];
-    WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
-
-    if (ConnectivityManagerImpl::mWiFiStationState == ConnectivityManager::kWiFiStationState_Connected)
-    {
-        return;
-    }
-
-    memset(ap_ssid, 0, sizeof(ap_ssid));
-    // wifi_mgmr_sta_ssid_get(ap_ssid);
-    // wifi_mgmr_ap_item_t * ap_info = mgmr_get_ap_info_handle();
-    // wifi_mgmr_get_scan_result_filter(ap_info, ap_ssid);
-
-    ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
-    ConnectivityMgrImpl().WifiStationStateChange();
-    ConnectivityMgrImpl().OnStationConnected();
-    if (delegate)
-    {
-        delegate->OnConnectionStatusChanged(
-            chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::ConnectionStatusEnum::kConnected));
-    }
-}
 typedef void (*aos_event_cb)(input_event_t * event, void * private_data);
 
 void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
@@ -187,9 +81,11 @@ void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
     break;
     case CODE_WIFI_ON_DISCONNECT: {
         ChipLogProgress(DeviceLayer, "WiFi station disconnect, reason %s.", wifi_mgmr_status_code_str(event->value));
-
         chip::DeviceLayer::PlatformMgr().LockChipStack();
-        WifiStaDisconect();
+        if (ConnectivityManager::kWiFiStationState_Connecting == ConnectivityMgrImpl().GetWiFiStationState())
+        {
+            ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting_Failed);
+        }
         chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
@@ -198,17 +94,15 @@ void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
     }
     break;
     case CODE_WIFI_ON_GOT_IP: {
-
         ChipLogProgress(DeviceLayer, "WiFi station gets IPv4 address.");
-
         chip::DeviceLayer::PlatformMgr().LockChipStack();
-        WifiStaConnected();
+        ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
+        ConnectivityMgrImpl().OnIPv4AddressAvailable();
         chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_ON_GOT_IP6: {
         ChipLogProgress(DeviceLayer, "WiFi station gets IPv6 address.");
-
         chip::DeviceLayer::PlatformMgr().LockChipStack();
         ConnectivityMgrImpl().OnIPv6AddressAvailable();
         chip::DeviceLayer::PlatformMgr().UnlockChipStack();

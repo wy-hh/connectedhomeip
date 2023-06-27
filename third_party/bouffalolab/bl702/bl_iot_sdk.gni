@@ -60,6 +60,10 @@ template("bl_iot_sdk") {
       defines += invoker.defines
     }
 
+    if (enable_cdc_module) {
+      defines += [ "CFG_USB_CDC_ENABLE" ]
+    }
+
     cflags_c = [
       "-include",
       rebase_path("${invoker.freertos_config}", root_build_dir),
@@ -736,7 +740,6 @@ template("bl_iot_sdk") {
 
     defines = [
       "TCPIP_THREAD_PRIO=24",
-      "CFG_ETHERNET_ENABLE=1",
     ]
 
     cflags = []
@@ -752,28 +755,43 @@ template("bl_iot_sdk") {
 
   source_set("${sdk_target_name}_lwip_port") {
     defines = [
-      "SPI_WIFI_RXBUFF_IN_PSRAM=1",
-      "VIRT_NET_SPI_RX_TASK_PRIORITY=25",
+      "RAMSYNC_TX_TASK_PRI=25",
+      "RAMSYNC_RX_TASK_PRI=25",
+      "CFG_USE_PSRAM=1",
+      "CFG_USE_DTS_SPI_CONFIG=1",
     ]
 
-    #    include_dirs = [
-    #      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/arch",
-    #      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/FreeRTOS",
-    #      "${bl_iot_sdk_root}/components/stage/throughput"
-    #    ]
+    include_dirs = [
+      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/arch",
+      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/FreeRTOS",
+      "${bl_iot_sdk_root}/components/stage/tpsync/dbg/",
+      "${bl_iot_sdk_root}/components/stage/tpsync/desc_buf/",
+      "${bl_iot_sdk_root}/components/stage/tpsync/ramsync_upper/",
+      "${bl_iot_sdk_root}/components/stage/tpsync/ramsync_low/",
+      "${bl_iot_sdk_root}/components/stage/virt_net",
+    ]
 
-    #    sources = [
-    #      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/FreeRTOS/ethernetif.c",
-    #      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/FreeRTOS/sys_arch.c"
-    #    ]
+    sources = [
+      "${bl_iot_sdk_root}/components/stage/tpsync/dbg/tpdbg.c",
+      "${bl_iot_sdk_root}/components/stage/tpsync/desc_buf/desc_buf.c",
+      "${bl_iot_sdk_root}/components/stage/tpsync/ramsync_low/master/ramsync_low.c",
+      "${bl_iot_sdk_root}/components/stage/tpsync/ramsync_upper/ramsync_upper.c",
 
-    #    sources += [
-    #      "${bl_iot_sdk_root}/components/stage/throughput/bl702/src/tp_spi_master.c",
-    #    ]
-    #    sources += [
-    #      "${bl_iot_sdk_root}/components/stage/virt_net/src/virt_net.c",
-    #      "${bl_iot_sdk_root}/components/stage/virt_net/src/virt_net_spi.c",
-    #    ]
+      "${bl_iot_sdk_root}/components/stage/virt_net/src/virt_net.c",
+      "${bl_iot_sdk_root}/components/stage/virt_net/src/virt_net_ramsync.c",
+    ]
+
+    configs += [ 
+      ":${sdk_target_name}_config_soc",
+      ":${sdk_target_name}_config_BSP_Driver",
+      ":${sdk_target_name}_config_stage",
+      ":${sdk_target_name}_config_sys",
+      ":${sdk_target_name}_config_fs",
+      ":${sdk_target_name}_config_utils",
+      ":${sdk_target_name}_config_hosal",
+      ":${sdk_target_name}_config_freertos",
+      ":${sdk_target_name}_config_lwip",
+    ]
 
     public_configs = [
       ":${sdk_target_name}_config",
@@ -781,7 +799,10 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_config_lwip",
     ]
 
-    cflags = [ "-Wno-sign-compare" ]
+    cflags = [ 
+        "-Wno-sign-compare",
+        "-Wno-stringop-truncation", 
+    ]
   }
 
   config("${sdk_target_name}_config_lwip") {
@@ -800,7 +821,7 @@ template("bl_iot_sdk") {
       "LWIP_IPV6_DHCP6=1",
       "LWIP_IPV6_SCOPES=0",
       "PBUF_POOL_SIZE=20",
-      "PBUF_POOL_BUFSIZE=(1280+150)",
+      "PBUF_POOL_BUFSIZE=1600",
     ]
   }
 
@@ -879,6 +900,52 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_lwip",
     ]
+
+    cflags = [
+      "-Wno-incompatible-pointer-types",
+      "-Wno-unused-variable",
+      "-Wno-sign-compare"
+    ]
+  }
+
+  config("${sdk_target_name}_zigbee_config") {
+    _include_dirs = [
+      "${bl_iot_sdk_root}/../zigbee/zbstack/",
+      "${bl_iot_sdk_root}/../zigbee/zbstack/include",
+      "${bl_iot_sdk_root}/../zigbee/zbstack/include/core",
+      "${bl_iot_sdk_root}/../zigbee/zbstack/include/zcl",
+      "${bl_iot_sdk_root}/components/network/lmac154/include",
+    ]
+
+    defines = [ 
+        #"CFG_ZIGBEE_TOUCHLINK=1" 
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  source_set("${sdk_target_name}_zigbee") {
+    libs = [
+      "${bl_iot_sdk_root}/../zigbee/macphy154/lib/libmacphy154.a",
+      "${bl_iot_sdk_root}/../zigbee/zbstack/lib/libzbstack.a",
+      "${bl_iot_sdk_root}/../zigbee/zbstack/lib/libzbstackex.a",
+      "${bl_iot_sdk_root}/../zigbee/zbstack_gpp/lib/libzbstack_gpp.a",
+      "${bl_iot_sdk_root}/components/network/lmac154/lib/liblmac154.a",
+    ]
+
+    public_configs = [
+      ":${sdk_target_name}_config",
+      ":${sdk_target_name}_zigbee_config",
+    ]
+
+    cflags = [
+      "-Wno-implicit-function-declaration",
+      "-Wno-incompatible-pointer-types",
+      "-Wno-unused-variable",
+    ]
   }
 
   group(sdk_target_name) {
@@ -903,6 +970,10 @@ template("bl_iot_sdk") {
     if (chip_enable_wifi) {
       public_deps += [ ":${sdk_target_name}_lwip_port" ]
       public_deps += [ ":${sdk_target_name}_lwip" ]
+    }
+
+    if (enable_zigbee) {
+      public_deps += [ ":${sdk_target_name}_zigbee" ]
     }
 
     if (enable_cdc_module) {

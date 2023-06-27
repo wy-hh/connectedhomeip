@@ -423,12 +423,9 @@ extern "C" void START_ENTRY(void)
 {
     app_init();
 
-    easyflash_init();
-    ef_load_env_cache();
-
-    ChipLogProgress(NotSpecified, "Init CHIP Memory");
-    chip::Platform::MemoryInit(NULL, 0);
-
+#if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
+    uartInit();
+#endif
 #ifdef SYS_AOS_LOOP_ENABLE
     ChipLogProgress(NotSpecified, "Starting AOS loop Task");
     aos_loop_start();
@@ -438,6 +435,12 @@ extern "C" void START_ENTRY(void)
     usb_cdc_start(-1);
 #endif
 #endif
+
+    easyflash_init();
+    ef_load_env_cache();
+
+    ChipLogProgress(NotSpecified, "Init CHIP Memory");
+    chip::Platform::MemoryInit(NULL, 0);
 
     ChipLogProgress(NotSpecified, "Starting App Task");
     StartAppTask();

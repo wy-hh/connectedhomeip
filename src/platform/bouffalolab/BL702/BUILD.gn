@@ -25,6 +25,7 @@ if (chip_enable_openthread) {
 
 static_library("BL702") {
   sources = [
+    "ConfigurationManagerImpl.cpp",
     "DiagnosticDataProviderImpl.cpp",
     "PlatformManagerImpl.cpp",
   ]
@@ -82,6 +83,14 @@ static_library("BL702") {
       ]
       deps += [ "${chip_root}/src/lib/dnssd:platform_header" ]
     }
+  }
+
+  if (chip_enable_wifi) {
+    sources += [ 
+      "WiFiInterface.c",
+      "ConnectivityManagerImpl.cpp",
+      "NetworkCommissioningDriver.cpp"
+    ]
   }
 
   public_deps = [ "${chip_root}/src/platform:platform_base" ]

@@ -230,17 +230,14 @@ SECTIONS
     . = ALIGN(8);
     KEEP(*dnssd.Resolver_ImplMinimalMdns.cpp.o(.bss.*gResolver*))
 
-    /*. = ALIGN(8);*/
-    /*KEEP(*libCHIPAppServer.Server.cpp.o(.bss.*sServer*))*/
+    . = ALIGN(8);
+    KEEP(*InteractionModelEngine.cpp.o(.bss.*))
 
     . = ALIGN(8);
-    KEEP(*bridge-common.*.cpp.o(.bss.*))
-    /* . = ALIGN(8); */
-    /* # KEEP(*bridge-common.*.cpp.o(.bss.*bindingTable*)) */
-    /* # . = ALIGN(8); */
-    /* # KEEP(*bridge-common.*.cpp.o(.bss.appResponseData*)) */
-    /* # . = ALIGN(8); */
-    /* # KEEP(*bridge-common.*.cpp.o(.bss.*NetworkCommissioning*)) */
+    KEEP(*libCHIPAppServer.Server.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*SessionManager.cpp.o(.bss.*))) */
 
     . = ALIGN(8);
     KEEP(*libopenthread-cli-*.cli.cpp.o(.bss.*sInterpreterRaw*))
@@ -281,7 +278,13 @@ SECTIONS
     KEEP(*sdk_lwip.dns.c.o(.bss.dns_table))
 
     . = ALIGN(8);
-    KEEP(*virt_net_spi.c.o(.bss.tx_buffer))
+    KEEP(*stack_main.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*main.cpp.o(.bss.*))
+
+    . = ALIGN(8);
+    KEEP(*AppTask.cpp.o(.bss.*))
 
     PROVIDE ( __psram_bss_init_end = . );
     . = ALIGN(16);

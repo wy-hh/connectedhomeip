@@ -15,17 +15,25 @@
  *    limitations under the License.
  */
 
-#pragma once
-
-#include <stdint.h>
+#include <platform/internal/CHIPDeviceLayerInternal.h>
+#include <platform/ConfigurationManager.h>
+#include <platform/internal/GenericConfigurationManagerImpl.ipp>
+#include <lib/support/logging/CHIPLogging.h>
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#endif
 
 namespace chip {
 namespace DeviceLayer {
-struct ChipDeviceEvent;
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+CHIP_ERROR ConfigurationManagerImpl::GetPrimaryWiFiMACAddress(uint8_t * buf)
+{
+    wifiInterface_getMacAddress(buf);
+
+    return CHIP_NO_ERROR;
+}
+#endif
+
 } // namespace DeviceLayer
 } // namespace chip
-
-// ==================== Platform Adaptations ====================
-#define CHIP_SYSTEM_CONFIG_PLATFORM_PROVIDES_EVENT_FUNCTIONS 1
-#define CHIP_SYSTEM_CONFIG_PLATFORM_PROVIDES_TIME 1
-#define CHIP_SYSTEM_CONFIG_EVENT_OBJECT_TYPE const struct ::chip::DeviceLayer::ChipDeviceEvent *

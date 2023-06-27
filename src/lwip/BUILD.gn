@@ -35,7 +35,8 @@ assert(lwip_platform == "external" || lwip_platform == "standalone" ||
            lwip_platform == "psoc6" || lwip_platform == "cyw30739" ||
            lwip_platform == "bl602" || lwip_platform == "mw320" ||
            lwip_platform == "bl702" || lwip_platform == "bl702l" ||
-           lwip_platform == "mt793x" || lwip_platform == "asr",
+           lwip_platform == "mt793x" || lwip_platform == "asr" ||
+           lwip_platform == "bl702_bl602",
        "Unsupported lwIP platform: ${lwip_platform}")
 
 if (lwip_platform != "external") {
@@ -65,6 +66,8 @@ if (lwip_platform == "cc13xx_26xx") {
 } else if (lwip_platform == "bl702") {
   import("//build_overrides/bouffalolab_iot_sdk.gni")
 } else if (lwip_platform == "bl702l") {
+  import("//build_overrides/bouffalolab_iot_sdk.gni")
+} else if (lwip_platform == "bl702_bl602") {
   import("//build_overrides/bouffalolab_iot_sdk.gni")
 } else if (lwip_platform == "mw320") {
   import("//build_overrides/mw320_sdk.gni")
@@ -111,7 +114,7 @@ if (current_os == "zephyr" || current_os == "mbed") {
     public_configs = [ "${chip_root}/src:includes" ]
     public_configs += [ "${psoc6_sdk_build_root}:psoc6_sdk_config" ]
   }
-} else if (lwip_platform == "bl702_lwip") {
+} else if (lwip_platform == "bl702_bl602") {
   import("${bouffalolab_iot_sdk_build_root}/bl702/bl_iot_sdk.gni")
 
   group("lwip") {
@@ -221,7 +224,7 @@ if (current_os == "zephyr" || current_os == "mbed") {
     } else if (lwip_platform == "cyw30739") {
       public_deps += [ "${cyw30739_sdk_build_root}:cyw30739_sdk" ]
     } else if (lwip_platform == "bl602") {
-      public_deps += [ "${bouffalolab_iot_sdk_build_root}/bl702l:bl_iot_sdk" ]
+      public_deps += [ "${bouffalolab_iot_sdk_build_root}/bl602:bl602_sdk" ]
     } else if (lwip_platform == "bl702") {
       public_deps += [ "${bouffalolab_iot_sdk_build_root}/bl702:bl_iot_sdk" ]
     } else if (lwip_platform == "bl702l") {
