@@ -25,7 +25,7 @@ extern "C" {
 
 bool wifiInterface_init();
 
-struct netif *wifiInterface_GetStaNetif();
+struct netif *wifiInterface_getStaNetif();
 void wifiInterface_getMacAddress(uint8_t *pmac);
 void wifiInterface_connect(char *ssid, char * passwd);
 void wifiInterface_disconnect(void);

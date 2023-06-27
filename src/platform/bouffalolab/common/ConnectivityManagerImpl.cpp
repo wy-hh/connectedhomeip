@@ -48,13 +48,6 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/internal/GenericConnectivityManagerImpl_Thread.ipp>
-#elif defined (BL702)
-extern "C" {
-#include <eth_bd.h>
-#include <lwip/netifapi.h>
-#include <lwip/dhcp6.h>
-static struct dhcp6 dhcp6_val;
-}
 #endif
 
 using namespace ::chip;
@@ -68,89 +61,14 @@ namespace DeviceLayer {
 
 ConnectivityManagerImpl ConnectivityManagerImpl::sInstance;
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD && defined (BL702)
-
-void netif_status_callback(struct netif *netif)
-{
-    if (netif->flags & NETIF_FLAG_UP) {
-        if(!ip4_addr_isany(netif_ip4_addr(netif))) {
-            printf("IP: %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif)));
-            printf("MASK: %s\r\n", ip4addr_ntoa(netif_ip4_netmask(netif)));
-            printf("Gateway: %s\r\n", ip4addr_ntoa(netif_ip4_gw(netif)));
-        }
-
-        for (uint32_t i = 0; i < LWIP_IPV6_NUM_ADDRESSES; i ++ ) {
-            if (!ip6_addr_isany(netif_ip6_addr(netif, i))
-                && ip6_addr_ispreferred(netif_ip6_addr_state(netif, i))) {
-
-                const ip6_addr_t* ip6addr = netif_ip6_addr(netif, i);
-                if (ip6_addr_isany(ip6addr)) {
-                    continue;
-                }
-
-                if(ip6_addr_islinklocal(ip6addr)){
-                    printf("LOCAL IP6 addr %s\r\n", ip6addr_ntoa(ip6addr));
-                }
-                else{
-                    printf("GLOBAL IP6 addr %s\r\n", ip6addr_ntoa(ip6addr));
-
-                    ConnectivityManagerImpl::OnIPv6AddressAvailable();
-                } 
-            }
-        }
-    }
-    else {
-        printf("interface is down status.\n");
-    }
-}
-
-int ethernet_callback(eth_link_state val)
-{
-    switch(val){
-    case ETH_INIT_STEP_LINKUP:
-        printf("Ethernet link up\r\n");
-        break;
-    case ETH_INIT_STEP_READY:
-        netifapi_netif_set_default(&eth_mac);
-        netifapi_netif_set_up(&eth_mac);
-
-        //netifapi_netif_set_up((struct netif *)&obj->netif);
-        netif_create_ip6_linklocal_address(&eth_mac, 1);
-        eth_mac.ip6_autoconfig_enabled = 1;
-        dhcp6_set_struct(&eth_mac, &dhcp6_val);
-        dhcp6_enable_stateless(&eth_mac);
-
-        printf("start dhcp...\r\n");
-
-        /* start dhcp */
-        netifapi_dhcp_start(&eth_mac);
-        break;
-    case ETH_INIT_STEP_LINKDOWN:
-        printf("Ethernet link down\r\n");
-        break;
-    }
-
-    return 0;
-}
-#endif
-
 CHIP_ERROR ConnectivityManagerImpl::_Init()
 {
     // Initialize the generic base classes that require it.
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     GenericConnectivityManagerImpl_Thread<ConnectivityManagerImpl>::_Init();
-#elif defined (BL702)
-
-    netif_add(&eth_mac, NULL, NULL, NULL, NULL, eth_init, ethernet_input);
-    
-    ethernet_init(ethernet_callback);
-
-    /* Set callback to be called when interface is brought up/down or address is changed while up */
-    netif_set_status_callback(&eth_mac, netif_status_callback);
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    ReturnErrorOnFailure(InitWiFi());
     mWiFiStationState = ConnectivityManager::kWiFiStationState_NotConnected;
     ReturnErrorOnFailure(SetWiFiStationMode(kWiFiStationMode_Enabled));
 #endif
@@ -277,26 +195,6 @@ void ConnectivityManagerImpl::OnWiFiStationConnected()
     }
 }
 
-void ConnectivityManagerImpl::OnIPv4AddressAvailable()
-{
-    ChipLogProgress(DeviceLayer, "IPv4 addr available.");
-
-    ChipDeviceEvent event;
-    event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
-    event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV4_Assigned;
-    PlatformMgr().PostEventOrDie(&event);
-}
-
-void ConnectivityManagerImpl::OnIPv6AddressAvailable()
-{
-    ChipLogProgress(DeviceLayer, "IPv6 addr available.");
-
-    ChipDeviceEvent event;
-    event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
-    event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV6_Assigned;
-    PlatformMgr().PostEventOrDie(&event);
-}
-
 void ConnectivityManagerImpl::DriveStationState() 
 {
     ChipLogProgress(DeviceLayer, "DriveStationState: mWiFiStationState=%s", WiFiStationStateToStr(mWiFiStationState));
@@ -353,6 +251,97 @@ void ConnectivityManagerImpl::DriveStationState()
 void ConnectivityManagerImpl::DriveStationState(::chip::System::Layer * aLayer, void * aAppState)
 {
     ConnectivityMgrImpl().DriveStationState();
+}
+#endif
+
+#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+void ConnectivityManagerImpl::OnConnectivityChanged(struct netif * interface)
+{
+    bool haveIPv4Conn = false;
+    bool haveIPv6Conn = false;
+    const bool hadIPv4Conn  = mConnectivityFlag.Has(ConnectivityFlags::kHaveIPv4InternetConnectivity);
+    const bool hadIPv6Conn  = mConnectivityFlag.Has(ConnectivityFlags::kHaveIPv6InternetConnectivity);
+    IPAddress addr;
+
+    if (interface != NULL && netif_is_up(interface) && netif_is_link_up(interface))
+    {
+        mConnectivityFlag.Clear(ConnectivityFlags::kAwaitingConnectivity);
+
+        if (!ip4_addr_isany(netif_ip4_addr(interface)) && !ip4_addr_isany(netif_ip4_gw(interface)))
+        {
+            haveIPv4Conn = true;
+            char addrStr[INET_ADDRSTRLEN];
+            ip4addr_ntoa_r(netif_ip4_addr(interface), addrStr, sizeof(addrStr));
+            IPAddress::FromString(addrStr, addr);
+            if (0 != memcmp(netif_ip4_addr(interface), &m_ip4addr, sizeof(ip4_addr_t))) {
+                ChipLogProgress(DeviceLayer, "IPv4 Address Assigned, %s", ip4addr_ntoa(netif_ip4_addr(interface)));
+                memcpy(&m_ip4addr, netif_ip4_addr(interface), sizeof(ip4_addr_t));
+                ConnectivityMgrImpl().OnIPv4AddressAvailable();
+            }
+        }
+
+        // Search among the IPv6 addresses assigned to the interface for a Global Unicast
+        // address (2000::/3) that is in the valid state.  If such an address is found...
+        for (uint32_t i = 0; i < LWIP_IPV6_NUM_ADDRESSES; i++)
+        {
+            if (!ip6_addr_islinklocal(netif_ip6_addr(interface, i)) &&
+                ip6_addr_isvalid(netif_ip6_addr_state(interface, i)))
+            {
+                haveIPv6Conn = true;
+                if (0 != memcmp(netif_ip6_addr(interface, i), m_ip6addr + i, sizeof(ip6_addr_t))) {
+                    ChipLogProgress(DeviceLayer, "IPv6 Address Assigned, %s", ip6addr_ntoa(netif_ip6_addr(interface, i)));
+                    memcpy(m_ip6addr + i, netif_ip6_addr(interface, i), sizeof(ip6_addr_t));
+                    ConnectivityMgrImpl().OnIPv6AddressAvailable();
+                }
+            }
+        }
+    }
+
+    // If the internet connectivity state has changed...
+    if (haveIPv4Conn != hadIPv4Conn || haveIPv6Conn != hadIPv6Conn)
+    {
+        // Update the current state.
+        mConnectivityFlag.Set(ConnectivityFlags::kHaveIPv4InternetConnectivity, haveIPv4Conn);
+        mConnectivityFlag.Set(ConnectivityFlags::kHaveIPv6InternetConnectivity, haveIPv6Conn);
+
+        // Alert other components of the state change.
+        ChipDeviceEvent event;
+        event.Type                                 = DeviceEventType::kInternetConnectivityChange;
+        event.InternetConnectivityChange.IPv4      = GetConnectivityChange(hadIPv4Conn, haveIPv4Conn);
+        event.InternetConnectivityChange.IPv6      = GetConnectivityChange(hadIPv6Conn, haveIPv6Conn);
+        event.InternetConnectivityChange.ipAddress = addr;
+        PlatformMgr().PostEventOrDie(&event);
+
+        if (haveIPv4Conn != hadIPv4Conn)
+        {
+            ChipLogProgress(DeviceLayer, "%s Internet connectivity %s", "IPv4", (haveIPv4Conn) ? "ESTABLISHED" : "LOST");
+        }
+
+        if (haveIPv6Conn != hadIPv6Conn)
+        {
+            ChipLogProgress(DeviceLayer, "%s Internet connectivity %s", "IPv6", (haveIPv6Conn) ? "ESTABLISHED" : "LOST");
+        }
+    }
+}
+
+void ConnectivityManagerImpl::OnIPv4AddressAvailable()
+{
+    ChipLogProgress(DeviceLayer, "IPv4 addr available.");
+
+    ChipDeviceEvent event;
+    event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
+    event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV4_Assigned;
+    PlatformMgr().PostEventOrDie(&event);
+}
+
+void ConnectivityManagerImpl::OnIPv6AddressAvailable()
+{
+    ChipLogProgress(DeviceLayer, "IPv6 addr available.");
+
+    ChipDeviceEvent event;
+    event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
+    event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV6_Assigned;
+    PlatformMgr().PostEventOrDie(&event);
 }
 
 #endif

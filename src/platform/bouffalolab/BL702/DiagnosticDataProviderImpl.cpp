@@ -25,14 +25,13 @@
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#include <lwip/tcpip.h>
-#endif
-
 extern "C" {
 #include <bl_sys.h>
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD && !CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD 
+#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <eth_bd.h>
+#endif
+#include <lwip/tcpip.h>
 #endif
 }
 namespace chip {
@@ -63,79 +62,6 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetBootReason(BootReasonType & bootReason
         bootReason = BootReasonType::kUnspecified;
     }
     return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** netifpp)
-{
-    NetworkInterface * ifp = new NetworkInterface();
-
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-    const char * threadNetworkName = otThreadGetNetworkName(ThreadStackMgrImpl().OTInstance());
-    ifp->name                      = Span<const char>(threadNetworkName, strlen(threadNetworkName));
-    ifp->isOperational             = true;
-    ifp->offPremiseServicesReachableIPv4.SetNull();
-    ifp->offPremiseServicesReachableIPv6.SetNull();
-    ifp->type = EMBER_ZCL_INTERFACE_TYPE_ENUM_THREAD;
-    uint8_t macBuffer[ConfigurationManager::kPrimaryMACAddressLength];
-    ConfigurationMgr().GetPrimary802154MACAddress(macBuffer);
-    ifp->hardwareAddress = ByteSpan(macBuffer, ConfigurationManager::kPrimaryMACAddressLength);
-#endif
-
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    //TODO: add WiFi interface
-#endif
-
-#else
-
-    struct netif * netif = NULL;
-#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    netif = &eth_mac;
-#endif
-
-    Platform::CopyString(ifp->Name, netif->name);
-    ifp->name          = CharSpan::fromCharString(ifp->Name);
-    ifp->isOperational = true;
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    ifp->type          = EMBER_ZCL_INTERFACE_TYPE_ENUM_WI_FI;
-#else
-    ifp->type          = EMBER_ZCL_INTERFACE_TYPE_ENUM_ETHERNET;
-#endif
-    ifp->offPremiseServicesReachableIPv4.SetNull();
-    ifp->offPremiseServicesReachableIPv6.SetNull();
-
-    memcpy(ifp->MacAddress, netif->hwaddr, sizeof(netif->hwaddr));
-    ifp->hardwareAddress = ByteSpan(ifp->MacAddress, sizeof(netif->hwaddr));
-
-    memcpy(ifp->Ipv4AddressesBuffer[0], netif_ip_addr4(netif), kMaxIPv4AddrSize);
-    ifp->Ipv4AddressSpans[0] = ByteSpan(ifp->Ipv4AddressesBuffer[0], kMaxIPv4AddrSize);
-    ifp->IPv4Addresses       = chip::app::DataModel::List<chip::ByteSpan>(ifp->Ipv4AddressSpans, 1);
-
-    int addr_count = 0;
-    for (size_t i = 0; (i < LWIP_IPV6_NUM_ADDRESSES) && (i < kMaxIPv6AddrCount); i++)
-    {
-        if (!ip6_addr_isany(&(netif->ip6_addr[i].u_addr.ip6)))
-        {
-            memcpy(ifp->Ipv6AddressesBuffer[addr_count], &(netif->ip6_addr[i].u_addr.ip6), sizeof(ip6_addr_t));
-            ifp->Ipv6AddressSpans[addr_count] = ByteSpan(ifp->Ipv6AddressesBuffer[addr_count], kMaxIPv6AddrSize);
-        }
-    }
-    ifp->IPv6Addresses = chip::app::DataModel::List<chip::ByteSpan>(ifp->Ipv6AddressSpans, addr_count);
-
-#endif
-
-    *netifpp = ifp;
-
-    return CHIP_NO_ERROR;
-}
-
-void DiagnosticDataProviderImpl::ReleaseNetworkInterfaces(NetworkInterface * netifp)
-{
-    while (netifp)
-    {
-        NetworkInterface * del = netifp;
-        netifp                 = netifp->Next;
-        delete del;
-    }
 }
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI

@@ -24,11 +24,17 @@
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.ipp>
 
 #include <lwip/tcpip.h>
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#include <openthread_port.h>
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
 
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <utils_list.h>
+#include <openthread_port.h>
+#else
+#include <platform/bouffalolab/BL702/EthernetInterface.h>
+#endif
+
 extern "C" {
 #include <bl_sec.h>
 }
@@ -58,8 +64,17 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     err = Internal::BLConfig::Init();
     SuccessOrExit(err);
 
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+    wifiInterface_init();
+#elif CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    otRadio_opt_t opt;
+    opt.byte            = 0;
+    opt.bf.isCoexEnable = true;
 
+    ot_alarmInit();
+    ot_radioInit(opt);
+#else
+    ethernetInterface_init();
 #endif
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());

@@ -18,6 +18,7 @@ import("//build_overrides/chip.gni")
 import("${chip_root}/src/platform/device.gni")
 
 assert(chip_device_platform == "bl702")
+assert(false == (chip_enable_openthread && chip_enable_openthread), "Not support Wi-Fi and Thread together")
 
 if (chip_enable_openthread) {
   import("//build_overrides/openthread.gni")
@@ -25,7 +26,6 @@ if (chip_enable_openthread) {
 
 static_library("BL702") {
   sources = [
-    "ConfigurationManagerImpl.cpp",
     "DiagnosticDataProviderImpl.cpp",
     "PlatformManagerImpl.cpp",
   ]
@@ -63,7 +63,16 @@ static_library("BL702") {
   }
   sources += common_sources
 
-  if (chip_enable_openthread) {
+  if (chip_enable_wifi) {
+    sources += [
+      "ConfigurationManagerImpl.cpp",
+      "WiFiInterface.c",
+      "ConnectivityManagerImpl.cpp",
+      "NetworkCommissioningDriver.cpp"
+    ]
+
+    deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
+  } else if (chip_enable_openthread) {
     # needed for MTD/FTD
 
     import("//build_overrides/bouffalolab_iot_sdk.gni")
@@ -87,17 +96,8 @@ static_library("BL702") {
   else {
     sources += [
       "ConfigurationManagerImpl.cpp",
-    ]
-
-    deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
-  }
-  
-  if (chip_enable_wifi) {
-    sources += [
-      "ConfigurationManagerImpl.cpp",
-      "WiFiInterface.c",
       "ConnectivityManagerImpl.cpp",
-      "NetworkCommissioningDriver.cpp"
+      "EthernetInterface.c",
     ]
 
     deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]

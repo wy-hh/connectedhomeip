@@ -74,10 +74,13 @@ public:
     bool _IsWiFiStationConnected(void);
     WiFiStationState GetWiFiStationState(void);
     void ChangeWiFiStationState(WiFiStationState newState);
-    void UpdateWiFiConnectivity(struct netif * interface);
     void OnWiFiStationStateChanged(void);
     void OnWiFiStationConnected(void);
     void OnWiFiStationDisconnected(void);
+#endif
+
+#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    void OnConnectivityChanged(struct netif * interface);
     void OnIPv4AddressAvailable();
     void OnIPv6AddressAvailable();
 #endif
@@ -87,11 +90,9 @@ private:
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     WiFiStationMode mWiFiStationMode;
     WiFiStationState mWiFiStationState;
-    BitFlags<GenericConnectivityManagerImpl_WiFi::ConnectivityFlags> mConnectivityFlag;
-    ip4_addr_t m_ip4addr;
-    ip6_addr_t m_ip6addr[LWIP_IPV6_NUM_ADDRESSES];
 
-    CHIP_ERROR InitWiFi();
+    BitFlags<GenericConnectivityManagerImpl_WiFi::ConnectivityFlags> mConnectivityFlag;
+
     bool _IsWiFiStationEnabled(void);
     ConnectivityManager::WiFiStationMode _GetWiFiStationMode();
     CHIP_ERROR _SetWiFiStationMode(WiFiStationMode val);
@@ -99,6 +100,19 @@ private:
     void _ClearWiFiStationProvision();
     void _OnWiFiStationProvisionChange();
     CHIP_ERROR ConnectProvisionedWiFiNetwork();
+#elif !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    enum class ConnectivityFlags : uint16_t
+    {
+        kHaveIPv4InternetConnectivity = 0x0001,
+        kHaveIPv6InternetConnectivity = 0x0002,
+        kAwaitingConnectivity         = 0x0010,
+    };
+    BitFlags<ConnectivityFlags> mConnectivityFlag;
+#endif
+
+#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    ip4_addr_t m_ip4addr;
+    ip6_addr_t m_ip6addr[LWIP_IPV6_NUM_ADDRESSES];
 #endif
 
     void DriveStationState(void);
