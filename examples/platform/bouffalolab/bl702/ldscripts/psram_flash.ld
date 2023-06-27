@@ -247,8 +247,8 @@ SECTIONS
     KEEP(*sdk_lwip.*.c.o(.bss.*))
 
     . = ALIGN(16);
+    *(.wifi_ram*)
     PROVIDE ( __psram_bss_init_end = . );
-    . = ALIGN(16);
   } >psram
 
   . = ALIGN(8);
