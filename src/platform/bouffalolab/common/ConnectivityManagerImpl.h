@@ -69,28 +69,36 @@ class ConnectivityManagerImpl final : public ConnectivityManager,
     friend class ConnectivityManager;
     friend void netif_status_callback(struct netif *netif);
 
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 public:
-    static WiFiStationState mWiFiStationState;
-
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     bool _IsWiFiStationConnected(void);
-    void WifiStationStateChange(void);
-    void OnStationConnected(void);
+    WiFiStationState GetWiFiStationState(void);
     void ChangeWiFiStationState(WiFiStationState newState);
-#endif
-
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || (defined(BL702) && !CHIP_DEVICE_CONFIG_ENABLE_THREAD)
-    static void OnIPv6AddressAvailable(void);
+    void UpdateWiFiConnectivity(struct netif * interface);
+    void OnWiFiStationStateChanged(void);
+    void OnWiFiStationConnected(void);
+    void OnWiFiStationDisconnected(void);
+    void OnIPv4AddressAvailable();
+    void OnIPv6AddressAvailable();
 #endif
 
 private:
     // ===== Members that implement the ConnectivityManager abstract interface.
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+    WiFiStationMode mWiFiStationMode;
+    WiFiStationState mWiFiStationState;
+    BitFlags<GenericConnectivityManagerImpl_WiFi::ConnectivityFlags> mConnectivityFlag;
+    ip4_addr_t m_ip4addr;
+    ip6_addr_t m_ip6addr[LWIP_IPV6_NUM_ADDRESSES];
+
+    CHIP_ERROR InitWiFi();
     bool _IsWiFiStationEnabled(void);
-    // bool _IsWiFiStationProvisioned(void);
+    ConnectivityManager::WiFiStationMode _GetWiFiStationMode();
     CHIP_ERROR _SetWiFiStationMode(WiFiStationMode val);
-    void GetWifiState(void);
-    WiFiStationState GetWiFiStationState(void);
+    bool _IsWiFiStationProvisioned(void);
+    void _ClearWiFiStationProvision();
+    void _OnWiFiStationProvisionChange();
+    CHIP_ERROR ConnectProvisionedWiFiNetwork();
 #endif
 
     void DriveStationState(void);
@@ -99,7 +107,6 @@ private:
     void _OnPlatformEvent(const ChipDeviceEvent * event);
 
     // ===== Members for internal use by the following friends.
-
     friend ConnectivityManager & ConnectivityMgr(void);
     friend ConnectivityManagerImpl & ConnectivityMgrImpl(void);
 
@@ -115,6 +122,11 @@ inline ConnectivityManager::WiFiStationState ConnectivityManagerImpl::GetWiFiSta
 inline bool ConnectivityManagerImpl::_IsWiFiStationConnected(void)
 {
     return mWiFiStationState == kWiFiStationState_Connected;
+}
+
+inline ConnectivityManager::WiFiStationMode ConnectivityManagerImpl::_GetWiFiStationMode(void)
+{
+    return kWiFiStationMode_Enabled;
 }
 #endif
 

@@ -16,24 +16,30 @@
  */
 
 #include <platform/internal/CHIPDeviceLayerInternal.h>
-
 #include <platform/ConfigurationManager.h>
-
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
-
-#include <lib/core/CHIPVendorIdentifiers.hpp>
-#include <platform/DiagnosticDataProvider.h>
-
-#include <lib/support/CodeUtils.h>
 #include <lib/support/logging/CHIPLogging.h>
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#endif
 
+#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI
 extern "C" {
 #include <eth_bd.h>
 }
+#endif
 
 namespace chip {
 namespace DeviceLayer {
 
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+CHIP_ERROR ConfigurationManagerImpl::GetPrimaryWiFiMACAddress(uint8_t * buf)
+{
+    wifiInterface_getMacAddress(buf);
+
+    return CHIP_NO_ERROR;
+}
+#else
 CHIP_ERROR ConfigurationManagerImpl::GetPrimaryMACAddress(MutableByteSpan buf)
 {
     if (buf.size() != ConfigurationManager::kPrimaryMACAddressLength)
@@ -43,6 +49,7 @@ CHIP_ERROR ConfigurationManagerImpl::GetPrimaryMACAddress(MutableByteSpan buf)
 
     return CHIP_NO_ERROR;
 }
+#endif
 
 } // namespace DeviceLayer
 } // namespace chip

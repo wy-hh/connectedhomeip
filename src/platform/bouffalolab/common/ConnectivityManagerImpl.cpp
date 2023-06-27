@@ -20,6 +20,10 @@
 #include <lib/support/CodeUtils.h>
 #include <lib/support/logging/CHIPLogging.h>
 #include <platform/ConnectivityManager.h>
+#include <platform/internal/BLEManager.h>
+#include <platform/DiagnosticDataProvider.h>
+#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
+#include <platform/bouffalolab/common/BLConfig.h>
 
 #include <platform/internal/GenericConnectivityManagerImpl_UDP.ipp>
 
@@ -31,6 +35,9 @@
 #include <platform/internal/GenericConnectivityManagerImpl_WiFi.ipp>
 #ifdef BL602
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
+#endif
+#ifdef BL702
+#include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #endif
 #endif
 
@@ -143,10 +150,9 @@ CHIP_ERROR ConnectivityManagerImpl::_Init()
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    CHIP_ERROR err = SetWiFiStationMode(kWiFiStationMode_Enabled);
-    NetworkCommissioning::BLWiFiDriver::GetInstance().ReConnectWiFiNetwork();
-
-    ReturnErrorOnFailure(err);
+    ReturnErrorOnFailure(InitWiFi());
+    mWiFiStationState = ConnectivityManager::kWiFiStationState_NotConnected;
+    ReturnErrorOnFailure(SetWiFiStationMode(kWiFiStationMode_Enabled));
 #endif
 
     return CHIP_NO_ERROR;
@@ -160,8 +166,128 @@ void ConnectivityManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
 #endif
 }
 
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || (defined(BL702) && !CHIP_DEVICE_CONFIG_ENABLE_THREAD)
-void ConnectivityManagerImpl::OnIPv6AddressAvailable(void)
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+bool ConnectivityManagerImpl::_IsWiFiStationEnabled(void)
+{
+    return GetWiFiStationMode() == kWiFiStationMode_Enabled;
+}
+
+bool ConnectivityManagerImpl::_IsWiFiStationProvisioned(void)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+    char ssid[64]  = { 0 };
+    char psk[64]   = { 0 };
+    size_t ssidLen = 0;
+    size_t pskLen  = 0;
+
+    err = PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiSSID, (void *) ssid, 64, &ssidLen, 0);
+    SuccessOrExit(err);
+
+    err = PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiPassword, (void *) psk, 64, &pskLen, 0);
+    SuccessOrExit(err);
+
+    return (ssidLen != 0);
+exit:
+    return false;
+}
+
+CHIP_ERROR ConnectivityManagerImpl::_SetWiFiStationMode(WiFiStationMode val)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+
+    VerifyOrExit(val != kWiFiStationMode_NotSupported, err = CHIP_ERROR_INVALID_ARGUMENT);
+
+    if (val != kWiFiStationMode_ApplicationControlled)
+    {
+        DeviceLayer::SystemLayer().ScheduleWork(DriveStationState, NULL);
+    }
+
+    if (mWiFiStationMode != val)
+    {
+        ChipLogProgress(DeviceLayer, "WiFi station mode change: %s -> %s", WiFiStationModeToStr(mWiFiStationMode),
+                        WiFiStationModeToStr(val));
+    }
+
+    mWiFiStationMode = val;
+
+exit:
+    return err;
+}
+
+void ConnectivityManagerImpl::ChangeWiFiStationState(WiFiStationState newState)
+{
+    if (mWiFiStationState != newState)
+    {
+        ChipLogProgress(DeviceLayer, "WiFi station state change: %s -> %s", WiFiStationStateToStr(mWiFiStationState),
+                        WiFiStationStateToStr(newState));
+        mWiFiStationState = newState;
+        ConnectivityMgrImpl().DriveStationState();
+        SystemLayer().ScheduleLambda([]() { NetworkCommissioning::BLWiFiDriver::GetInstance().OnNetworkStatusChange(); });
+    }
+}
+
+void ConnectivityManagerImpl::_ClearWiFiStationProvision(void)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+
+    err = PersistedStorage::KeyValueStoreMgr().Delete(BLConfig::kConfigKey_WiFiSSID);
+    SuccessOrExit(err);
+
+    err =PersistedStorage::KeyValueStoreMgr().Delete(BLConfig::kConfigKey_WiFiPassword);
+    SuccessOrExit(err);
+    
+exit:
+    return;
+}
+
+void ConnectivityManagerImpl::_OnWiFiStationProvisionChange(void) 
+{
+    DeviceLayer::SystemLayer().ScheduleWork(DriveStationState, NULL);
+}
+
+CHIP_ERROR ConnectivityManagerImpl::ConnectProvisionedWiFiNetwork(void)
+{
+    char ssid[64]  = { 0 };
+    char psk[64]   = { 0 };
+    size_t ssidLen = 0;
+    size_t pskLen  = 0;
+
+    ReturnErrorOnFailure(
+        PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiSSID, (void *) ssid, 64, &ssidLen, 0));
+    ReturnErrorOnFailure(
+        PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiPassword, (void *) psk, 64, &pskLen, 0));
+
+    NetworkCommissioning::BLWiFiDriver::GetInstance().ConnectWiFiNetwork(ssid, ssidLen, psk, pskLen);
+
+    return CHIP_NO_ERROR;
+}
+
+void ConnectivityManagerImpl::OnWiFiStationConnected()
+{
+    ChipDeviceEvent event;
+    event.Type                          = DeviceEventType::kWiFiConnectivityChange;
+    event.WiFiConnectivityChange.Result = kConnectivity_Established;
+    PlatformMgr().PostEventOrDie(&event);
+
+    WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
+    if (delegate)
+    {
+        delegate->OnConnectionStatusChanged(
+            chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::ConnectionStatusEnum::kConnected));
+    }
+}
+
+void ConnectivityManagerImpl::OnIPv4AddressAvailable()
+{
+    ChipLogProgress(DeviceLayer, "IPv4 addr available.");
+
+    ChipDeviceEvent event;
+    event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
+    event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV4_Assigned;
+    PlatformMgr().PostEventOrDie(&event);
+}
+
+void ConnectivityManagerImpl::OnIPv6AddressAvailable()
 {
     ChipLogProgress(DeviceLayer, "IPv6 addr available.");
 
@@ -170,6 +296,65 @@ void ConnectivityManagerImpl::OnIPv6AddressAvailable(void)
     event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV6_Assigned;
     PlatformMgr().PostEventOrDie(&event);
 }
+
+void ConnectivityManagerImpl::DriveStationState() 
+{
+    ChipLogProgress(DeviceLayer, "DriveStationState: mWiFiStationState=%s", WiFiStationStateToStr(mWiFiStationState));
+    switch(mWiFiStationState)
+    {
+        case ConnectivityManager::kWiFiStationState_NotConnected:
+        {
+            if (GetWiFiStationMode() == ConnectivityManager::kWiFiStationMode_Enabled && IsWiFiStationProvisioned())
+            {
+                ConnectProvisionedWiFiNetwork();
+            }
+        }
+        break;
+        case ConnectivityManager::kWiFiStationState_Connecting:
+        {
+            ChipLogProgress(DeviceLayer, "Wi-Fi station is connecting to AP");
+        }
+        break;
+        case ConnectivityManager::kWiFiStationState_Connecting_Succeeded:
+        {
+            ChipLogProgress(DeviceLayer, "Wi-Fi station successfully connects to AP");
+            mConnectivityFlag.ClearAll();
+            mConnectivityFlag.Set(ConnectivityFlags::kAwaitingConnectivity);
+        }
+        break;
+        case ConnectivityManager::kWiFiStationState_Connecting_Failed:
+        {
+            ChipLogProgress(DeviceLayer, "Wi-Fi station connecting failed");
+            mConnectivityFlag.ClearAll();
+            OnWiFiStationDisconnected();
+            if (ConnectivityManager::kWiFiStationState_Connecting == mWiFiStationState) {
+                SystemLayer().ScheduleLambda([]() { NetworkCommissioning::BLWiFiDriver::GetInstance().OnConnectWiFiNetwork(false); });
+            }
+        }
+        break;
+        case ConnectivityManager::kWiFiStationState_Connected:
+        {
+            ChipLogProgress(DeviceLayer, "Wi-Fi stattion connected.");
+            OnWiFiStationConnected();
+            SystemLayer().ScheduleLambda([]() { NetworkCommissioning::BLWiFiDriver::GetInstance().OnConnectWiFiNetwork(true); });
+        }
+        break;
+        case ConnectivityManager::kWiFiStationState_Disconnecting:
+        {
+            ChipLogProgress(DeviceLayer, "Wi-Fi station is disconnecting to AP");
+            mConnectivityFlag.ClearAll();
+        }
+        break;
+        default:
+        break;
+    }
+}
+
+void ConnectivityManagerImpl::DriveStationState(::chip::System::Layer * aLayer, void * aAppState)
+{
+    ConnectivityMgrImpl().DriveStationState();
+}
+
 #endif
 
 } // namespace DeviceLayer

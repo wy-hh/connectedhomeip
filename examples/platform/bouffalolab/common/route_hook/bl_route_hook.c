@@ -12,10 +12,15 @@
 #include "lwip/prot/ip6.h"
 #include "lwip/prot/nd6.h"
 #include "lwip/raw.h"
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
+#if defined(BL602_ENABLE)
 #include <wifi_mgmr_ext.h>
-#elif defined (BL702) || ! CHIP_DEVICE_CONFIG_ENABLE_OPENTHREAD
+#elif defined(BL702_ENABLE)
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#else
 #include <eth_bd.h>
+#endif
 #endif
 
 typedef struct bl_route_hook_t
@@ -157,15 +162,19 @@ static uint8_t icmp6_raw_recv_handler(void * arg, struct raw_pcb * pcb, struct p
 
 int8_t bl_route_hook_init()
 {
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if defined(BL602_ENABLE)
     struct netif * lwip_netif = wifi_mgmr_sta_netif_get();
-#elif defined (BL702) || ! CHIP_DEVICE_CONFIG_ENABLE_OPENTHREAD
+#elif defined(BL702_ENABLE)
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+    struct netif * lwip_netif = wifiInterface_GetStaNetif();
+#else
     struct netif * lwip_netif = &eth_mac;
 #endif
+#endif
 
-    ip_addr_t router_group    = IPADDR6_INIT_HOST(0xFF020000, 0, 0, 0x02);
-    bl_route_hook_t * hook    = NULL;
-    uint8_t ret               = 0;
+    ip_addr_t router_group = IPADDR6_INIT_HOST(0xFF020000, 0, 0, 0x02);
+    bl_route_hook_t * hook = NULL;
+    uint8_t ret            = 0;
 
     if (lwip_netif == NULL)
     {

@@ -59,17 +59,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     SuccessOrExit(err);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-    {
-        otRadio_opt_t opt;
 
-        opt.byte            = 0;
-        opt.bf.isCoexEnable = true;
-
-        ot_alarmInit();
-        ot_radioInit(opt);
-    }
-#else
-    
 #endif
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());

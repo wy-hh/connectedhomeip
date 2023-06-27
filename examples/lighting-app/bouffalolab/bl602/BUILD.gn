@@ -140,7 +140,7 @@ bouffalolab_executable("lighting_app") {
   include_dirs = [
     "${chip_root}/src/platform/bouffalolab/BL602",
     "${example_common_dir}",
-    "${examples_plat_common_dir}",
+    "${examples_plat_common_dir}/route_hook",
     "${examples_plat_common_dir}/plat",
     "${examples_plat_dir}",
   ]

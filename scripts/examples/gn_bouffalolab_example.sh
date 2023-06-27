@@ -26,7 +26,7 @@ source "$MATTER_ROOT/scripts/activate.sh"
 bl602_boards=("BL602-IoT-Matter-V1" "BL602-NIGHT-LIGHT")
 bl602_module_type="BL602"
 
-bl702_boards=("XT-ZB6-DevKit" "BL706-IoT-DVK" "BL706-NIGHT-LIGHT")
+bl702_boards=("XT-ZB6-DevKit" "BL706-IoT-DVK" "BL706-NIGHT-LIGHT" "BL706-HUB-V2")
 bl702_modules=("BL702" "BL706C-22")
 bl702_module_type="BL706C-22"
 
