@@ -118,7 +118,6 @@ void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
 CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 {
     CHIP_ERROR err                 = CHIP_NO_ERROR;
-    static uint8_t stack_wifi_init = 0;
     TaskHandle_t backup_eventLoopTask;
 
     // Initialize the configuration system.
@@ -129,14 +128,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     tcpip_init(NULL, NULL);
     aos_register_event_filter(EV_WIFI, OnWiFiPlatformEvent, NULL);
 
-    if (1 == stack_wifi_init)
-    {
-        ChipLogError(DeviceLayer, "Wi-Fi already initialized!");
-        return CHIP_NO_ERROR;
-    }
-
     hal_wifi_start_firmware_task();
-    stack_wifi_init = 1;
     aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);

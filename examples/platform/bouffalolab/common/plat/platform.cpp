@@ -144,7 +144,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
         if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
         {
-
+            bl_route_hook_init();
 #ifdef OTA_ENABLED
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
@@ -272,10 +272,6 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
 
 #if PW_RPC_ENABLED
     chip::rpc::Init();
-#endif
-
-#if !CHIP_ENABLE_OPENTHREAD
-    bl_route_hook_init();
 #endif
 
     vTaskResume(GetAppTask().sAppTaskHandle);
