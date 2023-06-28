@@ -3,7 +3,7 @@
 extern "C" {
 #endif
 
-int8_t bl_route_hook_init(void);
+int8_t bl_route_hook_init(struct netif * netif);
 
 #ifdef __cplusplus
 }

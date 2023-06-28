@@ -15,7 +15,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 #include <app/server/Dnssd.h>
 #include <app/server/OnboardingCodesUtil.h>
 #include <app/server/Server.h>
@@ -41,8 +40,6 @@
 #include <platform/ThreadStackManager.h>
 #include <platform/bouffalolab/common/ThreadStackManagerImpl.h>
 #include <utils_list.h>
-#else
-#include <bl_route_hook.h>
 #endif
 
 #ifdef OTA_ENABLED
@@ -66,6 +63,20 @@
 
 #if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
 #include "uart.h"
+#endif
+
+#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#include <lwip/netif.h>
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if defined(BL602_ENABLE)
+#include <wifi_mgmr_ext.h>
+#else 
+#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#endif
+#else
+#include <platform/bouffalolab/BL702/EthernetInterface.h>
+#endif
+#include <bl_route_hook.h>
 #endif
 
 #include <AppTask.h>
@@ -144,7 +155,17 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
         if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
         {
-            bl_route_hook_init();
+#if defined(BL602_ENABLE)
+            struct netif * lwip_netif = wifi_mgmr_sta_netif_get();
+#else
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+            struct netif * lwip_netif = wifiInterface_getStaNetif();
+#else
+            struct netif * lwip_netif = &eth_mac;
+#endif
+#endif
+
+            bl_route_hook_init(lwip_netif);
 #ifdef OTA_ENABLED
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
