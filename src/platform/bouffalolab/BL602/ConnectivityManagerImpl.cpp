@@ -18,53 +18,11 @@
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
 #include <NetworkCommissioningDriver.h>
-#include <lib/support/CodeUtils.h>
-#include <lib/support/logging/CHIPLogging.h>
-#include <platform/ConnectivityManager.h>
-#include <platform/internal/BLEManager.h>
 
 #include <platform/DiagnosticDataProvider.h>
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
-#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
-
-#include <hal_wifi.h>
-#include <wifi_mgmr_ext.h>
-
-#include <platform/internal/GenericConnectivityManagerImpl_UDP.ipp>
-
-#if INET_CONFIG_ENABLE_TCP_ENDPOINT
-#include <platform/internal/GenericConnectivityManagerImpl_TCP.ipp>
-#endif
-
-#include <platform/internal/GenericConnectivityManagerImpl_WiFi.ipp>
-
-#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
-#include <platform/internal/GenericConnectivityManagerImpl_BLE.ipp>
-#endif
-
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#include <platform/internal/GenericConnectivityManagerImpl_Thread.ipp>
-#endif
-
-#include <wifi_mgmr_ext.h>
-
-#include <FreeRTOS.h>
-#include <task.h>
-
-#include <lwip/netifapi.h>
-#include <wifi_mgmr_ext.h>
-
-#include <FreeRTOS.h>
-#include <stdio.h>
-#include <string.h>
-#include <task.h>
 
 using namespace ::chip;
-using namespace ::chip::Dnssd;
-using namespace ::chip::Inet;
-using namespace ::chip::System;
-using namespace ::chip::TLV;
-using namespace ::chip::DeviceLayer::Internal;
 
 namespace chip {
 namespace DeviceLayer {

@@ -20,22 +20,14 @@
 
 #include <platform/PlatformManager.h>
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
-#include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.ipp>
 
 #include <lwip/tcpip.h>
-#include <utils_log.h>
 
-#include <aos/kernel.h>
-#include <bl60x_fw_api.h>
 #include <bl_sec.h>
-#include <event_device.h>
+
 #include <hal_wifi.h>
-#include <lwip/tcpip.h>
 #include <wifi_mgmr_ext.h>
 
-extern "C" {
-#include <bl_sec.h>
-}
 
 namespace chip {
 namespace DeviceLayer {

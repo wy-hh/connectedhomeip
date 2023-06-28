@@ -192,10 +192,14 @@ extern "C" void vAssertCalled(void)
     void * ra = (void *) __builtin_return_address(0);
 
     taskDISABLE_INTERRUPTS();
-    printf("vAssertCalled, ra = %p, taskname %s\r\n", 
-        (void *)__builtin_return_address(0), pcTaskGetName(NULL));
-    while (true)
-        ;
+    if (xPortIsInsideInterrupt()) {
+        printf("vAssertCalled, ra = %p in ISR\r\n", (void *)ra);
+    }
+    else {
+        printf("vAssertCalled, ra = %p in task %s\r\n", (void *)ra, pcTaskGetName(NULL));
+    }
+
+    while (true);
 }
 #endif
 
@@ -205,10 +209,14 @@ extern "C" void __attribute__((weak)) user_vAssertCalled(void)
     void * ra = (void *) __builtin_return_address(0);
 
     taskDISABLE_INTERRUPTS();
-    printf("vAssertCalled, ra = %p, taskname %s\r\n", 
-        (void *)__builtin_return_address(0), pcTaskGetName(NULL));
-    while (true)
-        ;
+    if (xPortIsInsideInterrupt()) {
+        printf("vAssertCalled, ra = %p in ISR\r\n", (void *)ra);
+    }
+    else {
+        printf("vAssertCalled, ra = %p in task %s\r\n", (void *)ra, pcTaskGetName(NULL));
+    }
+    
+    while (true);
 }
 
 extern "C" void __attribute__((weak)) user_vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)

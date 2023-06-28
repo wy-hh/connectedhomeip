@@ -75,7 +75,7 @@ void ethernetInterface_init(void)
     netif_set_status_callback(&eth_mac, netif_status_callback);
 }
 
-struct netif *ethernetInterface_getNetif(void) 
+struct netif *deviceInterface_getNetif(void) 
 {
     return &eth_mac;
 }

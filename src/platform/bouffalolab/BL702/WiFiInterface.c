@@ -111,7 +111,7 @@ bool wifiInterface_init()
     return true;
 }
 
-struct netif * wifiInterface_getStaNetif(void)
+struct netif * deviceInterface_getNetif(void)
 {
     if (vnet_spi)
     {

@@ -15,22 +15,15 @@
  *    limitations under the License.
  */
 
-#include <aos/yloop.h>
-#include <bl60x_wifi_driver/wifi_mgmr.h>
-#include <bl60x_wifi_driver/wifi_mgmr_api.h>
-#include <hal_wifi.h>
-#include <lib/support/CodeUtils.h>
-#include <lib/support/SafeInt.h>
-#include <lwip/tcpip.h>
+#include <limits>
+#include <stdint.h>
+#include <string>
+
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
 #include <wifi_mgmr_ext.h>
 #include <wifi_mgmr_portable.h>
 
-#include <limits>
-#include <stdint.h>
-#include <string>
-#include <utils_log.h>
 
 #define WIFI_STA_DISCONNECT_DELAY (pdMS_TO_TICKS(200))
 

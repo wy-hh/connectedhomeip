@@ -36,6 +36,8 @@ typedef struct rio_header_t rio_header_t;
 
 static bl_route_hook_t * s_hooks;
 
+extern struct netif * deviceInterface_getNetif(void);
+
 static bool is_self_address(struct netif * netif, const ip6_addr_t * addr)
 {
     for (size_t i = 0; i < LWIP_ARRAYSIZE(netif->ip6_addr); i++)
@@ -151,11 +153,12 @@ static uint8_t icmp6_raw_recv_handler(void * arg, struct raw_pcb * pcb, struct p
     return 0;
 }
 
-int8_t bl_route_hook_init(struct netif * lwip_netif)
+int8_t bl_route_hook_init(void)
 {
     ip_addr_t router_group = IPADDR6_INIT_HOST(0xFF020000, 0, 0, 0x02);
     bl_route_hook_t * hook = NULL;
     uint8_t ret            = 0;
+    struct netif * lwip_netif = deviceInterface_getNetif();
 
     if (lwip_netif == NULL)
     {

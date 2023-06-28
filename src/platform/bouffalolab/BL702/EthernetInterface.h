@@ -23,7 +23,7 @@ extern "C" {
 
 void ethernetInterface_init(void);
 void ethernetInterface_eventGotIP(struct netif * interface);
-struct netif *ethernetInterface_getNetif(void);
+struct netif *deviceInterface_getNetif(void);
 
 #ifdef __cplusplus
 }

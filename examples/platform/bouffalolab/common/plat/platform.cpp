@@ -23,23 +23,12 @@
 #include <lib/support/CodeUtils.h>
 #include <lib/support/ErrorStr.h>
 #include <system/SystemClock.h>
-
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <NetworkCommissioningDriver.h>
-#include <app/clusters/network-commissioning/network-commissioning.h>
-#endif
+#include <DeviceInfoProviderImpl.h>
 #include <platform/bouffalolab/common/PlatformManagerImpl.h>
 
 #if HEAP_MONITORING
 #include <MemMonitoring.h>
 #include <lib/support/CHIPMem.h>
-#endif
-
-#if CHIP_ENABLE_OPENTHREAD
-#include <platform/OpenThread/OpenThreadUtils.h>
-#include <platform/ThreadStackManager.h>
-#include <platform/bouffalolab/common/ThreadStackManagerImpl.h>
-#include <utils_list.h>
 #endif
 
 #ifdef OTA_ENABLED
@@ -52,17 +41,27 @@
 #endif
 
 #if PW_RPC_ENABLED
-#include "PigweedLogger.h"
-#include "Rpc.h"
+#include <PigweedLogger.h>
+#include <Rpc.h>
+#endif
+#if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
+#include <uart.h>
 #endif
 
-#include <DeviceInfoProviderImpl.h>
 #if CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE || defined(CONFIG_BOUFFALOLAB_FACTORY_DATA_TEST)
 #include <platform/bouffalolab/common/FactoryDataProvider.h>
 #endif
 
-#if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
-#include "uart.h"
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#include <NetworkCommissioningDriver.h>
+#include <app/clusters/network-commissioning/network-commissioning.h>
+#endif
+
+#if CHIP_ENABLE_OPENTHREAD
+#include <platform/OpenThread/OpenThreadUtils.h>
+#include <platform/ThreadStackManager.h>
+#include <platform/bouffalolab/common/ThreadStackManagerImpl.h>
+#include <utils_list.h>
 #endif
 
 #if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
@@ -155,17 +154,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
         if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
         {
-#if defined(BL602_ENABLE)
-            struct netif * lwip_netif = wifi_mgmr_sta_netif_get();
-#else
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-            struct netif * lwip_netif = wifiInterface_getStaNetif();
-#else
-            struct netif * lwip_netif = &eth_mac;
-#endif
-#endif
-
-            bl_route_hook_init(lwip_netif);
+            bl_route_hook_init();
 #ifdef OTA_ENABLED
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);

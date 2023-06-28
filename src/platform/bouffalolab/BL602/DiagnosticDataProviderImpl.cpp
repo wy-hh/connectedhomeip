@@ -20,10 +20,7 @@
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
-#include <lwip/tcpip.h>
-
 extern "C" {
-#include <bl_efuse.h>
 #include <bl_sys.h>
 
 #include <bl60x_fw_api.h>

@@ -24,16 +24,6 @@
 
 #include <FreeRTOS.h>
 
-#if defined (BL602)
-#include <wifi_mgmr_ext.h>
-#elif defined (BL702)
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <platform/bouffalolab/BL702/WiFiInterface.h>
-#elif !CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#include <platform/bouffalolab/BL702/EthernetInterface.h>
-#endif
-#endif
-
 namespace chip {
 namespace DeviceLayer {
 
@@ -41,6 +31,7 @@ extern "C" size_t get_heap_size(void);
 #ifdef CFG_USE_PSRAM
 extern "C" size_t get_heap3_size(void);
 #endif
+extern "C" struct netif * deviceInterface_getNetif(void);
 
 DiagnosticDataProviderImpl & DiagnosticDataProviderImpl::GetDefaultInstance()
 {
@@ -234,15 +225,7 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** 
     ifp->hardwareAddress = ByteSpan(macBuffer, ConfigurationManager::kPrimaryMACAddressLength);
 #else
 
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#if defined (BL602)
-    struct netif * netif = wifi_mgmr_sta_netif_get();
-#else
-    struct netif * netif = wifiInterface_getStaNetif();
-#endif
-#else
-    struct netif * netif = ethernetInterface_getNetif();
-#endif
+    struct netif * netif = deviceInterface_getNetif();
 
     Platform::CopyString(ifp->Name, netif->name);
     ifp->name          = CharSpan::fromCharString(ifp->Name);

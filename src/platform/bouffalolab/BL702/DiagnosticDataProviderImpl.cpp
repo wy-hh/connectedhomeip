@@ -15,11 +15,8 @@
  *    limitations under the License.
  */
 
-#include <lib/support/CHIPMemString.h>
-
-#include <platform/DiagnosticDataProvider.h>
-#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
+#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
@@ -27,13 +24,8 @@
 
 extern "C" {
 #include <bl_sys.h>
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD 
-#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <eth_bd.h>
-#endif
-#include <lwip/tcpip.h>
-#endif
 }
+
 namespace chip {
 namespace DeviceLayer {
 

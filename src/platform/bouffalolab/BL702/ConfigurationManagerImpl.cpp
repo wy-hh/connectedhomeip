@@ -15,10 +15,8 @@
  *    limitations under the License.
  */
 
-#include <platform/internal/CHIPDeviceLayerInternal.h>
 #include <platform/ConfigurationManager.h>
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
-#include <lib/support/logging/CHIPLogging.h>
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif

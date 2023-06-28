@@ -18,40 +18,21 @@
 
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
-#include <lib/support/CodeUtils.h>
-#include <lib/support/logging/CHIPLogging.h>
 #include <platform/ConnectivityManager.h>
-#include <platform/internal/BLEManager.h>
-#include <platform/DiagnosticDataProvider.h>
 
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <platform/internal/GenericConnectivityManagerImpl_WiFi.ipp>
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
-
-#include <lwip/dns.h>
-#include <lwip/ip_addr.h>
-#include <lwip/ip6_addr.h>
-#include <lwip/nd6.h>
-#include <lwip/netif.h>
-#include <lwip/ethip6.h>
-#include <lwip/dhcp6.h>
 #endif
 
 #if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <eth_bd.h>
-#include <lwip/netifapi.h>
-#include <lwip/dhcp6.h>
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif
 
 using namespace ::chip;
-using namespace ::chip::Inet;
-using namespace ::chip::System;
-using namespace ::chip::TLV;
-using namespace ::chip::DeviceLayer::Internal;
 
 namespace chip {
 namespace DeviceLayer {

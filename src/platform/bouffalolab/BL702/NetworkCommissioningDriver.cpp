@@ -15,11 +15,6 @@
  *    limitations under the License.
  */
 
-#include <stdint.h>
-#include <string>
-
-#include <lib/support/CodeUtils.h>
-#include <lib/support/SafeInt.h>
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
