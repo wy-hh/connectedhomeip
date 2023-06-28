@@ -106,7 +106,8 @@ bool wifiInterface_init()
     }
 
     virt_net_setup_callback(vnet_spi, virt_net_spi_event_cb, NULL);
-
+    netifapi_netif_set_default((struct netif *)&vnet_spi->netif);
+    
     return true;
 }
 

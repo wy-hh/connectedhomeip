@@ -64,6 +64,9 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     err = Internal::BLConfig::Init();
     SuccessOrExit(err);
 
+    // Initialize LwIP.
+    tcpip_init(NULL, NULL);
+    
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     wifiInterface_init();
 #elif CHIP_DEVICE_CONFIG_ENABLE_THREAD
@@ -82,8 +85,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     SetConfigurationMgr(&ConfigurationManagerImpl::GetDefaultInstance());
     SetDiagnosticDataProvider(&DiagnosticDataProviderImpl::GetDefaultInstance());
 
-    // Initialize LwIP.
-    tcpip_init(NULL, NULL);
+    ChipLogProgress(NetworkProvisioning, "SetDiagnosticDataProvider");
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);

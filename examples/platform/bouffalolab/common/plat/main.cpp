@@ -192,7 +192,8 @@ extern "C" void vAssertCalled(void)
     void * ra = (void *) __builtin_return_address(0);
 
     taskDISABLE_INTERRUPTS();
-    ChipLogProgress(NotSpecified, "vAssertCalled, ra= %p", ra);
+    printf("vAssertCalled, ra = %p, taskname %s\r\n", 
+        (void *)__builtin_return_address(0), pcTaskGetName(NULL));
     while (true)
         ;
 }
@@ -204,7 +205,8 @@ extern "C" void __attribute__((weak)) user_vAssertCalled(void)
     void * ra = (void *) __builtin_return_address(0);
 
     taskDISABLE_INTERRUPTS();
-    ChipLogProgress(NotSpecified, "vAssertCalled, ra= %p", ra);
+    printf("vAssertCalled, ra = %p, taskname %s\r\n", 
+        (void *)__builtin_return_address(0), pcTaskGetName(NULL));
     while (true)
         ;
 }
@@ -326,20 +328,6 @@ extern "C" void do_psram_test()
 }
 #endif
 
-#ifdef BL702L_ENABLE
-void exception_entry_app(uint32_t mcause, uint32_t mepc, uint32_t mtval, uintptr_t * regs, uintptr_t * tasksp)
-{
-    static const char dbg_str[] = "Exception Entry--->>>\r\n mcause %08lx, mepc %08lx, mtval %08lx\r\n";
-
-    printf(dbg_str, mcause, mepc, mtval);
-
-    while (1)
-    {
-        /*dead loop now*/
-    }
-}
-#endif
-
 extern "C" void setup_heap()
 {
     bl_sys_init();
@@ -358,16 +346,6 @@ extern "C" void setup_heap()
 
     vPortDefineHeapRegions(xHeapRegions);
 
-    bl_sys_early_init();
-
-#ifdef BL702L_ENABLE
-    rom_freertos_init(256, 400);
-    rom_hal_init();
-    rom_lmac154_hook_init();
-
-    exception_entry_ptr = exception_entry_app;
-#endif
-
 #ifdef CFG_USE_PSRAM
     bl_psram_init();
     do_psram_test();
@@ -382,6 +360,14 @@ extern "C" size_t get_heap_size(void)
 
 extern "C" void app_init(void)
 {
+    bl_sys_early_init();
+
+#ifdef BL702L_ENABLE
+    rom_freertos_init(256, 400);
+    rom_hal_init();
+    rom_lmac154_hook_init();
+#endif
+
     hosal_uart_init(&uart_stdio);
 
     ChipLogProgress(NotSpecified, "==================================================");
@@ -410,6 +396,7 @@ extern "C" void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
 
+    hosal_dma_init();
 #ifdef BL602_ENABLE
     wifi_td_diagnosis_init();
 #endif

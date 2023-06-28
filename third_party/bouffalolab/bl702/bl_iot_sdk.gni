@@ -753,8 +753,6 @@ template("bl_iot_sdk") {
 
   source_set("${sdk_target_name}_wifi") {
     defines = [
-      "RAMSYNC_TX_TASK_PRI=25",
-      "RAMSYNC_RX_TASK_PRI=25",
       "CFG_USE_DTS_SPI_CONFIG=1",
     ]
 
