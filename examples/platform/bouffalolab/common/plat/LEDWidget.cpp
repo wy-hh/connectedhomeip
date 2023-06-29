@@ -99,6 +99,8 @@ void DimmableLEDWidget::SetOnoff(bool state)
     {
         set_level(0);
     }
+
+    printf ("SetOnoff = %d, %d\r\n", mOnoff, light_v);
 #endif
 }
 

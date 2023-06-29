@@ -47,6 +47,7 @@ declare_args() {
   ota_auto_reboot_delay_seconds = 5
 
   enable_heap_monitoring = false
+  enable_reset_counter = false
 
   setupPinCode = 20202021
   setupDiscriminator = 3840
@@ -102,6 +103,10 @@ bouffalolab_executable("lighting_app") {
     "SYS_AOS_LOOP_ENABLE",
   ]
 
+  if (false == enable_reset_counter) {
+    defines += [ "BOOT_PIN_RESET=8" ]
+  }
+
   bl_plat_name = "bl602"
   sources = [
     "${examples_plat_common_dir}/route_hook/bl_route_hook.c",
@@ -112,8 +117,6 @@ bouffalolab_executable("lighting_app") {
     defines += [ "BL602_IoT_Matter_V1" ]
   } else if ("BL602-NIGHT-LIGHT" == board) {
     defines += [ "BL602_NIGHT_LIGHT" ]
-  } else if ("BL602-IOT-DVK-3S" == board) {
-    defines += [ "BL602_IOT_DVK_3S" ]
   }
 
   sources += [

@@ -608,6 +608,7 @@ def BuildBouffalolabTarget():
     target.AppendModifier('115200', baudrate=115200)
     target.AppendModifier('rpc', enable_rpcs=True)
     target.AppendModifier('cdc', enable_cdc=True)
+    target.AppendModifier('resetCnt', enable_resetCnt=False)
 
     return target
 

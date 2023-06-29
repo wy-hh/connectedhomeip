@@ -81,7 +81,8 @@ class BouffalolabBuilder(GnBuilder):
                  module_type: str = "BL706C-22",
                  baudrate=2000000,
                  enable_shell: bool = False,
-                 enable_cdc: bool = False
+                 enable_cdc: bool = False,
+                 enable_resetCnt : bool = False
                  ):
 
         if 'BL602' == module_type:
@@ -144,6 +145,9 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append('import("//with_pw_rpc.gni")')
         elif enable_shell:
             self.argsOpt.append('chip_build_libshell=true')
+
+        if enable_resetCnt:
+            self.argsOpt.append('enable_reset_counter=true')
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])

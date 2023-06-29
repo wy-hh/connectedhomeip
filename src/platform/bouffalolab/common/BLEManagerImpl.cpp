@@ -21,7 +21,7 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 
 #include <ble/CHIPBleServiceData.h>
-#include <lib/support/logging/CHIPLogging.h>
+#include <lib/support/CHIPMemString.h>
 #include <platform/internal/BLEManager.h>
 #if CHIP_ENABLE_ADDITIONAL_DATA_ADVERTISING
 #include <setup_payload/AdditionalDataPayloadGenerator.h>
