@@ -60,10 +60,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     CHIP_ERROR err;
     TaskHandle_t backup_eventLoopTask;
 
-    // Initialize the configuration system.
-    err = Internal::BLConfig::Init();
-    SuccessOrExit(err);
-
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
     

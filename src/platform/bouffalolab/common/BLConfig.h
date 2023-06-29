@@ -78,8 +78,6 @@ public:
     static constexpr const char * kCounterKey_TotalOperationalHours = ("total-hours");
     static constexpr const char * kCounterKey_UpTime                = ("up-time");
 
-    static CHIP_ERROR Init(void);
-
     // Config value accessors.
     static CHIP_ERROR ReadConfigValue(const char * key, uint8_t * val, size_t size, size_t & readsize);
     static CHIP_ERROR ReadConfigValue(const char * key, bool & val);

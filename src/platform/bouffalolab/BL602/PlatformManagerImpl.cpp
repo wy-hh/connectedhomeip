@@ -112,10 +112,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     CHIP_ERROR err                 = CHIP_NO_ERROR;
     TaskHandle_t backup_eventLoopTask;
 
-    // Initialize the configuration system.
-    err = Internal::BLConfig::Init();
-    SuccessOrExit(err);
-
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
     aos_register_event_filter(EV_WIFI, OnWiFiPlatformEvent, NULL);

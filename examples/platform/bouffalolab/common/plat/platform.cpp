@@ -20,8 +20,6 @@
 #include <app/server/Server.h>
 #include <credentials/DeviceAttestationCredsProvider.h>
 #include <credentials/examples/DeviceAttestationCredsExample.h>
-#include <lib/support/CodeUtils.h>
-#include <lib/support/ErrorStr.h>
 #include <system/SystemClock.h>
 #include <DeviceInfoProviderImpl.h>
 #include <platform/bouffalolab/common/PlatformManagerImpl.h>
@@ -29,7 +27,6 @@
 
 #if HEAP_MONITORING
 #include <MemMonitoring.h>
-#include <lib/support/CHIPMem.h>
 #endif
 
 #if CONFIG_ENABLE_CHIP_SHELL

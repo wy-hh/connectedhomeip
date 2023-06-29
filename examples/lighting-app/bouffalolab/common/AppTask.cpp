@@ -16,22 +16,16 @@
  *    limitations under the License.
  */
 
-#include <LEDWidget.h>
-#include <plat.h>
+
 
 #include <app-common/zap-generated/attributes/Accessors.h>
-#include <app-common/zap-generated/ids/Clusters.h>
 #include <app/clusters/identify-server/identify-server.h>
-#include <app/util/attribute-storage.h>
 
 #include <app/server/Dnssd.h>
 #include <app/server/OnboardingCodesUtil.h>
 #include <app/server/Server.h>
 #include <credentials/DeviceAttestationCredsProvider.h>
 #include <credentials/examples/DeviceAttestationCredsExample.h>
-#include <lib/support/CHIPMem.h>
-#include <lib/support/CodeUtils.h>
-#include <lib/support/ErrorStr.h>
 #include <system/SystemClock.h>
 
 #if HEAP_MONITORING
@@ -49,6 +43,9 @@
 #include <ChipShellCollection.h>
 #include <lib/shell/Engine.h>
 #endif
+
+#include <LEDWidget.h>
+#include <plat.h>
 
 extern "C" {
 #include "board.h"

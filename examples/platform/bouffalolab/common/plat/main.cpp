@@ -27,8 +27,6 @@
 
 #include <AppTask.h>
 #include <easyflash.h>
-#include <lib/support/CHIPMem.h>
-#include <lib/support/CHIPPlatformMemory.h>
 #include <plat.h>
 
 extern "C" {
