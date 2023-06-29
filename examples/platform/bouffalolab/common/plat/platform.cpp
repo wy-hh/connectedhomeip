@@ -25,15 +25,12 @@
 #include <system/SystemClock.h>
 #include <DeviceInfoProviderImpl.h>
 #include <platform/bouffalolab/common/PlatformManagerImpl.h>
+#include <OTAConfig.h>
 
 #if HEAP_MONITORING
 #include <MemMonitoring.h>
 #include <lib/support/CHIPMem.h>
 #endif
-
-#ifdef OTA_ENABLED
-#include "OTAConfig.h"
-#endif // OTA_ENABLED
 
 #if CONFIG_ENABLE_CHIP_SHELL
 #include <ChipShellCollection.h>
@@ -106,41 +103,19 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
     switch (event->Type)
     {
     case DeviceEventType::kCHIPoBLEAdvertisingChange:
-
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-        GetAppTask().mIsConnected = ConnectivityMgr().IsWiFiStationConnected();
-#endif
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-        GetAppTask().mIsConnected = ConnectivityMgr().IsThreadAttached();
-#endif
-
-        if (ConnectivityMgr().NumBLEConnections())
-        {
-            GetAppTask().PostEvent(AppTask::APP_EVENT_SYS_BLE_CONN);
-        }
-        else
-        {
-            GetAppTask().PostEvent(AppTask::APP_EVENT_SYS_BLE_ADV);
-        }
         ChipLogProgress(NotSpecified, "BLE adv changed, connection number: %d", ConnectivityMgr().NumBLEConnections());
         break;
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     case DeviceEventType::kThreadStateChange:
 
         ChipLogProgress(NotSpecified, "Thread state changed, IsThreadAttached: %d", ConnectivityMgr().IsThreadAttached());
-        if (!GetAppTask().mIsConnected && ConnectivityMgr().IsThreadAttached())
+        if (ConnectivityMgr().IsThreadAttached())
         {
-            GetAppTask().PostEvent(AppTask::APP_EVENT_SYS_PROVISIONED);
-            GetAppTask().mIsConnected = true;
-#ifdef OTA_ENABLED
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
-#endif
         }
         break;
-#endif
-
-#if ! CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#else
     case DeviceEventType::kInterfaceIpAddressChanged:
         if ((event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV4_Assigned) ||
             (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned))
@@ -155,10 +130,8 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
         if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
         {
             bl_route_hook_init();
-#ifdef OTA_ENABLED
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
-#endif
         }
         break;
 #endif

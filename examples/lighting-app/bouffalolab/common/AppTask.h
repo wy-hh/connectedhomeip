@@ -64,14 +64,13 @@ public:
         APP_EVENT_TIMER     = 0x00000010,
         APP_EVENT_BTN_SHORT = 0x00000020,
 
-        APP_EVENT_SYS_BLE_ADV      = 0x00000100,
-        APP_EVENT_SYS_BLE_CONN     = 0x00000200,
-        APP_EVENT_SYS_PROVISIONED  = 0x00000400,
-        APP_EVENT_SYS_LIGHT_TOGGLE = 0x00000800,
-        APP_EVENT_FACTORY_RESET    = 0x00001000,
+        APP_EVENT_SYS_UNPROVISION  = 0x00000100,
+        APP_EVENT_SYS_PROVISIONED  = 0x00000200,
+        APP_EVENT_SYS_LIGHT_TOGGLE = 0x00000400,
+        APP_EVENT_FACTORY_RESET    = 0x00000800,
 
         APP_EVENT_SYS_ALL_MASK =
-            APP_EVENT_SYS_BLE_ADV | APP_EVENT_SYS_BLE_CONN | APP_EVENT_SYS_PROVISIONED | APP_EVENT_FACTORY_RESET,
+            APP_EVENT_SYS_UNPROVISION | APP_EVENT_SYS_PROVISIONED | APP_EVENT_FACTORY_RESET,
 
         APP_EVENT_LIGHTING_ONOFF = 0x00010000,
         APP_EVENT_LIGHTING_LEVEL = 0x00020000,
@@ -100,7 +99,6 @@ public:
     static void IdentifyStartHandler(Identify *);
     static void IdentifyStopHandler(Identify *);
     static void IdentifyHandleOp(app_event_t event);
-    bool mIsConnected;
 
 private:
     friend void StartAppTask(void);

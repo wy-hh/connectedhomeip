@@ -1,7 +1,6 @@
 /*
  *
  *    Copyright (c) 2020 Project CHIP Authors
- *    Copyright (c) 2019 Google LLC.
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -140,7 +139,7 @@ void AppTask::AppTaskMain(void * pvParameter)
     app_event_t appEvent;
     bool onoff = false;
 
-    sLightLED.Init();
+    ChipLogProgress(NotSpecified, "AppTaskMain %d", Server::GetInstance().GetFabricTable().FabricCount());
 
 #ifdef LED_BTN_RESET
     ButtonInit();
@@ -173,9 +172,15 @@ void AppTask::AppTaskMain(void * pvParameter)
     }
 
     GetAppTask().PostEvent(AppTask::APP_EVENT_TIMER);
+    if (Server::GetInstance().GetFabricTable().FabricCount()) 
+    {
+        /** Deivce is commissioned. */
+        LightingUpdate(APP_EVENT_LIGHTING_MASK);
+    }
+    else {
+        LightingUpdate(APP_EVENT_SYS_UNPROVISION);
+    }
     vTaskSuspend(NULL);
-
-    GetAppTask().mIsConnected = false;
 
     ChipLogProgress(NotSpecified, "App Task started, with heap %d left\r\n", xPortGetFreeHeapSize());
 
@@ -188,8 +193,9 @@ void AppTask::AppTaskMain(void * pvParameter)
         {
             PlatformMgr().LockChipStack();
 
-            if (APP_EVENT_SYS_PROVISIONED & appEvent)
+            if ((APP_EVENT_SYS_PROVISIONED & appEvent) && Server::GetInstance().GetFabricTable().FabricCount() == 1)
             {
+                /** only change lighting state when device changes from commissionable to commissioned */
                 LightingUpdate(APP_EVENT_LIGHTING_MASK);
             }
 
@@ -211,9 +217,9 @@ void AppTask::AppTaskMain(void * pvParameter)
                 IdentifyHandleOp(appEvent);
             }
 
-            if (APP_EVENT_SYS_BLE_ADV & appEvent)
+            if (APP_EVENT_SYS_UNPROVISION & appEvent)
             {
-                LightingUpdate(APP_EVENT_SYS_BLE_ADV);
+                LightingUpdate(APP_EVENT_SYS_UNPROVISION);
             }
 
             if (APP_EVENT_FACTORY_RESET & appEvent)
@@ -279,13 +285,13 @@ void AppTask::LightingUpdate(app_event_t status)
 
         } while (0);
     }
-    else if (APP_EVENT_SYS_BLE_ADV & status)
+    else if (APP_EVENT_SYS_UNPROVISION & status)
     {
 #if defined(BL706_NIGHT_LIGHT) || defined(BL602_NIGHT_LIGHT)
-        /** show yellow to indicate BLE advertisement */
+        /** show yellow to indicate not-provision state for extended color light */
         sLightLED.SetColor(254, 35, 254);
 #else
-        /** show 30% brightness to indicate BLE advertisement */
+        /** show 30% brightness to indicate not-provision state */
         sLightLED.SetLevel(25);
 #endif
     }
@@ -357,13 +363,13 @@ void AppTask::TimerEventHandler(app_event_t event)
         StartTimer();
         if (GetAppTask().mIsFactoryResetIndicat)
         {
-            if (GetAppTask().mIsConnected)
+            if (Server::GetInstance().GetFabricTable().FabricCount())
             {
                 LightingUpdate(APP_EVENT_LIGHTING_MASK);
             }
             else
             {
-                LightingUpdate(APP_EVENT_SYS_BLE_ADV);
+                LightingUpdate(APP_EVENT_SYS_UNPROVISION);
             }
         }
         GetAppTask().mIsFactoryResetIndicat = false;

@@ -150,6 +150,7 @@ bouffalolab_executable("lighting_app") {
     "${examples_plat_common_dir}/plat/main.cpp",
     "${examples_plat_common_dir}/plat/platform.cpp",
     "${examples_plat_common_dir}/plat/uart.c",
+    "${examples_plat_common_dir}/plat/OTAConfig.cpp"
   ]
 
   deps = [
@@ -259,11 +260,6 @@ bouffalolab_executable("lighting_app") {
   if (enable_heap_monitoring) {
     sources += [ "${examples_plat_common_dir}/plat/MemMonitoring.cpp" ]
     defines += [ "HEAP_MONITORING=1" ]
-  }
-
-  if (chip_enable_ota_requestor) {
-    defines += [ "OTA_ENABLED" ]
-    sources += [ "${examples_plat_common_dir}/plat/OTAConfig.cpp" ]
   }
 
   if (enable_psram) {

@@ -113,6 +113,9 @@ class BouffalolabBuilder(GnBuilder):
         self.argsOpt.append('board=\"{}\"'.format(self.board.GnArgName()))
         self.argsOpt.append('baudrate=\"{}\"'.format(baudrate))
 
+        if bouffalo_chip == "bl602":
+            self.argsOpt.append('chip_enable_openthread=false')
+            self.argsOpt.append('chip_enable_wifi=true')
         if bouffalo_chip == "bl702":
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
             if board == BouffalolabBoard.BL706_ETH:
@@ -125,6 +128,9 @@ class BouffalolabBuilder(GnBuilder):
             else:
                 self.argsOpt.append('chip_enable_openthread=true')
                 self.argsOpt.append('chip_enable_wifi=false')
+        elif bouffalo_chip == "bl702l":
+            self.argsOpt.append('chip_enable_openthread=true')
+            self.argsOpt.append('chip_enable_wifi=false')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":
