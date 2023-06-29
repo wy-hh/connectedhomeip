@@ -52,15 +52,6 @@
 
 #elif defined(XT_ZB6_DevKit)
 
-// #define LED_B_PIN_PORT 3
-// #define LED_B_PIN 18
-
-// #define LED_R_PIN_PORT 4
-// #define LED_R_PIN 19
-
-// #define LED_G_PIN_PORT 0
-// #define LED_G_PIN 20
-
 #define LED_PIN_PORT 3
 #define LED_PIN 18
 

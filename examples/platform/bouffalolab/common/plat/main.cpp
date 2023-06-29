@@ -43,7 +43,9 @@ extern "C" {
 #include <wifi_mgmr_ext.h>
 #endif
 #include <bl_irq.h>
+#if defined(BL702L_ENABLE)
 #include <bl_rtc.h>
+#endif
 #include <bl_sec.h>
 #include <bl_sys.h>
 #ifdef CFG_USE_PSRAM
@@ -391,7 +393,9 @@ extern "C" void app_init(void)
 
     blog_init();
     bl_irq_init();
+#if defined(BL702L_ENABLE)
     bl_rtc_init();
+#endif
     bl_sec_init();
 #if defined(BL702_ENABLE)
     bl_timer_init();
@@ -402,7 +406,9 @@ extern "C" void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
 
+#if defined(BL702L_ENABLE)
     hosal_dma_init();
+#endif
 #ifdef BL602_ENABLE
     wifi_td_diagnosis_init();
 #endif

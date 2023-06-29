@@ -22,6 +22,8 @@
 #include "EthernetInterface.h"
 static struct dhcp6 dhcp6_val;
 
+extern int8_t bl_route_hook_init(void);
+
 static void netif_status_callback(struct netif *netif)
 {
     if (netif->flags & NETIF_FLAG_UP) {
@@ -35,6 +37,7 @@ static void netif_status_callback(struct netif *netif)
                 }
 
                 ethernetInterface_eventGotIP(netif);
+                break;
             }
         }
     }
@@ -73,6 +76,8 @@ void ethernetInterface_init(void)
 
     /* Set callback to be called when interface is brought up/down or address is changed while up */
     netif_set_status_callback(&eth_mac, netif_status_callback);
+
+    bl_route_hook_init();
 }
 
 struct netif *deviceInterface_getNetif(void) 

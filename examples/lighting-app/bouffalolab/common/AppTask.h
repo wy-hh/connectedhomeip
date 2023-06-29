@@ -29,7 +29,7 @@ using namespace ::chip;
 using namespace ::chip::DeviceLayer;
 
 #define APP_BUTTON_PRESS_JITTER 50
-#define APP_BUTTON_PRESS_SHORT 1000
+#define APP_BUTTON_PRESS_SHORT 1500
 #define APP_BUTTON_PRESS_LONG 5000
 
 #define APP_LIGHT_ENDPOINT_ID 1

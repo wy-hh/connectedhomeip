@@ -81,8 +81,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     SetConfigurationMgr(&ConfigurationManagerImpl::GetDefaultInstance());
     SetDiagnosticDataProvider(&DiagnosticDataProviderImpl::GetDefaultInstance());
 
-    ChipLogProgress(NetworkProvisioning, "SetDiagnosticDataProvider");
-
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);
 

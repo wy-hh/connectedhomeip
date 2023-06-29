@@ -89,14 +89,14 @@ void OnWiFiPlatformEvent(input_event_t * event, void * private_data)
         ChipLogProgress(DeviceLayer, "WiFi station gets IPv4 address.");
         chip::DeviceLayer::PlatformMgr().LockChipStack();
         ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
-        ConnectivityMgrImpl().OnIPv4AddressAvailable();
+        ConnectivityMgrImpl().OnConnectivityChanged(wifi_mgmr_sta_netif_get());
         chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_ON_GOT_IP6: {
         ChipLogProgress(DeviceLayer, "WiFi station gets IPv6 address.");
         chip::DeviceLayer::PlatformMgr().LockChipStack();
-        ConnectivityMgrImpl().OnIPv6AddressAvailable();
+        ConnectivityMgrImpl().OnConnectivityChanged(wifi_mgmr_sta_netif_get());
         chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;

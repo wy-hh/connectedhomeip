@@ -121,12 +121,13 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
             // will not trigger a 'internet connectivity change' as there is no internet
             // connectivity. MDNS still wants to refresh its listening interfaces to include the
             // newly selected address.
+            
+            bl_route_hook_init();
             chip::app::DnssdServer::Instance().StartServer();
         }
 
         if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
         {
-            bl_route_hook_init();
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
         }
