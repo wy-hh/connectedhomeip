@@ -50,7 +50,6 @@ declare_args() {
 
   enable_heap_monitoring = false
   enable_reset_counter = false
-
   enable_cdc_module = false
   
   setupPinCode = 20202021

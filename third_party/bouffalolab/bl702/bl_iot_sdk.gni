@@ -910,46 +910,6 @@ template("bl_iot_sdk") {
     ]
   }
 
-  config("${sdk_target_name}_zigbee_config") {
-    _include_dirs = [
-      "${bl_iot_sdk_root}/../zigbee/zbstack/",
-      "${bl_iot_sdk_root}/../zigbee/zbstack/include",
-      "${bl_iot_sdk_root}/../zigbee/zbstack/include/core",
-      "${bl_iot_sdk_root}/../zigbee/zbstack/include/zcl",
-      "${bl_iot_sdk_root}/components/network/lmac154/include",
-    ]
-
-    defines = [ 
-        #"CFG_ZIGBEE_TOUCHLINK=1" 
-    ]
-
-    cflags = []
-    foreach(include_dir, _include_dirs) {
-      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
-    }
-  }
-
-  source_set("${sdk_target_name}_zigbee") {
-    libs = [
-      "${bl_iot_sdk_root}/../zigbee/macphy154/lib/libmacphy154.a",
-      "${bl_iot_sdk_root}/../zigbee/zbstack/lib/libzbstack.a",
-      "${bl_iot_sdk_root}/../zigbee/zbstack/lib/libzbstackex.a",
-      "${bl_iot_sdk_root}/../zigbee/zbstack_gpp/lib/libzbstack_gpp.a",
-      "${bl_iot_sdk_root}/components/network/lmac154/lib/liblmac154.a",
-    ]
-
-    public_configs = [
-      ":${sdk_target_name}_config",
-      ":${sdk_target_name}_zigbee_config",
-    ]
-
-    cflags = [
-      "-Wno-implicit-function-declaration",
-      "-Wno-incompatible-pointer-types",
-      "-Wno-unused-variable",
-    ]
-  }
-
   group(sdk_target_name) {
     public_deps = [
       ":${sdk_target_name}_BSP_Driver",
