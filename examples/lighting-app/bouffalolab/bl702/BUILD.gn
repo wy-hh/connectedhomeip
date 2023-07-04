@@ -51,6 +51,8 @@ declare_args() {
   enable_heap_monitoring = false
   enable_reset_counter = false
 
+  enable_cdc_module = false
+  
   setupPinCode = 20202021
   setupDiscriminator = 3840
 
@@ -137,7 +139,10 @@ bouffalolab_executable("lighting_app") {
     defines += [ "BL706_NIGHT_LIGHT" ]
   } else if ("BL706-ETH" == board) {
     defines += [ "BL706_ETHERNET" ]
+  } else if ("BL706-WIFI" == board) {
+    defines += [ "BL706_WIFI" ]
   }
+
 
   if (defined(enable_cdc_module) && enable_cdc_module) {
     defines += [ "CFG_USB_CDC_ENABLE" ]

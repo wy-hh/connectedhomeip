@@ -406,7 +406,7 @@ extern "C" void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
 
-#if defined(BL702L_ENABLE)
+#if defined(BL702L_ENABLE) || defined (BL706_WIFI)
     hosal_dma_init();
 #endif
 #ifdef BL602_ENABLE

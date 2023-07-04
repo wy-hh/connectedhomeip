@@ -16,8 +16,6 @@
  *    limitations under the License.
  */
 
-
-
 #include <app-common/zap-generated/attributes/Accessors.h>
 #include <app/clusters/identify-server/identify-server.h>
 
@@ -157,6 +155,7 @@ void AppTask::AppTaskMain(void * pvParameter)
     }
     else {
         resetCnt++;
+        GetAppTask().mButtonPressedTime = 0;
     }
     ef_set_env_blob(APP_REBOOT_RESET_COUNT_KEY, &resetCnt, sizeof(resetCnt));
 #endif
@@ -341,7 +340,17 @@ void AppTask::TimerEventHandler(app_event_t event)
             APP_BUTTON_PRESS_LONG)
         {
             /** factory reset confirm timeout */
+            GetAppTask().mButtonPressedTime = 0;
             GetAppTask().PostEvent(APP_EVENT_FACTORY_RESET);
+        } 
+        else {
+#if defined (BL602_NIGHT_LIGHT) || defined(BL706_NIGHT_LIGHT)
+            /** change color to indicate to wait factory reset confirm */
+            sLightLED.SetColor(254, 0, 210);
+#else
+            /** toggle led to indicate to wait factory reset confirm */
+            sLightLED.Toggle();
+#endif
         }
 #endif
     }
@@ -416,7 +425,6 @@ void AppTask::ButtonEventHandler(void * arg)
 #else
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_NEG_LEVEL);
 #endif
-
         GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
         GetAppTask().mTimerIntvl = APP_BUTTON_PRESS_JITTER;
         GetAppTask().PostEvent(APP_EVENT_TIMER);

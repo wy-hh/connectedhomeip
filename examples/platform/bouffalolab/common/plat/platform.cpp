@@ -105,7 +105,6 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     case DeviceEventType::kThreadStateChange:
 
-        ChipLogProgress(NotSpecified, "Thread state changed, IsThreadAttached: %d", ConnectivityMgr().IsThreadAttached());
         if (ConnectivityMgr().IsThreadAttached())
         {
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
@@ -122,15 +121,14 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
             // connectivity. MDNS still wants to refresh its listening interfaces to include the
             // newly selected address.
             
-            bl_route_hook_init();
             chip::app::DnssdServer::Instance().StartServer();
-        }
 
-        if (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned)
-        {
+            bl_route_hook_init();
+            
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
         }
+
         break;
 #endif
     case DeviceEventType::kInternetConnectivityChange:

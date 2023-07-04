@@ -66,11 +66,5 @@
 
 #endif
 
-#define SPI_WIFI_MISO_PIN 4
-#define SPI_WIFI_MOSI_PIN 5
-#define SPI_WIFI_CLK_PIN 3
-#define SPI_WIFI_CS_PIN 6
-#define SPI_WIFI_IRQ_PIN 10
-
 #define CHIP_UART_PIN_RX 15
 #define CHIP_UART_PIN_TX 14
