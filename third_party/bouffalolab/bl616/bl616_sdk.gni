@@ -1,0 +1,1210 @@
+# Copyright (c) 2021 Project CHIP Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#import("//build_overrides/bl616_sdk.gni")
+import("//build_overrides/chip.gni")
+#import("//build_overrides/mbedtls.gni")
+
+#import("bl616_board.gni")
+
+declare_args() {
+  # Location of the bl616 SDK.
+  bl616_sdk_root = "${chip_root}/third_party/bouffalolab/bouffalo_sdk"
+}
+
+assert(bl616_sdk_root != "", "bl616_sdk_root must be specified")
+
+# Defines an bl616 SDK build target.
+#
+# Parameters:
+#   bl616_sdk_root - The location of the bl616 SDK.
+#   sources - The sources files to build.
+template("bouffalo_sdk") {
+  if (defined(invoker.bl616_sdk_root)) {
+    bl616_sdk_root = invoker.bl616_sdk_root
+  }
+
+  assert(bl616_sdk_root != "", "bl616_sdk_root must be specified")
+
+  sdk_target_name = target_name
+
+  config("${sdk_target_name}_os_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/components/os/freertos/include",
+      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
+      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
+      #"${bl616_sdk_root}/components/os/freertos/posix/include",
+      "${chip_root}/examples/platform/bouffalolab/bl616",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_startup_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  #config("${sdk_target_name}_lwip_config") {
+  #  _include_dirs = [
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src/include",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src/include/netif",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/ports",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/ports/Ceva-WiFi",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/ports/Ceva-WiFi/include",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/net_al",
+  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src/include/compat/posix",
+  #  ]
+
+  #  defines = [
+  #  ]
+
+  #  cflags = []
+  #  foreach(include_dir, _include_dirs) {
+  #    cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+  #  }
+  #}
+
+  config("${sdk_target_name}_std_drv_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/drivers/soc/bl616/std/include",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/include/hardware",
+    ]
+
+    defines = [
+      "ARCH_RISCV",
+      "BFLB_USE_HAL_DRIVER",
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_rf_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/drivers/soc/bl616/rf/inc",
+    ]
+
+    defines = [
+     "WL_BL616"
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+  config("${sdk_target_name}_lhal_config") {
+    _include_dirs = [
+      #bl616 lhal
+      "${bl616_sdk_root}/drivers/lhal/include",
+      "${bl616_sdk_root}/drivers/lhal/include/arch",
+      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head",
+      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/Core/Include",
+      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/csi_dsp/include",
+      "${bl616_sdk_root}/drivers/lhal/src/flash",
+      "${bl616_sdk_root}/drivers/lhal/config/bl616",
+    ]
+
+    defines = [
+      "BL616"
+    ]
+
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_rfparam_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/drivers/rfparam/Inc",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_board_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/bsp/board/bl616dk",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_mm_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/components/mm",
+      "${bl616_sdk_root}/components/mm/tlsf",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_easyflash4_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/components/easyflash4/inc",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_thirdparty_mbedlts_config") {
+    _include_dirs = [
+      "${chip_root}/third_party/mbedtls/repo/include",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_stddrv_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/bl616_bsp_driver/std_drv/inc",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/bl616_bsp_driver/regs",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/bl616_bsp_driver/startup/source",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/bl616_bsp_driver/risc-v/Core/Include",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/mcu_common/misc",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/mcu_common/misc/compiler",
+      "${bl616_sdk_root}/components/platform/soc/bl616/bl616_std/mcu_common/soft_crc",
+    ]
+
+    defines = [
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_utils_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/components/utils/log",
+      "${bl616_sdk_root}/components/utils/log/bflog",
+      "${bl616_sdk_root}/components/utils/bflb_mtd/include",
+      "${bl616_sdk_root}/components/utils/partition",
+
+    ]
+
+    defines = [
+      "ONFIG_LOG_LEVEL=3",
+      "CONFIG_BFLOG",
+      "CONFIG_BFLOG_DEBUG",
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
+
+  config("${sdk_target_name}_config") {
+    include_dirs = [
+      "${bl616_sdk_root}/components/security/blcrypto_suite/inc/blcrypto_suite",
+      "${bl616_sdk_root}/components/sys/bltime/include",
+      "${bl616_sdk_root}/components/sys/blmtd/include",
+      "${bl616_sdk_root}/components/os/bl616_os_adapter/include",
+      "${bl616_sdk_root}/components/security/blcrypto_suite/inc/blcrypto_suite",
+      "${bl616_sdk_root}/components/security/blcrypto_suite/inc",
+      "${bl616_sdk_root}/components/security/blcrypto_suite/priv_inc",
+      "${bl616_sdk_root}/components/network/wifi_hosal/include",
+      "${bl616_sdk_root}/components/os/bl_os_adapter/bl_os_adapter",
+      "${bl616_sdk_root}/components/os/bl_os_adapter/bl_os_adapter/include",
+      "${bl616_sdk_root}/components/os/bl_os_adapter/bl_os_adapter/include/bl_os_adapter",
+      "${bl616_sdk_root}/components/security/wpa_supplicant/include/bl_supplicant",
+      "${bl616_sdk_root}/security/wpa_supplicant/src/",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/common/include",
+
+      #fhost include
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_fhost/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_fhost/src/application",
+
+      #macsw include
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rwnx",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/mac/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/common/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/compiler/thead_e907",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/dbg/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf_build_reg",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/boot/thead_e907",
+
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/include",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/common/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/dbg/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/ke/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/scan",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rwnx",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tx",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rx",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/mm",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/chan",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tdls",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/p2p",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/ps",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/sta",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/vif",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tx/txl",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rx/rxl",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/hal",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rd",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/uf",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/td",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tpc", 
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/bfr",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/mac/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/macif/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/rtos/src",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/compiler/thead_e907",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf_build_reg",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/boot",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/boot/thead_e907",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/ll/thead_e907",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/reg",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/crm",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/phy",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/intc/risc-v",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/extint",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/sysctrl",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/ipc_fhost",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/dma",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/la",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/time",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/button",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/led",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/scanu",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/rxu",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/me",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/sm",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/apm",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/txu",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/llc",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/bam",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/mfp",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/rc",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/hsu",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/rm",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/twt",
+      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/ftm",
+
+      #bt ble stack
+      "${bl616_sdk_root}/components/network/ble/blestack/src/include",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/include/bluetooth",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/port/include",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/port/include",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/common/include/zephyr",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/host",
+      "${bl616_sdk_root}/components/network/ble/btblecontroller/ble_inc",
+
+      #mbedtls include
+      "${bl616_sdk_root}/components/security/mbedtls_lts/mbedtls/include",
+      #"${chip_root}/third_party/mbedtls/repo/include",
+      "${bl616_sdk_root}/components/network/ble/blestack/src/include/drivers/bluetooth",
+    ]
+    libs = []
+    if (defined(invoker.include_dirs)) {
+      include_dirs += invoker.include_dirs
+    }
+
+    # Treat these includes as system includes, so warnings in them are not fatal.
+    _include_dirs = [
+    ]
+
+    bl_sdk_ver = getenv("BL_SDK_VER")
+    defines = [
+      #"MBEDTLS_CONFIG_FILE=\"bl616-chip-mbedtls-config.h\"",
+      "__STARTUP_CLEAR_BSS",
+      "HARD_FAULT_LOG_ENABLE",
+      "RETARGET_VCOM",
+      "RETARGET_USART0",
+      "ARCH_RISCV",
+      "portasmHANDLE_INTERRUPT=interrupt_entry",
+
+      "SYS_APP_TASK_STACK_SIZE=4096",
+      "SYS_APP_TASK_PRIORITY=28",
+      "BL_SDK_VER=\"$bl_sdk_ver\"",
+
+      "SYS_BLOG_ENABLE=1",
+      "SYS_VFS_ENABLE=1",
+      "SYS_AOS_LOOP_ENABLE=1",
+      "BL602_USE_HAL_DRIVER=1",
+      "CFG_TXDESC=2",
+
+      "CONFIG_RENDEZVOUS_MODE=2",
+
+      # bluetooth
+      "CONFIG_SET_TX_PWR",
+      "CFG_BLE_ENABLE",
+      "BFLB_BLE",
+      "CFG_BLE",
+      "OPTIMIZE_DATA_EVT_FLOW_FROM_CONTROLLER",
+      "CFG_BT_RESET",
+      "CFG_CON=1",
+      "CFG_BLE_TX_BUFF_DATA=2",
+
+      "CONFIG_BT_PERIPHERAL=1",
+      "CONFIG_BT_L2CAP_DYNAMIC_CHANNEL",
+      "CONFIG_BT_GATT_CLIENT",
+      "CONFIG_BT_CONN=1",
+      "CONFIG_BT_GATT_DIS_PNP",
+      "CONFIG_BT_GATT_DIS_SERIAL_NUMBER",
+      "CONFIG_BT_GATT_DIS_FW_REV",
+      "CONFIG_BT_GATT_is_hwREV",
+      "CONFIG_BT_GATT_DIS_SW_REV",
+      "CONFIG_BT_ECC",
+      "CONFIG_BT_GATT_DYNAMIC_DB",
+      "CONFIG_BT_GATT_SERVICE_CHANGED",
+      "CONFIG_BT_KEYS_OVERWRITE_OLDEST",
+      "CONFIG_BT_KEYS_SAVE_AGING_COUNTER_ON_PAIRING",
+      "CONFIG_BT_GAP_PERIPHERAL_PREF_PARAMS",
+      "CONFIG_BT_BONDABLE",
+      "CONFIG_BT_HCI_VS_EVT_USER",
+      "CONFIG_BT_ASSERT",
+      "CONFIG_BT_SETTINGS_CCC_LAZY_LOADING",
+      "CONFIG_BT_SETTINGS_USE_PRINTK",
+      "CFG_BLE_STACK_DBG_PRINT",
+
+      "__FILENAME__=\"\b\"",
+      "BL602_LOG_ENABLED=1",
+      "ENOTSUP=134",
+
+      #dump backtrace
+      "CONF_ENABLE_FRAME_PTR=1",
+      "CONF_ENABLE_FUNC_BACKTRACE_ELF=out/bl616-light/chip-bl616-lighting-example.out",
+      "CHIP_SYSTEM_CRYPTO_HEADER_RESERVE_SIZE=128",
+
+      # board defines
+      "BL_CHIP_NAME=\"BL616\"",
+
+      #include defines
+      "OS_USING_FREERTOS",
+      "BL602_MATTER_SUPPORT",
+      "TD_DIAGNOSIS_STA",
+
+      #bl616 defines
+      "BL616",
+      "CFG_CPU_E907",
+      "CFG_BL616",
+      #"CPU_M0",
+      "CFG_RTOS",
+      "CFG_FHOST",
+      "CFG_UMAC",
+      "CFG_STATS",
+      "CFG_DBG=2",
+      "CFG_BCN",
+      "CFG_AGG",
+      "CFG_AMSDU_4K",
+      "CFG_VIF_MAX=2",
+      "CFG_STA_MAX=4",
+      "CFG_SPC=16",
+      "CFG_TXDESC0=4",
+      "CFG_TXDESC1=8",
+      "CFG_TXDESC2=4",
+      "CFG_TXDESC3=4",
+      "CFG_TXDESC4=4",
+      "CFG_MAC_VER_V21",
+      "CFG_MDM_VER_V30",
+      "CFG_IPC_VER_V11",
+      "CFG_PLF_VER_V30",
+      "CFG_PS",
+      "CFG_MU_CNT=1",
+      "CFG_UAPSD",
+      "CFG_KEYCFG",
+      "CFG_P2P=0",
+      "CFG_P2P_GO",
+      "CFG_BWLEN",
+      "CFG_HE",
+      "CFG_TWT=8",
+      "CFG_BARX=1",
+      "CFG_BATX=1",
+      "CFG_REORD_BUF=16",
+      "CFG_DBGDUMPKEY",
+      "CFG_UF",
+      "CFG_MFP",
+      "CFG_FTM_INIT",
+      "CFG_FTM_RSP",
+      "CFG_HSU=0",
+      "CONFIG_RWNX_LWIP",
+      "CFG_CRYPTO",
+      "CONFIG_BL6_MBEDTLS",
+      "CFG_FHOST_MONITOR",
+      "CFG_IPERF",
+      "CFG_SMARTCONFIG",
+      "CONFIG_NO_STDOUT_DEBUG",
+      "BL616_IOTSDK ",
+
+      "CONFIG_USE_STD_DRIVER:=1",
+
+      #global
+      "CPU_M1",
+
+     # "CONFIG_BT_CENTRAL=1",
+     # "CONFIG_BT_OBSERVER=1",
+     # "CONFIG_BT_PERIPHERAL=1",
+     # "CONFIG_BT_STACK_CLI=1",
+     # "CONFIG_BT_WIFIPROV_SERVER=1",
+     # "CONFIG_WIFI=0",
+      "CONFIG_PHY_BZ_ONLY=0",
+      "CONFIG_PHY_CLI_SUPPORT_SRAM=0",
+      "CONFIG_MEMMAP_BL616=1",
+      "CONFIG_BUILD_ROM_CODE= 1",
+     # "CONFIG_BLE_USE_MAC2=0",
+      "CONFIG_PHY_FPGA=0",
+      "CONFIG_PHY_CLI=0",
+      "CONFIG_PHY_ANT2=0",
+      "CONFIG_SYS_VFS_ENABLE=1",
+     # "CONFIG_CAM_ENABLE=1",
+
+      #mbedtls
+      "CONFIG_MBEDTLS_BIGNUM_USE_HW=1",
+      "CONFIG_MBEDTLS_ECC_USE_HW=1",
+
+      "LOG_ENABLED_COMPONENTS= hosal",
+      "CONF_ENABLE_COREDUMP=1",
+      "CONFIG_COMPONENT_BUGKILLER_ENABLE=1",
+      "CONFIG_COMPONENT_BL616_CLI_DEMO=1",
+
+      # btble,
+     # "CONFIG_BT=0",
+     # "CONFIG_BLE=1",
+     # "CONFIG_SLEEP=0",
+     # "CONFIG_BT_DEBUG_MONITOR=0",
+     # "CONFIG_SEC_CONN=1",
+     # "CONFIG_EM_SIZE=32",
+     # "CONFIG_CIS=0",
+     # "CONFIG_ADV_EXTENSION=0",
+     # "CONFIG_BIS=0",
+     # "CONFIG_LE_PWR_CTRL=0",
+     # "CONFIG_CTE=0",
+     # "CONFIG_BT_CONN=1",
+     # "CONFIG_BLE_TP_SERVER=1",
+
+      #genmap
+      "CONFIG_CHIP_NAME=BL616",
+      "ARCH=risc-v",
+      "CPU=e907",
+      "CPU_ID=M1",
+      "BT=thead_e907",
+      "PRODUCT=fhost",
+      "PLATFORM=bl616",
+      "PHY=bl616rf",
+      "MDM=v30",
+      "DBG=2",
+      "P2P=0",
+      "AMSDU=off",
+      "TXDESC0=4",
+      "TXDESC1=8",
+      "TXDESC2=4",
+      "TXDESC3=4",
+      "TXDESC4=4",
+      "TRACE=on",
+      "STA=4",
+      "PROF=off",
+      "DBGDUMP=off",
+      "REORDBUF=4",
+      "BATX=1",
+      "BARX=4",
+      "TDLS=off",
+      "BFMEE=off",
+      "BFMER=off",
+      "VHT=off",
+      "ANT_DIV=off",
+      "HSU=0",
+      "TG=off",
+      "MFP=on",
+      "DEBUGDUMP=off",
+      "RADAR=off",
+      "REC=off",
+      "AGG=on",
+      "TRACE_COMPO_FHOST=off",
+      "CONFIG_CHIP_CODE=BL616",
+      "CONFIG_LINK_NOPSRAM=0",
+    ]
+
+    cflags = [
+      "-Wno-maybe-uninitialized",
+      "-Wno-shadow",
+      "-Wno-error",
+      "-fcommon",
+      "-fno-jump-tables",
+      #"-std=gnu99",
+      "-gdwarf",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-fstrict-volatile-bitfields",
+      "-fshort-enums",
+      "-Wno-old-style-declaration",
+      "-mtune=e907",
+      "-mcmodel=medany",
+      "-Wl,--gc-sections",
+      "-Wl,-static",
+      "-Wl,--start-group",
+      "-Wl,--end-group",
+      "-Wl,-EL",
+      "-lm",
+    ]
+
+    cflags += [ "-Wno-implicit-function-declaration", "-Wno-incompatible-pointer-types", "-Wno-unused-variable" ]
+
+    cflags_cc = [ "-fpermissive" ]
+    cflags_cc += [ "-std=c++17" ]
+    cflags_cc += [ "-D _GNU_SOURCE" ]
+
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+
+    cflags += [ "-save-temps=obj" ]
+    cflags += [ "-Wno-maybe-uninitialized" ]
+    #cflags += [ "-latomic" ]
+
+    cflags_cc += [ "-lstdc++",
+      "-Wl,--gc-sections",
+      "-Wl,-static",
+      "-Wl,--start-group",
+      "-Wl,--end-group",
+      "-Wl,-EL",
+      "-lm",
+    ]
+
+    cflags += [
+      "-O1"
+    ]
+    cflags_cc += [
+      "-O1"
+    ]
+
+    if (defined(invoker.defines)) {
+      defines += invoker.defines
+    }
+  }
+
+  source_set("${sdk_target_name}_startup") {
+    defines = [
+      "ARCH_RISCV",
+      "BFLB_USE_HAL_DRIVER",
+      "CONFIG_IRQ_NUM=80",
+    ]
+
+    include_dirs = [
+      #bl616 startup
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/start.S",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/vector.S",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/riscv_fpu.S",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/interrupt.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/start_load.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      #":${sdk_target_name}_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_std_drv") {
+    defines = [
+      "ARCH_RISCV",
+      "BFLB_USE_HAL_DRIVER",
+      "BFLB_USE_ROM_DRIVER",
+    ]
+
+    include_dirs = [
+      #bl616 startup
+      "${bl616_sdk_root}/drivers/soc/bl616/std/include",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/include/hardware",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      #use rom api default
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_e907.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_patch.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_common.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_ef_cfg.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_sdh.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_tzc_sec.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_psram.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_pm.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_aon.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_efuse.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_flash.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_media.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_clock.c",
+    ]
+
+    cflags = [
+      "-Wno-absolute-value",
+      "-Wno-sign-compare",
+      "-fno-jump-tables",
+    ]
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_lhal") {
+    defines = [
+      "BL616",
+      "CPU_M0",
+      "CONFIG_IRQ_NUM=80",
+    ]
+
+    include_dirs = [
+      #bl616 lhal
+      "${bl616_sdk_root}/drivers/lhal/include",
+      "${bl616_sdk_root}/drivers/lhal/include/arch",
+      "${bl616_sdk_root}/drivers/lhal/include/risc-v/t-head",
+      "${bl616_sdk_root}/drivers/lhal/include/risc-v/t-head/Core/Include",
+      "${bl616_sdk_root}/drivers/lhal/include/risc-v/t-head/csi_dsp/include",
+      "${bl616_sdk_root}/drivers/lhal/src/flash",
+      "${bl616_sdk_root}/drivers/lhal/config/bl616",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_common.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_adc.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_acomp.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_cks.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_ef_ctrl.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_gpio.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_i2c.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_dma.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_rtc.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_sec_aes.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_sec_sha.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_sec_trng.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_spi.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_timer.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_uart.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_wdg.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_flash.c",
+      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_sf_cfg.c",
+      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_xip_sflash.c",
+      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_sflash.c",
+      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_sf_ctrl.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_dac.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_emac.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_ir.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_mjpeg.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_pwm_v2.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_cam.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_i2s.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_sdio2.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_dbi.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_audac.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_auadc.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_platform_dma.c",
+      #"${bl616_sdk_root}/drivers/lhal/src/bflb_usb_v2.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_irq.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_l1c.c",
+      "${bl616_sdk_root}/drivers/lhal/src/bflb_mtimer.c",
+      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/rv_hart.c",
+      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/rv_pmp.c",
+      "${bl616_sdk_root}/drivers/lhal/config/bl616/device_table.c",
+    ]
+
+        cflags = [
+          "-Wno-error",
+          "-Wno-sign-compare",
+          "-Wno-implicit-fallthrough",
+        ]
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      #":${sdk_target_name}_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_rfparam") {
+    defines = [
+      "RFPARAM_BL616",
+    ]
+
+    include_dirs = [
+      #bl616 rfparam
+      "${bl616_sdk_root}/drivers/rfparam/Inc",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/drivers/rfparam/Src/rfparam_adapter.c",
+      "${bl616_sdk_root}/drivers/rfparam/Src/rfparam_rftlv.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_rf_config",
+      ":${sdk_target_name}_utils_config",
+      ":${sdk_target_name}_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_board") {
+    defines = [
+      "CONFIG_PSRAM",
+      "CONFIG_PSRAM_COPY_CODE",
+    ]
+
+    include_dirs = [
+      "${bl616_sdk_root}/bsp/board/bl616dk",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/bsp/board/bl616dk/board.c",
+      "${bl616_sdk_root}/bsp/board/bl616dk/board_rf.c",
+    ]
+
+    cflags = []
+    cflags_c = [
+      "-Wno-error",
+
+    ]
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_mm_config",
+      ":${sdk_target_name}_rf_config",
+      ":${sdk_target_name}_rfparam_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_libc") {
+    defines = [
+    ]
+
+    include_dirs = [
+      "${bl616_sdk_root}/components/libc",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/components/libc/newlib/port_memory.c",
+      "${bl616_sdk_root}/components/libc/newlib/syscalls_nosys.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_abs.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atof.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoi.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atol.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoll.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_bsearch.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_checkbase.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_itoa.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_llabs.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_lldiv.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_qsort.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_strtod.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_ffs.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_ffsl.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_ffsll.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_fls.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_flsl.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_flsll.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_index.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memccpy.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memchr.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memcmp.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memmove.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memrchr.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memset.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_stpcpy.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_stpncpy.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcasecmp.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcasestr.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcat.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strchr.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcmp.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcspn.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strdup.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strnlen.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strpbrk.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strsep.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strspn.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strstr.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strtok.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strtokr.c",
+      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_vikmemcpy.c",
+      "${bl616_sdk_root}/components/libc/vsnprintf.c",
+      "${bl616_sdk_root}/components/libc/snprintf.c",
+      "${bl616_sdk_root}/components/libc/sprintf.c",
+      "${bl616_sdk_root}/components/libc/vsprintf.c",
+      "${bl616_sdk_root}/components/libc/printf.c",
+    ]
+
+    cflags = [
+      "-fno-builtin",
+      "-Wno-sign-compare",
+      "-Wno-implicit-fallthrough",
+    ]
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_mm_config",
+      ":${sdk_target_name}_lhal_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_mm") {
+    defines = [
+      "configSTACK_ALLOCATION_FROM_SEPARATE_HEAP=1",
+      "CONFIG_TLSF",
+    ]
+
+    include_dirs = [
+      #memory heap
+      "${bl616_sdk_root}/components/mm",
+      "${bl616_sdk_root}/components/mm/tlsf",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/components/mm/mem.c",
+      "${bl616_sdk_root}/components/mm/tlsf/tlsf.c",
+      "${bl616_sdk_root}/components/mm/tlsf/bflb_tlsf.c",
+    ]
+
+    cflags = [
+      "-Wno-sign-compare",
+    ]
+
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_os") {
+    defines = [
+      "CONFIG_FREERTOS",
+      "portasmHANDLE_INTERRUPT=interrupt_entry",
+      "default_interrupt_handler=freertos_risc_v_trap_handler",
+      #"CONFIG_POSIX",
+    ]
+
+    include_dirs = [
+      #memory heap
+      "${bl616_sdk_root}/components/os/freertos/include",
+      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
+      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
+      #"${bl616_sdk_root}/components/os/freertos/posix/include",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/components/os/freertos/croutine.c",
+      "${bl616_sdk_root}/components/os/freertos/event_groups.c",
+      "${bl616_sdk_root}/components/os/freertos/list.c",
+      "${bl616_sdk_root}/components/os/freertos/queue.c",
+      "${bl616_sdk_root}/components/os/freertos/tasks.c",
+      "${bl616_sdk_root}/components/os/freertos/timers.c",
+      "${bl616_sdk_root}/components/os/freertos/freertos_port.c",
+      "${bl616_sdk_root}/components/os/freertos/portable/MemMang/heap_3.c",
+      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/port.c",
+      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/portASM.S",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_clock.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_mqueue.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_pthread_barrier.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_pthread_cond.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_pthread_mutex.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_pthread.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_sched.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_semaphore.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_timer.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_unistd.c",
+      #"${bl616_sdk_root}/components/os/freertos/posix/source/FreeRTOS_POSIX_utils.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      #":${sdk_target_name}_config",
+      #":${sdk_target_name}_lwip_config",
+      #":${sdk_target_name}_freertos_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_easyflash4") {
+    defines = [
+      "CONFIG_EASYFLASH4",
+    ]
+
+    include_dirs = [
+      #memory heap
+      "${bl616_sdk_root}/components/easyflash4/inc",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/components/easyflash4/src/easyflash.c",
+      "${bl616_sdk_root}/components/easyflash4/src/ef_env.c",
+      "${bl616_sdk_root}/components/easyflash4/src/ef_env_legacy_wl.c",
+      "${bl616_sdk_root}/components/easyflash4/src/ef_env_legacy.c",
+      "${bl616_sdk_root}/components/easyflash4/src/ef_port.c",
+      "${bl616_sdk_root}/components/easyflash4/src/ef_utils.c",
+      "${bl616_sdk_root}/components/easyflash4/src/easyflash_cli.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_utils_config",
+      ":${sdk_target_name}_lhal_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_utils") {
+    defines = [
+      "ONFIG_LOG_LEVEL=3",
+      "CONFIG_BFLOG",
+      "CONFIG_BFLOG_DEBUG",
+    ]
+
+    include_dirs = [
+      "${bl616_sdk_root}/components/utils/log",
+      "${bl616_sdk_root}/components/utils/bflog",
+      "${bl616_sdk_root}/components/utils/bflb_mtd/include",
+      "${bl616_sdk_root}/components/utils/partition",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/components/utils/log/log.c",
+      "${bl616_sdk_root}/components/utils/log/bflog/bflog.c",
+      "${bl616_sdk_root}/components/utils/log/log_freertos.c",
+      "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
+      "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_utils_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_startup_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_thirdparty_mbedlts") {
+
+    defines = [
+      "MBEDTLS_NO_PLATFORM_ENTROPY",
+    ]
+
+    include_dirs = [
+      "${chip_root}/third_party/mbedtls/repo/include",
+      #"${bl616_sdk_root}/components/security/mbedtls_lts/mbedtls/include",
+    ]
+
+    sources = [
+      "${chip_root}/third_party/mbedtls/repo/library/aes.c",
+      "${chip_root}/third_party/mbedtls/repo/library/asn1parse.c",
+      "${chip_root}/third_party/mbedtls/repo/library/asn1write.c",
+      "${chip_root}/third_party/mbedtls/repo/library/bignum.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ccm.c",
+      "${chip_root}/third_party/mbedtls/repo/library/cipher.c",
+      "${chip_root}/third_party/mbedtls/repo/library/cipher_wrap.c",
+      "${chip_root}/third_party/mbedtls/repo/library/constant_time.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ctr_drbg.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ecdh.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ecdsa.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ecp.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ecp_curves.c",
+      "${chip_root}/third_party/mbedtls/repo/library/entropy.c",
+      "${chip_root}/third_party/mbedtls/repo/library/hkdf.c",
+      "${chip_root}/third_party/mbedtls/repo/library/hmac_drbg.c",
+      "${chip_root}/third_party/mbedtls/repo/library/md.c",
+      "${chip_root}/third_party/mbedtls/repo/library/oid.c",
+      "${chip_root}/third_party/mbedtls/repo/library/pk.c",
+      "${chip_root}/third_party/mbedtls/repo/library/pk_wrap.c",
+      "${chip_root}/third_party/mbedtls/repo/library/pkcs5.c",
+      "${chip_root}/third_party/mbedtls/repo/library/pkwrite.c",
+      "${chip_root}/third_party/mbedtls/repo/library/platform.c",
+      "${chip_root}/third_party/mbedtls/repo/library/platform_util.c",
+      "${chip_root}/third_party/mbedtls/repo/library/sha256.c",
+      "${chip_root}/third_party/mbedtls/repo/library/sha512.c",
+      "${chip_root}/third_party/mbedtls/repo/library/x509_create.c",
+      "${chip_root}/third_party/mbedtls/repo/library/x509write_csr.c",
+      "${chip_root}/third_party/mbedtls/repo/library/chachapoly.c",
+      "${chip_root}/third_party/mbedtls/repo/library/gcm.c",
+      "${chip_root}/third_party/mbedtls/repo/library/chacha20.c",
+      "${chip_root}/third_party/mbedtls/repo/library/des.c",
+      "${chip_root}/third_party/mbedtls/repo/library/camellia.c",
+      "${chip_root}/third_party/mbedtls/repo/library/blowfish.c",
+      "${chip_root}/third_party/mbedtls/repo/library/arc4.c",
+      "${chip_root}/third_party/mbedtls/repo/library/md5.c",
+      "${chip_root}/third_party/mbedtls/repo/library/psa_crypto_hash.c",
+      "${chip_root}/third_party/mbedtls/repo/library/rsa.c",
+      "${chip_root}/third_party/mbedtls/repo/library/poly1305.c",
+      "${chip_root}/third_party/mbedtls/repo/library/ripemd160.c",
+      "${chip_root}/third_party/mbedtls/repo/library/rsa_internal.c",
+      "${chip_root}/third_party/mbedtls/repo/library/sha1.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+  }
+
+
+  group(sdk_target_name) {
+    public_deps = [
+      ":${sdk_target_name}_startup",
+      ":${sdk_target_name}_std_drv",
+      ":${sdk_target_name}_lhal",
+      ":${sdk_target_name}_rfparam",
+      ":${sdk_target_name}_board",
+      ":${sdk_target_name}_libc",
+      ":${sdk_target_name}_mm",
+      ":${sdk_target_name}_os",
+      ":${sdk_target_name}_easyflash4",
+      ":${sdk_target_name}_thirdparty_mbedlts",
+      ":${sdk_target_name}_utils",
+    ]
+  }
+}

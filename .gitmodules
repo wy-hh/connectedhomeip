@@ -308,3 +308,8 @@
 	url = https://github.com/google/perfetto.git
 	branch = master
 	platforms = linux,android
+[submodule "third_party/bouffalolab/bouffalo_sdk"]
+	path = third_party/bouffalolab/bouffalo_sdk
+	url = https://github.com/bouffalolab/bouffalo_sdk.git
+	branch = master
+	platforms = bouffalolab
