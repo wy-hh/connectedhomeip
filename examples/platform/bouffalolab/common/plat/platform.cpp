@@ -123,8 +123,9 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
             chip::app::DnssdServer::Instance().StartServer();
 
+#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
             bl_route_hook_init();
-
+#endif
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
         }

@@ -83,7 +83,8 @@ class BouffalolabBuilder(GnBuilder):
                  enable_shell: bool = False,
                  enable_cdc: bool = False,
                  enable_resetCnt: bool = False,
-                 function_mfd: str = "disable"
+                 function_mfd: str = "disable",
+                 enable_otbr: bool = False
                  ):
 
         if 'BL602' == module_type:
@@ -122,17 +123,20 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
             if board == BouffalolabBoard.BL706_ETH:
                 self.argsOpt.append('chip_config_network_layer_ble=false')
-                self.argsOpt.append('chip_enable_openthread=false')
                 self.argsOpt.append('chip_enable_wifi=false')
-            elif board == BouffalolabBoard.BL706_WIFI:
                 self.argsOpt.append('chip_enable_openthread=false')
+            elif board == BouffalolabBoard.BL706_WIFI:
                 self.argsOpt.append('chip_enable_wifi=true')
+                self.argsOpt.append('chip_enable_openthread=false')
             else:
                 self.argsOpt.append('chip_enable_openthread=true')
                 self.argsOpt.append('chip_enable_wifi=false')
+                self.argsOpt.append('openthread_project_core_config_file="bl702-openthread-core-bl-config.h"')
+
         elif bouffalo_chip == "bl702l":
             self.argsOpt.append('chip_enable_openthread=true')
             self.argsOpt.append('chip_enable_wifi=false')
+            self.argsOpt.append('openthread_project_core_config_file="bl702l-openthread-core-bl-config.h"')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":
@@ -149,6 +153,13 @@ class BouffalolabBuilder(GnBuilder):
 
         if enable_resetCnt:
             self.argsOpt.append('enable_reset_counter=true')
+
+        if enable_otbr:
+            if board == BouffalolabBoard.BL706_ETH or board == BouffalolabBoard.BL706_WIFI:
+                self.argsOpt.append('enable_openthread_border_router=true')
+                self.argsOpt.append('openthread_project_core_config_file="bl702-openthread-core-bl-otbr-config.h"')
+            else:
+                raise Exception('Only board BL706-ETH and BL706-WIFI support openthread border router function')
 
         if "disable" != function_mfd:
             if bouffalo_chip != "bl602":

@@ -22,7 +22,9 @@
 #include "EthernetInterface.h"
 static struct dhcp6 dhcp6_val;
 
+#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
 extern int8_t bl_route_hook_init(void);
+#endif
 
 static void netif_status_callback(struct netif * netif)
 {
@@ -81,10 +83,17 @@ void ethernetInterface_init(void)
     /* Set callback to be called when interface is brought up/down or address is changed while up */
     netif_set_status_callback(&eth_mac, netif_status_callback);
 
+#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
     bl_route_hook_init();
+#endif
 }
 
 struct netif * deviceInterface_getNetif(void)
+{
+    return &eth_mac;
+}
+
+struct netif * otbr_getBackboneNetif(void) 
 {
     return &eth_mac;
 }

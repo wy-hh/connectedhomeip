@@ -34,7 +34,9 @@ virt_net_t vnet_spi;
 struct bflbwifi_ap_record vnet_ap_record;
 SemaphoreHandle_t vnet_msgSem = NULL;
 
+#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
 extern int8_t bl_route_hook_init(void);
+#endif
 
 /* event callback */
 static int virt_net_spi_event_cb(virt_net_t obj, enum virt_net_event_code code, void * opaque)
@@ -110,7 +112,9 @@ bool wifiInterface_init()
     virt_net_setup_callback(vnet_spi, virt_net_spi_event_cb, NULL);
     netifapi_netif_set_default((struct netif *)&vnet_spi->netif);
 
+#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
     bl_route_hook_init();
+#endif
 
     return true;
 }
@@ -123,6 +127,11 @@ struct netif * deviceInterface_getNetif(void)
     }
 
     return NULL;
+}
+
+struct netif * otbr_getBackboneNetif(void) 
+{
+    return deviceInterface_getNetif();
 }
 
 void wifiInterface_getMacAddress(uint8_t * pmac)

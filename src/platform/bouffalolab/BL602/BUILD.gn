@@ -20,6 +20,7 @@ import("${chip_root}/src/platform/device.gni")
 import("${chip_root}/src/platform/bouffalolab/common/args.gni")
 
 assert(chip_device_platform == "bl602")
+assert(enable_openthread_border_router == false)
 
 static_library("BL602") {
   sources = [

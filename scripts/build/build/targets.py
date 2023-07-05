@@ -612,6 +612,7 @@ def BuildBouffalolabTarget():
     target.AppendModifier('resetCnt', enable_resetCnt=True)
     target.AppendModifier('mfd', function_mfd="release")
     target.AppendModifier('mfdtest', function_mfd="test")
+    target.AppendModifier('otbr', enable_otbr=True)
 
     return target
 

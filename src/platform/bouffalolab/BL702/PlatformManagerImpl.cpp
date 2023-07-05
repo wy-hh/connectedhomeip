@@ -28,10 +28,16 @@
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
 
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD || defined (ENABLE_OPENTHREAD_BORDER_ROUTER)
 #include <openthread_port.h>
 #include <utils_list.h>
-#else
+#endif
+
+#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#include <openthread_br.h>
+#endif
+
+#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI && !CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif
 
@@ -65,15 +71,28 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     wifiInterface_init();
+#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+    otbr_netif_init(otrGetInstance());
+#endif
 #elif CHIP_DEVICE_CONFIG_ENABLE_THREAD
     otRadio_opt_t opt;
-    opt.byte            = 0;
+    opt.bf.isFtd = true;
     opt.bf.isCoexEnable = true;
 
     ot_alarmInit();
     ot_radioInit(opt);
 #else
     ethernetInterface_init();
+#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+
+    otRadio_opt_t opt;
+    opt.bf.isFtd = true;
+    opt.bf.isCoexEnable = true;
+    opt.bf.isLinkMetricEnable = true;
+
+    otrStart(opt);
+    otbr_netif_init(otrGetInstance());
+#endif
 #endif
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());

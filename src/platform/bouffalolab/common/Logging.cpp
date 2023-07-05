@@ -29,6 +29,7 @@
 #include <task.h>
 #include <utils_log.h>
 
+
 namespace chip {
 namespace Logging {
 namespace Platform {
@@ -82,3 +83,24 @@ void LogV(const char * module, uint8_t category, const char * msg, va_list v)
 } // namespace Platform
 } // namespace Logging
 } // namespace chip
+
+extern "C" void otPlatLog(int aLogLevel, int aLogRegion, const char *aFormat, ...)
+{
+    va_list v;
+    uint8_t category = chip::Logging::kLogCategory_Error;
+
+    (void) aLogRegion;
+
+    if (aLogLevel > 1) {
+        category = chip::Logging::kLogCategory_Error;
+    }
+    else {
+        category = chip::Logging::kLogCategory_Progress;
+    }
+
+    va_start(v, aFormat);
+
+    chip::Logging::Platform::LogV("OT", category, aFormat, v);
+
+    va_end(v);
+}

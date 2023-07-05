@@ -247,6 +247,18 @@ SECTIONS
     KEEP(*sdk_lwip.*.c.o(.bss.*))
 
     . = ALIGN(16);
+    KEEP(*sdk_lwip.*.c.o(.sbss.*))
+    KEEP(*sdk_lwip.*.c.o(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*libopenthread_br.a:*(.sbss.*))
+    KEEP(*libopenthread_br.a:*(.bss.*))
+    
+    . = ALIGN(16);
+    KEEP(*third_party/tcplp*.c.o(.bss.*))
+    KEEP(*third_party/tcplp*.c.o(.bss.*))
+
+    . = ALIGN(16);
     KEEP(*stack_main.o(.bss.*))
     
     . = ALIGN(16);

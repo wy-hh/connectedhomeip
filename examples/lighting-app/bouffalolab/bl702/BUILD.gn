@@ -21,6 +21,7 @@ import("${bouffalolab_iot_sdk_build_root}/common/bouffalolab_executable.gni")
 import("${build_root}/config/defaults.gni")
 import("${chip_root}/examples/common/pigweed/pigweed_rpcs.gni")
 import("${chip_root}/src/platform/device.gni")
+import("${chip_root}/src/platform/bouffalolab/common/args.gni")
 
 import("${chip_root}/src/app/chip_data_model.gni")
 
@@ -46,7 +47,7 @@ declare_args() {
   # reboot delay in seconds to apply new OTA image
   ota_auto_reboot_delay_seconds = 5
 
-  config_cache_size = 8192
+  config_cache_size = 16318
 
   enable_heap_monitoring = false
   enable_reset_counter = false
@@ -63,6 +64,7 @@ declare_args() {
 
 bl_iot_sdk("sdk") {
   include_dirs = [
+    "${chip_root}/src/platform/bouffalolab/common",
     "${chip_root}/src/platform/bouffalolab/BL702",
     "${example_dir}",
     "${example_common_dir}",
@@ -79,7 +81,7 @@ bl_iot_sdk("sdk") {
     "PRINT_DEBUG=0",
   ]
 
-  if (chip_enable_openthread) {
+  if (chip_enable_openthread || enable_openthread_border_router) {
     defines += [ "OPENTHREAD_CONFIG_PLATFORM_XTAL_ACCURACY=40" ]
   }
 
@@ -140,7 +142,6 @@ bouffalolab_executable("lighting_app") {
     defines += [ "BL706_WIFI" ]
   }
 
-
   if (defined(enable_cdc_module) && enable_cdc_module) {
     defines += [ "CFG_USB_CDC_ENABLE" ]
   }
@@ -183,7 +184,20 @@ bouffalolab_executable("lighting_app") {
         "${chip_root}/third_party/openthread/repo:libopenthread-mtd",
       ]
     }
-  } else {
+  } 
+  else if (enable_openthread_border_router) {
+    deps += [
+      "${chip_root}/third_party/openthread/platforms:libopenthread-platform",
+      "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
+    ]
+    defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
+    deps += [
+      "${chip_root}/third_party/openthread/repo:libopenthread-cli-ftd",
+      "${chip_root}/third_party/openthread/repo:libopenthread-ftd",
+    ]
+  }
+  else {
+    defines += [ "CONFIG_BL_ROUTE_HOOK_ENABLE" ]
     sources += [
       "${examples_plat_common_dir}/route_hook/bl_route_hook.c",
       "${examples_plat_common_dir}/route_hook/bl_route_table.c",
