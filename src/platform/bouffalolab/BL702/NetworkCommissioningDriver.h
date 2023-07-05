@@ -16,13 +16,13 @@
  */
 
 #pragma once
-#include <vector>
+
 #include <platform/NetworkCommissioning.h>
 
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
-// #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
 namespace {
 constexpr uint8_t kMaxWiFiNetworks                  = 1;
 constexpr uint8_t kWiFiScanNetworksTimeOutSeconds   = 10;
@@ -130,7 +130,6 @@ private:
     char mScanSSID[chip::DeviceLayer::Internal::kMaxWiFiSSIDLength + 1];
     bool mScanSpecific = false;
 };
-// #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 } // namespace NetworkCommissioning
 } // namespace DeviceLayer

@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#include <vector>
+
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
