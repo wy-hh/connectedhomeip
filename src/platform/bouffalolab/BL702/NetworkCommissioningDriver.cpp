@@ -15,8 +15,6 @@
  *    limitations under the License.
  */
 
-#include <vector>
-
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
@@ -184,7 +182,6 @@ exit:
 void BLWiFiDriver::OnScanWiFiNetworkDone(void *arg)
 {
     netbus_fs_scan_ind_cmd_msg_t* pmsg = (netbus_fs_scan_ind_cmd_msg_t*) arg;
-    std::vector<WiFiScanResponse *> scanResults;
     size_t i = 0, ap_num = pmsg->num;
     WiFiScanResponse *  pScanResponse, *p;
 
