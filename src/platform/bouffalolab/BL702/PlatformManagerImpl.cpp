@@ -29,8 +29,8 @@
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
-#include <utils_list.h>
 #include <openthread_port.h>
+#include <utils_list.h>
 #else
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif
