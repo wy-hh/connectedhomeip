@@ -17,6 +17,8 @@ import("//build_overrides/chip.gni")
 
 import("${chip_root}/src/platform/device.gni")
 
+import("${chip_root}/src/platform/bouffalolab/common/args.gni")
+
 assert(chip_device_platform == "bl702l")
 
 if (chip_enable_openthread) {
@@ -39,12 +41,6 @@ static_library("BL702L") {
     "../common/KeyValueStoreManagerImpl.cpp",
     "../common/Logging.cpp",
     "../common/PlatformManagerImpl.cpp",
-
-    # "${chip_root}/src/credentials/CHIPCert.h",
-    # "${chip_root}/src/credentials/DeviceAttestationCredsProvider.h",
-
-    # "../common/FactoryDataProvider.cpp",
-    # "../common/FactoryDataProvider.h",
   ]
 
   if (chip_enable_ota_requestor) {
@@ -60,6 +56,19 @@ static_library("BL702L") {
       "../common/BLEManagerImpl.h",
     ]
   }
+  
+  if (chip_enable_factory_data || chip_enable_factory_data_test) {
+    if (chip_enable_factory_data) {
+      defines = [ "CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE" ]
+    }
+    common_sources += [
+      "${chip_root}/src/credentials/CHIPCert.h",
+      "${chip_root}/src/credentials/DeviceAttestationCredsProvider.h",
+      "../common/FactoryDataProvider.cpp",
+      "../common/FactoryDataProvider.h",
+    ]
+  }
+
   sources += common_sources
 
   if (chip_enable_openthread) {

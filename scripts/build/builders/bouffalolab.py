@@ -82,7 +82,8 @@ class BouffalolabBuilder(GnBuilder):
                  baudrate=2000000,
                  enable_shell: bool = False,
                  enable_cdc: bool = False,
-                 enable_resetCnt: bool = False
+                 enable_resetCnt: bool = False,
+                 function_mfd: str = "disable"
                  ):
 
         if 'BL602' == module_type:
@@ -148,6 +149,15 @@ class BouffalolabBuilder(GnBuilder):
 
         if enable_resetCnt:
             self.argsOpt.append('enable_reset_counter=true')
+
+        if "disable" != function_mfd:
+            if bouffalo_chip != "bl602":
+                raise Exception('Only BL602 support matter factory data feature currently.')
+
+            if "release" == function_mfd:
+                self.argsOpt.append("chip_enable_factory_data=true")
+            elif "test" == function_mfd:
+                self.argsOpt.append("chip_enable_factory_data_test=true")
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])

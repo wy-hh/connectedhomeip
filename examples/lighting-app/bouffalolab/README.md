@@ -19,7 +19,7 @@ The steps were verified on `Bouffalo Lab` BL602 and BL706 development board.
 > it as the default while using this example.
 
 
-# Solution introduction
+# Solutions introduction
 
 Bouffalo Lab has full connectivities support for Matter Applications.
 - Wi-Fi application, we have
@@ -119,6 +119,16 @@ BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704L-DVK` and BL706 Eth
     ./scripts/build/build_examples.py --target bouffalolab-bl602-iot-matter-v1-light-rpc build
     ./scripts/build/build_examples.py --target bouffalolab-xt-zb6-devkit-light-rpc build
     ```
+### Build options with build_examples.py
+
+- `-shell`, enable UART command line
+- `-115200`, set UART bardrate to 115200 for log and command line
+- `-rpc`, enable Pigweed RPC feature
+- `-cdc`, enable USB CDC feature, only support for BL706, and can't work with Ethernet Board
+- `-resetCnt`, enable feature to do factory reset when continues power cycle is greater than 3
+- `-mfd`, enable Matter factory data feature, which load factory data from `DTS` region and `MFD` partition
+    - Please contact to Bouffalo Lab for Matter factory data support.
+- `-mfdtest`, neable Matter factory data module, but only load factory data from `FactoryDataProvider.cpp` file.
 
 ## Download image
 

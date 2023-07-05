@@ -610,6 +610,8 @@ def BuildBouffalolabTarget():
     target.AppendModifier('rpc', enable_rpcs=True)
     target.AppendModifier('cdc', enable_cdc=True)
     target.AppendModifier('resetCnt', enable_resetCnt=True)
+    target.AppendModifier('mfd', function_mfd="release")
+    target.AppendModifier('mfdtest', function_mfd="test")
 
     return target
 
