@@ -11,10 +11,28 @@ The steps were verified on `Bouffalo Lab` BL602 and BL706 development board.
 -   `BL602-NIGHT-LIGHT`
 -   `XT-ZB6-DevKit`
 -   `BL706-NIGHT-LIGHT`
+-   `BL706-ETHERNET`
+-   `BL706-WIFI`
 -   `BL704L-DVK`
 
-> Warning: Changing the PID may cause compilation problems, we recommend leaving
+> Warning: Changing the VID/PID may cause compilation problems, we recommend leaving
 > it as the default while using this example.
+
+
+# Solution introduction
+
+Bouffalo Lab has full connectivities support for Matter Applications.
+- Wi-Fi application, we have
+    - BL602
+    - BL706 + BL602. BL602 runs as a normal WLAN transceiver; TCP/IP stack runs as BL706 side. We recommend this solution is for Openthread Border Router application and Matter ZigBee bridge.
+        - Openthread Border Router application, please refer to [Openthread Border Router application](../../../third_party/bouffalolab/repo/customer_app/bl702_demo_otbr/readme.md)
+        - Matter ZigBee application, please contact Bouffalo Lab for support.
+- Thread application, we have
+    - B70X
+- Ethernet application, we have
+    - BL706. It supports single Matter application, and also Openthread Border Router application and Matter ZigBee bridge
+        - Openthread Border Router application, please refer to [Openthread Border Router application](../../../third_party/bouffalolab/repo/customer_app/bl702_demo_otbr/readme.md)
+        - Matter ZigBee application, please contact Bouffalo Lab for support.
 
 ## BL602
 
@@ -24,10 +42,13 @@ BL602/BL604 is combo chip-set for Wi-Fi 802.11b/g/n and BLE 5.0 base-band/MAC.
 
 <img src="../../platform/bouffalolab/doc/chart/BL602-IoT-Matter_V1.png" style="zoom:25%;" />
 
-## BL706
+## BL70x
 
-BL702/BL706 is combo chip-set for BLE and IEEE 802.15.4/ZigBee/Thread. In some
-cases, e.g. in SDK, we use BL702 as a general name for BL702/BL706 family.
+BL70x is combo chip-set for BLE and IEEE 802.15.4/ZigBee/Thread. 
+- BL702/BL706 has 14dbm tx power and is recommended for routing devices. SDK uses BL702 as a general name.
+- BL702L/BL704L is designed for low power application. SDK uses BL702L as a general name.
+
+BL70x has fully certified with all Thread 1.3 features, included Thread SSED and Thread Border Router with DUA manager.
 
 ### `XT-ZB6-DevKit`
 
@@ -73,7 +94,7 @@ Mac OS.
 ## Build CHIP Lighting App example
 
 The following steps take examples for BL602 develop board `BL602-IoT-Matter-V1`,
-BL706 develop board `XT-ZB6-DevKit` and BL704L DVK board `BL704L-DVK`
+BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704L-DVK` and BL706 Ethernet and Wi-Fi Board.
 
 -   Build lighting app with UART baudrate 2000000
 
@@ -81,6 +102,8 @@ BL706 develop board `XT-ZB6-DevKit` and BL704L DVK board `BL704L-DVK`
     ./scripts/build/build_examples.py --target bouffalolab-bl602-iot-matter-v1-light build
     ./scripts/build/build_examples.py --target bouffalolab-xt-zb6-devkit-light build
     ./scripts/build/build_examples.py --target bouffalolab-bl704l-dvk-light build
+    ./scripts/build/build_examples.py --target bouffalolab-bl706-eth-light build
+    ./scripts/build/build_examples.py --target bouffalolab-bl706-wifi-light build
     ```
 
 -   Build lighting app with UART baudrate 115200
