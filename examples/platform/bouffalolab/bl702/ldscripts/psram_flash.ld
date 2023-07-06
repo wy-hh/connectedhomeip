@@ -227,6 +227,12 @@ SECTIONS
     KEEP(*libMatterDeviceInfoProviderExample.a:*(.bss.*))
 
     . = ALIGN(16);
+    KEEP(*libopenthread-ftd.a:*(.sbss.*))
+    KEEP(*libopenthread-ftd.a:*(.bss.*))
+    KEEP(*libopenthread-mtd.a:*(.sbss.*))
+    KEEP(*libopenthread-mtd.a:*(.bss.*))
+    
+    . = ALIGN(16);
     KEEP(*src/app/clusters/*/bouffalolab*.cpp.o(.sbss.*))
     KEEP(*src/app/clusters/*/bouffalolab*.cpp.o(.bss.*))
 

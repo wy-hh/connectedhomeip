@@ -29,3 +29,7 @@ void appError(CHIP_ERROR error);
 #else
 void appError(int err);
 #endif
+
+#if defined (ENABLE_OPENTHREAD_BORDER_ROUTER) && CONFIG_ENABLE_CHIP_SHELL
+extern void cli_otc_init(void);
+#endif

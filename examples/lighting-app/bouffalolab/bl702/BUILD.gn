@@ -47,7 +47,7 @@ declare_args() {
   # reboot delay in seconds to apply new OTA image
   ota_auto_reboot_delay_seconds = 5
 
-  config_cache_size = 16318
+  config_cache_size = 16384
 
   enable_heap_monitoring = false
   enable_reset_counter = false
@@ -186,11 +186,14 @@ bouffalolab_executable("lighting_app") {
     }
   } 
   else if (enable_openthread_border_router) {
+
+    defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
+    defines += [ "ENABLE_OPENTHREAD_BORDER_ROUTER" ]
+
     deps += [
       "${chip_root}/third_party/openthread/platforms:libopenthread-platform",
       "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
     ]
-    defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
     deps += [
       "${chip_root}/third_party/openthread/repo:libopenthread-cli-ftd",
       "${chip_root}/third_party/openthread/repo:libopenthread-ftd",
@@ -265,12 +268,18 @@ bouffalolab_executable("lighting_app") {
   } else if (chip_build_libshell) {
     defines += [ "CONFIG_ENABLE_CHIP_SHELL=${chip_build_libshell}" ]
 
-    deps += [ "${chip_root}/examples/shell/shell_common:shell_common" ]
-
     include_dirs += [
       "${chip_root}/src/lib/shell",
       "${chip_root}/examples/shell/shell_common/include",
     ]
+
+    if (enable_openthread_border_router) {
+      sources += [
+        "${examples_plat_common_dir}/shell/cli_otc.cpp",
+      ]
+    }
+
+    deps += [ "${chip_root}/examples/shell/shell_common:shell_common" ]
   }
 
   if (enable_heap_monitoring) {
