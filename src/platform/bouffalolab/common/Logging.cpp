@@ -38,18 +38,20 @@ static char formattedMsg[CHIP_CONFIG_LOG_MESSAGE_MAX_SIZE];
 void LogV(const char * module, uint8_t category, const char * msg, va_list v)
 {
 #ifndef PW_RPC_ENABLED
+    uint32_t len = strlen(msg);
+
     vsnprintf(formattedMsg, sizeof(formattedMsg), msg, v);
 
     switch (category)
     {
     case kLogCategory_Error:
-        __utils_printf("[%10u][%s][ERROR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+        __utils_printf("[%10u][%s][ERROR] %s%s", xTaskGetTickCount(), module, formattedMsg, (len && msg[len - 1] == '\n')? "": "\r\n");
         break;
     case kLogCategory_Progress:
-        __utils_printf("[%10u][%s][PROGR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+        __utils_printf("[%10u][%s][PROGR] %s%s", xTaskGetTickCount(), module, formattedMsg, (len && msg[len - 1] == '\n')? "": "\r\n");
         break;
     case kLogCategory_Detail:
-        __utils_printf("[%10u][%s][DETAIL] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+        __utils_printf("[%10u][%s][DETAIL] %s%s", xTaskGetTickCount(), module, formattedMsg, (len && msg[len - 1] == '\n')? "": "\r\n");
         break;
     }
 #else
@@ -91,7 +93,7 @@ extern "C" void otPlatLog(int aLogLevel, int aLogRegion, const char *aFormat, ..
 
     (void) aLogRegion;
 
-    if (aLogLevel > 1) {
+    if (aLogLevel == 1 && aLogLevel == 2 ) {
         category = chip::Logging::kLogCategory_Error;
     }
     else {
@@ -100,7 +102,7 @@ extern "C" void otPlatLog(int aLogLevel, int aLogRegion, const char *aFormat, ..
 
     va_start(v, aFormat);
 
-    chip::Logging::Platform::LogV("OT", category, aFormat, v);
+    chip::Logging::Platform::LogV("OTBR", category, aFormat, v);
 
     va_end(v);
 }

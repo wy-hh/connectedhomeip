@@ -87,12 +87,16 @@ chip::app::Clusters::NetworkCommissioning::Instance
 }
 #endif
 
-static chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
-
 #if CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE || defined(CONFIG_BOUFFALOLAB_FACTORY_DATA_TEST)
 namespace {
 FactoryDataProvider sFactoryDataProvider;
 }
+#endif
+
+static chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
+
+#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+extern "C" void otbr_netif_init(void);
 #endif
 
 void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
@@ -128,6 +132,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 #endif
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
+
         }
 
         break;
@@ -144,6 +149,9 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
         if (event->InternetConnectivityChange.IPv6 == kConnectivity_Established)
         {
             ChipLogProgress(NotSpecified, "IPv6 connectivity ready...");
+#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+            otbr_netif_init();
+#endif
         }
         else if (event->InternetConnectivityChange.IPv6 == kConnectivity_Lost)
         {
