@@ -116,6 +116,7 @@
 #define OPENTHREAD_CONFIG_DNSSD_SERVER_ENABLE 1
 #define OPENTHREAD_CONFIG_PLATFORM_UDP_ENABLE 1
 
+#define OPENTHREAD_CONFIG_NUM_MESSAGE_BUFFERS 256
 
 #define tcp_input tcp_input_ot
 #define tcp_output tcp_output_ot
