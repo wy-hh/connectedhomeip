@@ -16,11 +16,15 @@
  *    limitations under the License.
  */
 
+#if !defined BOUFFALO_SDK
 #include <bl_gpio.h>
 #include <bl_sys.h>
+#endif
 #include <board.h>
 #include <demo_pwm.h>
+#if !defined BOUFFALO_SDK
 #include <hosal_gpio.h>
+#endif
 
 #include "LEDWidget.h"
 
@@ -29,10 +33,12 @@ void LEDWidget::Init()
 #ifdef LED1_PIN
     mPin = LED1_PIN;
 
+#if !defined BOUFFALO_SDK
     hosal_gpio_dev_t gpio_led = { .config = OUTPUT_OPEN_DRAIN_NO_PULL, .priv = NULL };
     gpio_led.port             = mPin;
 
     hosal_gpio_init(&gpio_led);
+#endif
 #endif
     SetOnoff(false);
 }
@@ -45,17 +51,22 @@ void LEDWidget::Toggle(void)
 void LEDWidget::SetOnoff(bool state)
 {
 #ifdef LED1_PIN
+#if !defined BOUFFALO_SDK
     hosal_gpio_dev_t gpio_led = { .port = mPin, .config = OUTPUT_OPEN_DRAIN_NO_PULL, .priv = NULL };
-
+#endif
     mOnoff = state;
 
     if (state)
     {
+#if !defined BOUFFALO_SDK
         hosal_gpio_output_set(&gpio_led, 1);
+#endif
     }
     else
     {
+#if !defined BOUFFALO_SDK
         hosal_gpio_output_set(&gpio_led, 0);
+#endif
     }
 #endif
 }

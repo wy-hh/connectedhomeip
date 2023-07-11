@@ -26,7 +26,7 @@ __RFTLV_HEAD1_L = (0x41524150); /* PAPA */
 
 MEMORY
 {
-    fw_header_memory  (rx)  : ORIGIN = 0xA0000000 - 0x1000, LENGTH = 4K
+    /*fw_header_memory  (rx)  : ORIGIN = 0xA0000000 - 0x1000, LENGTH = 4K*/
     xip_memory  (rx)  : ORIGIN = 0xA0000000, LENGTH = 4M
     ram_psram  (wxa)   : ORIGIN = 0xA8000000, LENGTH = 4M
     itcm_memory (rx)  : ORIGIN = 0x62FC0000, LENGTH = 20K
@@ -40,12 +40,12 @@ SECTIONS
 {
 
     BOOT2_PT_ADDR = 0x63027c00;
-
+/*
     .fw_header :
     {
         KEEP(*(.fw_header))
     } > fw_header_memory
-
+*/
     .init :
     {
         KEEP (*(SORT_NONE(.init)))

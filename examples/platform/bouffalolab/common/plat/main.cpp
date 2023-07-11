@@ -32,8 +32,9 @@
 #include <plat.h>
 
 extern "C" {
-
+#if !defined BOUFFALO_SDK
 #include <blog.h>
+#endif
 
 #ifdef BL702_ENABLE
 #include <bl702_glb.h>
@@ -41,9 +42,12 @@ extern "C" {
 #elif BL702L_ENABLE
 #include <bl702l_glb.h>
 #include <bl702l_hbn.h>
-#elif defined(BL602_ENABLE)
+#elif defined(BL602_ENABLE) || defined(BL616_ENABLE)
 #include <wifi_mgmr_ext.h>
 #endif
+#ifdef BOUFFALO_SDK
+
+#else
 #include <bl_irq.h>
 #include <bl_rtc.h>
 #include <bl_sec.h>
@@ -62,7 +66,7 @@ extern "C" {
 #include <rom_hal_ext.h>
 #include <rom_lmac154_ext.h>
 #endif
-
+#endif
 #include "board.h"
 }
 
@@ -72,8 +76,9 @@ using namespace ::chip::DeviceLayer;
 
 #define UNUSED_PARAMETER(a) (a = a)
 
+#if !defined BOUFFALO_SDK
 HOSAL_UART_DEV_DECL(uart_stdio, CHIP_UART_PORT, CHIP_UART_PIN_TX, CHIP_UART_PIN_RX, CHIP_UART_BAUDRATE);
-
+#endif
 volatile int apperror_cnt;
 
 #ifdef SYS_AOS_LOOP_ENABLE
@@ -107,7 +112,7 @@ extern "C" unsigned int sleep(unsigned int seconds)
 }
 
 #ifndef BL702L_ENABLE
-
+#if !defined BOUFFALO_SDK
 extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
     ChipLogProgress(NotSpecified, "Stack Overflow checked. Stack name %s", pcTaskName);
@@ -116,10 +121,10 @@ extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskN
         /*empty here*/
     }
 }
-
+#endif
 extern "C" void vApplicationMallocFailedHook(void)
 {
-    ChipLogProgress(NotSpecified, "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
+    //ChipLogProgress(NotSpecified, "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
     while (true)
     {
         /*empty here*/
@@ -346,6 +351,7 @@ void exception_entry_app(uint32_t mcause, uint32_t mepc, uint32_t mtval, uintptr
 
 extern "C" void setup_heap()
 {
+#if !defined BOUFFALO_SDK
     bl_sys_init();
 
 #ifdef BL702_ENABLE
@@ -377,6 +383,7 @@ extern "C" void setup_heap()
     do_psram_test();
     vPortDefineHeapRegionsPsram(xPsramHeapRegions);
 #endif
+#endif
 }
 
 extern "C" size_t get_heap_size(void)
@@ -386,12 +393,23 @@ extern "C" size_t get_heap_size(void)
 
 extern "C" void app_init(void)
 {
-    hosal_uart_init(&uart_stdio);
+#if !defined BOUFFALO_SDK
+    bl_sys_init();
 
+    bl_sys_early_init();
+
+    hosal_uart_init(&uart_stdio);
+#endif
     ChipLogProgress(NotSpecified, "==================================================");
     ChipLogProgress(NotSpecified, "bouffalolab chip-lighting-example, built at " __DATE__ " " __TIME__);
     ChipLogProgress(NotSpecified, "==================================================");
-
+#if !defined BOUFFALO_SDK
+    blog_init();
+    bl_irq_init();
+    bl_sec_init();
+#ifdef BL702_ENABLE
+    bl_timer_init();
+#endif
 #ifdef CFG_USE_PSRAM
     ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
                     &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
@@ -413,7 +431,15 @@ extern "C" void app_init(void)
 
     /* board config is set after system is init*/
     hal_board_cfg(0);
-
+    //    hosal_dma_init();
+#endif
+#ifdef CFG_USE_PSRAM
+    vPortDefineHeapRegionsPsram(xPsramHeapRegions);
+    ChipLogProgress(NotSpecified, "Heap %u@%p, %u@%p", (unsigned int) &_heap_size, &_heap_start, (unsigned int) &_heap3_size,
+                    &_heap3_start);
+#else
+    ChipLogProgress(NotSpecified, "Heap %u@%p", (unsigned int) &_heap_size, &_heap_start);
+#endif
 #ifdef BL602_ENABLE
     wifi_td_diagnosis_init();
 #endif
@@ -431,7 +457,9 @@ extern "C" void START_ENTRY(void)
 
 #ifdef SYS_AOS_LOOP_ENABLE
     ChipLogProgress(NotSpecified, "Starting AOS loop Task");
+#if !defined BOUFFALO_SDK
     aos_loop_start();
+#endif
 #else
 #if defined(CFG_USB_CDC_ENABLE)
     extern void usb_cdc_start(int fd_console);

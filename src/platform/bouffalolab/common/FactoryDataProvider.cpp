@@ -25,12 +25,16 @@
 #else
 #include <platform/CHIPDeviceConfig.h>
 extern "C" {
+#if !defined BOUFFALO_SDK
 #include <utils_base64.h>
+#endif
 }
 #endif
 #include <platform/CHIPDeviceConfig.h>
 extern "C" {
+#if !defined BOUFFALO_SDK
 #include <utils_base64.h>
+#endif
 }
 #include <platform/bouffalolab/common/FactoryDataProvider.h>
 
@@ -327,13 +331,13 @@ CHIP_ERROR FactoryDataProvider::GetSpake2pSalt(MutableByteSpan & saltBuf)
 #else
     static const char spake2pSalt[] = "U1BBS0UyUCBLZXkgU2FsdA==";
     uint32_t aSpake2pSaltLen;
-
+#if !defined BOUFFALO_SDK
     if (!utils_base64decode((const uint8_t *) spake2pSalt, sizeof(spake2pSalt) - 1, saltBuf.size(), saltBuf.data(),
                             &aSpake2pSaltLen))
     {
         return CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND;
     }
-
+#endif
     saltBuf = MutableByteSpan(saltBuf.data(), aSpake2pSaltLen);
 
     return CHIP_NO_ERROR;
@@ -363,12 +367,13 @@ CHIP_ERROR FactoryDataProvider::GetSpake2pVerifier(MutableByteSpan & verifierBuf
                                           "WdbVWhmDFSSjLqFhiiCILxXQ4NVO3YBWTdkERnTlXbFmx+T/32FMRpZLPz8yqFXyALytJW7ZJfArBz0/CP9hA==";
     uint32_t aSpake2pVerifierLen;
 
+#if !defined BOUFFALO_SDK
     if (!utils_base64decode((const uint8_t *) spake2pVerifier, sizeof(spake2pVerifier) - 1, verifierBuf.size(), verifierBuf.data(),
                             &aSpake2pVerifierLen))
     {
         return CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND;
     }
-
+#endif
     verifierBuf = MutableByteSpan(verifierBuf.data(), aSpake2pVerifierLen);
     verifierLen = aSpake2pVerifierLen;
 

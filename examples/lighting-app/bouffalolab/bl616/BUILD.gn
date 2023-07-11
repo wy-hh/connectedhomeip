@@ -74,7 +74,6 @@ bouffalo_sdk("sdk") {
     "OTA_PERIODIC_TIMEOUT=${ota_periodic_query_timeout_seconds}",
     "OTA_AUTO_REBOOT_DELAY=${ota_auto_reboot_delay_seconds}",
     "CHIP_UART_BAUDRATE=${baudrate}",
-    "SYS_AOS_LOOP_ENABLE",
   ]
   if (chip_enable_pw_rpc) {
     include_dirs += [ "${examples_plat_common_dir}/rpc" ]
@@ -100,7 +99,6 @@ bouffalolab_executable("lighting_app") {
     "CHIP_UART_BAUDRATE=${baudrate}",
     "BL616_ENABLE",
     "START_ENTRY=bfl_main",
-    "SYS_AOS_LOOP_ENABLE",
   ]
 
   bl_plat_name = "bl616"

@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-riscv_arch = "rv32imfc"
+import("//build_overrides/chip.gni")
+
+import("${chip_root}/src/platform/device.gni")
+if (chip_device_platform == "bl616") {
+  riscv_arch = "rv32imafcpzpsfoperand_xthead"
+} else {
+  riscv_arch = "rv32imfc"
+}
 riscv_abi = "ilp32f"
 #  riscv_cpu = ""
 #  riscv_float_abi = "hard"

@@ -16,39 +16,37 @@
  *    limitations under the License.
  */
 
-/**
- *    @file
- *          Provides an implementation of the PlatformManager object
- *          for BL602 platforms using the Bouffalolab BL602 SDK.
- */
-/* this file behaves like a config.h, comes first */
 #include <crypto/CHIPCryptoPAL.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
 #include <platform/PlatformManager.h>
-#include <platform/bouffalolab/BL616/DiagnosticDataProviderImpl.h>
 #include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
+#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.ipp>
 
 #include <lwip/tcpip.h>
-#include <utils_log.h>
 
 //#include <aos/kernel.h>
-#include <bl60x_fw_api.h>
-#include <bl_sec.h>
-#include <event_device.h>
-#include <hal_wifi.h>
+//#include <bl60x_fw_api.h>
+//#include <bl_sec.h>
+//#include <event_device.h>
+//#include <hal_wifi.h>
 #include <lwip/tcpip.h>
 #include <wifi_mgmr_ext.h>
 
 extern "C" {
-#include <bl_sec.h>
+#include <bl616.h>
+#include <bl_fw_api.h>
+#include <bl616_glb.h>
+#include <rfparam_adapter.h>
 }
 
+#define WIFI_STACK_SIZE  (1536)
+#define TASK_PRIORITY_FW (16)
+
+static TaskHandle_t wifi_fw_task;
 namespace chip {
 namespace DeviceLayer {
-
-PlatformManagerImpl PlatformManagerImpl::sInstance;
 
 static wifi_conf_t conf = {
     .country_code = "CN",
@@ -56,8 +54,8 @@ static wifi_conf_t conf = {
 
 static int app_entropy_source(void * data, unsigned char * output, size_t len, size_t * olen)
 {
-
-    bl_rand_stream(reinterpret_cast<uint8_t *>(output), static_cast<int>(len));
+    //FIXME:app entropy source
+    //bl_rand_stream(reinterpret_cast<uint8_t *>(output), static_cast<int>(len));
     *olen = len;
 
     return 0;
@@ -117,8 +115,8 @@ static void WifiStaDisconect(void)
         }
         break;
     case WLAN_FW_BEACON_LOSS:
-    case WLAN_FW_JOIN_NETWORK_SECURITY_NOMATCH:
-    case WLAN_FW_JOIN_NETWORK_WEPLEN_ERROR:
+    case WLAN_FW_NETWORK_SECURITY_NOMATCH:
+    case WLAN_FW_NETWORK_WEPLEN_ERROR:
     case WLAN_FW_DISCONNECT_BY_FW_PS_TX_NULLFRAME_FAILURE:
     case WLAN_FW_CREATE_CHANNEL_CTX_FAILURE_WHEN_JOIN_NETWORK:
     case WLAN_FW_ADD_STA_FAILURE:
@@ -173,7 +171,7 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     switch (code)
     {
     case CODE_WIFI_ON_INIT_DONE: {
-        wifi_mgmr_start_background(&conf);
+        wifi_mgmr_init(&conf);
     }
     break;
     case CODE_WIFI_ON_MGMR_DONE: {
@@ -194,7 +192,8 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     }
     break;
     case CODE_WIFI_ON_DISCONNECT: {
-        ChipLogProgress(DeviceLayer, "WiFi station disconnect, reason %s.", wifi_mgmr_status_code_str(event->value));
+        //ChipLogProgress(DeviceLayer, "WiFi station disconnect, reason %s.", wifi_mgmr_status_code_str(event->value));
+        ChipLogProgress(DeviceLayer, "WiFi station disconnect, reason .");
 
         chip::DeviceLayer::PlatformMgr().LockChipStack();
         WifiStaDisconect();
@@ -223,15 +222,47 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     }
     break;
     default: {
-        ChipLogProgress(DeviceLayer, "WiFi station gets unknow code %u.", event->code);
+        ChipLogProgress(DeviceLayer, "WiFi station gets unknow code %u.", code);
         /*nothing*/
     }
     }
 }
 
+extern void wifi_event_handler(uint32_t code);
 void wifi_event_handler(uint32_t code)
 {
     OnWiFiPlatformEvent(code, NULL);
+}
+
+int wifi_start_firmware_task(void)
+{
+    //LOG_I("Starting wifi ...\r\n");
+
+    /* enable wifi clock */
+
+    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
+    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
+
+    /* set ble controller EM Size */
+
+    GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
+
+    if (0 != rfparam_init(0, NULL, 0)) {
+        //LOG_I("PHY RF init failed!\r\n");
+        return 0;
+    }
+
+    //LOG_I("PHY RF init success!\r\n");
+
+    /* Enable wifi irq */
+
+    extern void interrupt0_handler(void);
+    bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
+    bflb_irq_enable(WIFI_IRQn);
+
+    xTaskCreate(wifi_main, (char *)"fw", WIFI_STACK_SIZE, NULL, TASK_PRIORITY_FW, &wifi_fw_task);
+
+    return 0;
 }
 
 CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
@@ -241,7 +272,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     TaskHandle_t backup_eventLoopTask;
 
     // Initialize the configuration system.
-    err = Internal::BL602Config::Init();
+    err = Internal::BLConfig::Init();
     SuccessOrExit(err);
 
     // Initialize LwIP.
@@ -273,31 +304,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 
 exit:
     return err;
-}
-
-void PlatformManagerImpl::_Shutdown()
-{
-    uint64_t upTime = 0;
-
-    if (GetDiagnosticDataProvider().GetUpTime(upTime) == CHIP_NO_ERROR)
-    {
-        uint32_t totalOperationalHours = 0;
-
-        if (ConfigurationMgr().GetTotalOperationalHours(totalOperationalHours) == CHIP_NO_ERROR)
-        {
-            ConfigurationMgr().StoreTotalOperationalHours(totalOperationalHours + static_cast<uint32_t>(upTime / 3600));
-        }
-        else
-        {
-            ChipLogError(DeviceLayer, "Failed to get total operational hours of the Node");
-        }
-    }
-    else
-    {
-        ChipLogError(DeviceLayer, "Failed to get current uptime since the Node’s last reboot");
-    }
-
-    Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_Shutdown();
 }
 
 } // namespace DeviceLayer

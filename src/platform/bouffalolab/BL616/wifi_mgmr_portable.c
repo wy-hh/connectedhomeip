@@ -1,9 +1,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <bl60x_wifi_driver/wifi_mgmr.h>
-#include <bl60x_wifi_driver/wifi_mgmr_api.h>
-#include <bl60x_wifi_driver/wifi_mgmr_profile.h>
+#include <wifi_mgmr.h>
+//#include <wifi_mgmr_profile.h>
+//FIXME:no wpa_supplicant
+#if 0
 #include <supplicant_api.h>
 
 #include <wpa_supplicant/src/utils/common.h>
@@ -11,7 +12,7 @@
 #include <wpa_supplicant/src/common/defs.h>
 #include <wpa_supplicant/src/common/wpa_common.h>
 #include <wpa_supplicant/src/rsn_supp/wpa_i.h>
-
+#endif
 extern struct wpa_sm gWpaSm;
 
 int wifi_mgmr_get_bssid(uint8_t * bssid)
@@ -44,7 +45,7 @@ int wifi_mgmr_get_scan_ap_num(void)
     return count;
 }
 
-void wifi_mgmr_get_scan_result(wifi_mgmr_ap_item_t * result, int * num, uint8_t scan_type, char * ssid)
+void wifi_mgmr_get_scan_result(wifi_mgmr_scan_item_t * result, int * num, uint8_t scan_type, char * ssid)
 {
     int i, count, iter;
 
@@ -77,7 +78,7 @@ void wifi_mgmr_get_scan_result(wifi_mgmr_ap_item_t * result, int * num, uint8_t 
     *num = iter;
 }
 
-int wifi_mgmr_get_scan_result_filter(wifi_mgmr_ap_item_t * result, char * ssid)
+int wifi_mgmr_get_scan_result_filter(wifi_mgmr_scan_item_t * result, char * ssid)
 {
     int i, count;
 
@@ -104,6 +105,8 @@ int wifi_mgmr_get_scan_result_filter(wifi_mgmr_ap_item_t * result, char * ssid)
 
 int wifi_mgmr_profile_ssid_get(uint8_t * ssid)
 {
+    //FIXME:no mgmr profile
+#if 0
     wifi_mgmr_profile_msg_t profile_msg;
 
     wifi_mgmr_profile_get_by_idx(&wifiMgmr, &profile_msg, wifiMgmr.profile_active_index);
@@ -111,6 +114,8 @@ int wifi_mgmr_profile_ssid_get(uint8_t * ssid)
     memcpy(ssid, profile_msg.ssid, profile_msg.ssid_len);
 
     return profile_msg.ssid_len;
+#endif
+    return 0;
 }
 
 bool wifi_mgmr_security_type_is_open(void)
@@ -120,27 +125,32 @@ bool wifi_mgmr_security_type_is_open(void)
 
 bool wifi_mgmr_security_type_is_wpa(void)
 {
+#if 0
     return WPA_PROTO_WPA == gWpaSm.proto;
+#endif
+    return 0;
 }
 
 bool wifi_mgmr_security_type_is_wpa2(void)
 {
+#if 0
     if (WPA_PROTO_RSN == gWpaSm.proto)
     {
         return (gWpaSm.key_mgmt &
                 (WPA_KEY_MGMT_IEEE8021X | WPA_KEY_MGMT_PSK | WPA_KEY_MGMT_PSK_SHA256 | WPA_KEY_MGMT_FT_PSK |
                  WPA_KEY_MGMT_IEEE8021X_SHA256 | WPA_KEY_MGMT_FT_IEEE8021X)) != 0;
     }
-
+#endif
     return false;
 }
 
 bool wifi_mgmr_security_type_is_wpa3(void)
 {
+#if 0
     if (WPA_PROTO_RSN == gWpaSm.proto)
     {
         return (gWpaSm.key_mgmt & (WPA_KEY_MGMT_SAE | WPA_KEY_MGMT_FT_SAE)) != 0;
     }
-
+#endif
     return false;
 }

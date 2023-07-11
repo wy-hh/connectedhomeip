@@ -16,7 +16,9 @@
  */
 
 #pragma once
-#include <bl60x_wifi_driver/wifi_mgmr.h>
+extern "C" {
+#include <wifi_mgmr.h>
+}
 #include <platform/NetworkCommissioning.h>
 
 namespace chip {
@@ -32,7 +34,7 @@ constexpr uint8_t kWiFiConnectNetworkTimeoutSeconds = 20;
 class BLScanResponseIterator : public Iterator<WiFiScanResponse>
 {
 public:
-    BLScanResponseIterator(const size_t size, const wifi_mgmr_ap_item_t * scanResults) : mSize(size), mpScanResults(scanResults) {}
+    BLScanResponseIterator(const size_t size, const wifi_mgmr_scan_item * scanResults) : mSize(size), mpScanResults(scanResults) {}
     size_t Count() override { return mSize; }
     bool Next(WiFiScanResponse & item) override
     {
@@ -58,7 +60,7 @@ public:
 
 private:
     const size_t mSize;
-    const wifi_mgmr_ap_item_t * mpScanResults;
+    const wifi_mgmr_scan_item * mpScanResults;
     size_t mIternum = 0;
 };
 

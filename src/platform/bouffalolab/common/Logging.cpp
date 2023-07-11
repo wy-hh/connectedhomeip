@@ -27,7 +27,9 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#if !defined BOUFFALO_SDK
 #include <utils_log.h>
+#endif
 
 namespace chip {
 namespace Logging {
@@ -42,13 +44,25 @@ void LogV(const char * module, uint8_t category, const char * msg, va_list v)
     switch (category)
     {
     case kLogCategory_Error:
+#if !defined BOUFFALO_SDK
         __utils_printf("[%10u][%s][ERROR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#else
+        printf("[%10u][%s][ERROR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#endif
         break;
     case kLogCategory_Progress:
+#if !defined BOUFFALO_SDK
         __utils_printf("[%10u][%s][PROGR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#else
+        printf("[%10u][%s][PROGR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#endif
         break;
     case kLogCategory_Detail:
+#if !defined BOUFFALO_SDK
         __utils_printf("[%10u][%s][DETAIL] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#else
+        printf("[%10u][%s][DETAIL] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#endif
         break;
     }
 #else

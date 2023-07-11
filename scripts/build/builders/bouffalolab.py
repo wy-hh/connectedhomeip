@@ -50,6 +50,7 @@ class BouffalolabBoard(Enum):
     BL706_IoT_DVK = auto()
     BL706_NIGHT_LIGHT = auto()
     BL704L_DVK = auto()
+    BL616_MATTER_DVK = auto()
 
     def GnArgName(self):
         if self == BouffalolabBoard.BL602_IoT_Matter_V1:
@@ -66,6 +67,8 @@ class BouffalolabBoard(Enum):
             return 'BL706-NIGHT-LIGHT'
         elif self == BouffalolabBoard.BL704L_DVK:
             return 'BL704L-DVK'
+        elif self == BouffalolabBoard.BL616_MATTER_DVK:
+            return 'BL616-Matter-DVK'
         else:
             raise Exception('Unknown board #: %r' % self)
 
@@ -90,6 +93,8 @@ class BouffalolabBuilder(GnBuilder):
             bouffalo_chip = 'bl702l'
         elif "BL70" in module_type:
             bouffalo_chip = 'bl702'
+        elif "BL616" == module_type:
+            bouffalo_chip = "bl616"
         else:
             raise Exception("module_type %s is not supported" % module_type)
 
@@ -98,7 +103,7 @@ class BouffalolabBuilder(GnBuilder):
                               app.ExampleName(), 'bouffalolab', bouffalo_chip),
             runner=runner
         )
-
+        print(bouffalo_chip)
         self.argsOpt = []
         self.chip_name = bouffalo_chip
 

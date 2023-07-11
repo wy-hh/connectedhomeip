@@ -53,10 +53,12 @@
 
 extern "C" {
 #include "board.h"
-#include <bl_gpio.h>
 #include <easyflash.h>
+#if !defined BOUFFALO_SDK
+#include <bl_gpio.h>
 #include <hal_gpio.h>
 #include <hosal_gpio.h>
+#endif
 }
 
 #include "AppTask.h"
@@ -483,21 +485,26 @@ void AppTask::ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction)
 }
 
 #ifdef LED_BTN_RESET
+#if !defined BOUFFALO_SDK
 hosal_gpio_dev_t gpio_key = { .port = LED_BTN_RESET, .config = INPUT_HIGH_IMPEDANCE, .priv = NULL };
+#endif
 
 void AppTask::ButtonInit(void)
 {
     GetAppTask().mButtonPressedTime     = 0;
     GetAppTask().mIsFactoryResetIndicat = false;
-
+#if !defined BOUFFALO_SDK
     hosal_gpio_init(&gpio_key);
     hosal_gpio_irq_set(&gpio_key, HOSAL_IRQ_TRIG_POS_PULSE, GetAppTask().ButtonEventHandler, NULL);
+#endif
 }
 
 bool AppTask::ButtonPressed(void)
 {
     uint8_t val = 1;
+#if !defined BOUFFALO_SDK
     hosal_gpio_input_get(&gpio_key, &val);
+#endif
     return val == 1;
 }
 
@@ -506,22 +513,27 @@ void AppTask::ButtonEventHandler(void * arg)
     uint32_t presstime;
     if (ButtonPressed())
     {
+
+#if !defined BOUFFALO_SDK
 #ifdef BL702L_ENABLE
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_NEG_LEVEL);
 #else
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_NEG_LEVEL);
 #endif
-
+#endif
         GetAppTask().mButtonPressedTime = chip::System::SystemClock().GetMonotonicMilliseconds64().count();
         GetAppTask().PostEvent(APP_EVENT_BTN_FACTORY_RESET_PRESS);
     }
     else
     {
+#if !defined BOUFFALO_SDK
 #ifdef BL702L_ENABLE
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_POS_PULSE);
 #else
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_POS_PULSE);
 #endif
+#endif 
+
         if (GetAppTask().mButtonPressedTime)
         {
             presstime = chip::System::SystemClock().GetMonotonicMilliseconds64().count() - GetAppTask().mButtonPressedTime;

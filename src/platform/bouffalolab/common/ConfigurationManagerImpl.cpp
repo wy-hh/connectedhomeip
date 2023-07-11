@@ -28,7 +28,11 @@
 #include <lib/support/logging/CHIPLogging.h>
 
 extern "C" {
+#ifdef BOUFFALO_SDK
+#include <bl616_glb.h>
+#else
 #include <bl_sys.h>
+#endif
 }
 
 namespace chip {
@@ -203,7 +207,13 @@ void ConfigurationManagerImpl::DoFactoryReset(intptr_t arg)
 
     // Restart the system.
     ChipLogProgress(DeviceLayer, "System restarting");
+#ifdef BOUFFALO_SDK
+    __disable_irq();
+    GLB_SW_System_Reset();
+#else
     bl_sys_reset_por();
+#endif
+    
 }
 
 ConfigurationManager & ConfigurationMgrImpl()

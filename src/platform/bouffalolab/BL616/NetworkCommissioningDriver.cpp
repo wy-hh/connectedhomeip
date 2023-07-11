@@ -15,27 +15,28 @@
  *    limitations under the License.
  */
 
-#include <aos/yloop.h>
-#include <bl60x_wifi_driver/wifi_mgmr.h>
-#include <bl60x_wifi_driver/wifi_mgmr_api.h>
-#include <hal_wifi.h>
+#include <wifi_mgmr.h>
+//#include <wifi_mgmr_api.h>
+//#include <hal_wifi.h>
 #include <lib/support/CodeUtils.h>
 #include <lib/support/SafeInt.h>
 #include <lwip/tcpip.h>
 #include <platform/CHIPDeviceLayer.h>
-#include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
+#include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
 #include <wifi_mgmr_ext.h>
 #include <wifi_mgmr_portable.h>
 
 #include <limits>
 #include <stdint.h>
 #include <string>
+#if !defined BOUFFALO_SDK
 #include <utils_log.h>
+#endif
 
 #define WIFI_STA_DISCONNECT_DELAY (pdMS_TO_TICKS(200))
 
 using namespace ::chip;
-//#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
@@ -170,23 +171,24 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
     char passwd[64]    = { 0 };
     int state          = 0;
 
-    wifi_mgmr_sta_disconnect();
+    wifi_sta_disconnect();
     vTaskDelay(WIFI_STA_DISCONNECT_DELAY);
 
-    wifi_mgmr_sta_disable(NULL);
-    wifi_mgmr_state_get(&state);
-    while (state != WIFI_STATE_IDLE)
+    //wifi_mgmr_sta_disable(NULL);
+    state = wifi_mgmr_sta_state_get();
+    while (state)
     {
-        wifi_mgmr_state_get(&state);
+        state = wifi_mgmr_sta_state_get();
         vTaskDelay(100);
     }
 
     memcpy(wifi_ssid, ssid, ssidLen);
     memcpy(passwd, key, keyLen);
-    wifi_interface_t wifi_interface;
-    wifi_interface = wifi_mgmr_sta_enable();
-    wifi_mgmr_sta_connect(&wifi_interface, wifi_ssid, passwd, NULL, NULL, 0, 0);
+   // wifi_interface_t wifi_interface;
+   // wifi_interface = wifi_mgmr_sta_enable();
+    //wifi_mgmr_sta_connect(&wifi_interface, wifi_ssid, passwd, NULL, NULL, 0, 0);
 
+    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
     ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
 
     return ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Enabled);
@@ -248,19 +250,21 @@ exit:
 CHIP_ERROR BLWiFiDriver::StartScanWiFiNetworks(ByteSpan ssid)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
+    wifi_mgmr_scan_params_t config;
+    memset(&config, 0 , sizeof(wifi_mgmr_scan_params_t));
 
     if (!ssid.empty())
     {
-        memset(WiFiSSIDStr, 0, sizeof(WiFiSSIDStr));
-        memcpy(WiFiSSIDStr, ssid.data(), ssid.size());
-        err       = (CHIP_ERROR) wifi_mgmr_scan_adv(NULL, NULL, NULL, 0, NULL, WiFiSSIDStr, 1, 0);
+        memcpy(config.ssid_array, ssid.data(), ssid.size());
+        config.ssid_length = ssid.size();
         scan_type = 1;
     }
     else
     {
-        err       = (CHIP_ERROR) wifi_mgmr_scan(NULL, NULL);
         scan_type = 0;
     }
+
+    err = (CHIP_ERROR) wifi_mgmr_sta_scan(&config);
     if (err != CHIP_NO_ERROR)
     {
         return CHIP_ERROR_INTERNAL;
@@ -284,7 +288,7 @@ void BLWiFiDriver::OnScanWiFiNetworkDone()
         return;
     }
 
-    wifi_mgmr_ap_item_t * ScanResult = (wifi_mgmr_ap_item_t *) pvPortMalloc(ap_num * sizeof(wifi_mgmr_ap_item_t));
+    wifi_mgmr_scan_item_t * ScanResult = (wifi_mgmr_scan_item_t *) pvPortMalloc(ap_num * sizeof(wifi_mgmr_scan_item_t));
     wifi_mgmr_get_scan_result(ScanResult, &ap_num, scan_type, WiFiSSIDStr);
 
     if (ScanResult)
@@ -334,8 +338,9 @@ CHIP_ERROR GetConfiguredNetwork(Network & network)
 {
     uint8_t ssid[64];
     uint16_t ssid_len;
-
-    ssid_len = wifi_mgmr_profile_ssid_get(ssid);
+    //FIXME:NO wifi mgmr profile
+    //ssid_len = wifi_mgmr_profile_ssid_get(ssid);
+    ssid_len = 0;
     if (!ssid_len || ssid_len > DeviceLayer::Internal::kMaxWiFiSSIDLength)
     {
         return CHIP_ERROR_INTERNAL;
@@ -380,9 +385,9 @@ CHIP_ERROR BLWiFiDriver::SetLastDisconnectReason(const ChipDeviceEvent * event)
 {
     // VerifyOrReturnError(event->Type == DeviceEventType::kRtkWiFiStationDisconnectedEvent, CHIP_ERROR_INVALID_ARGUMENT);
 
-    uint16_t status_code, reason_code;
+    uint16_t reason_code;
 
-    wifi_mgmr_conn_result_get(&status_code, &reason_code);
+    reason_code = wifiMgmr.wifi_mgmr_stat_info.reason_code;
     mLastDisconnectedReason = reason_code;
 
     return CHIP_NO_ERROR;

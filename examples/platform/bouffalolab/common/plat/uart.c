@@ -19,12 +19,14 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 
+#include <board.h>
+
+#if !defined BOUFFALO_SDK
 #include <bl_uart.h>
 #include <hosal_uart.h>
 
-#include <board.h>
-
 extern hosal_uart_dev_t uart_stdio;
+#endif
 
 #if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
 
@@ -42,6 +44,7 @@ typedef struct _chipUart
 
 static chipUart_t chipUart_var;
 
+#if !defined BOUFFALO_SDK
 static int uartTxCallback(void * p_arg)
 {
     hosal_uart_ioctl(&uart_stdio, HOSAL_UART_TX_TRIGGER_OFF, NULL);
@@ -82,17 +85,63 @@ static int uartRxCallback(void * p_arg)
     return 0;
 }
 
+//bl_iot_sdk
+#else
+static int uartTxCallback(void * p_arg)
+{
+
+    return 0;
+}
+
+static int uartRxCallback(void * p_arg)
+{
+    uint32_t len                        = 0;
+    BaseType_t xHigherPriorityTaskWoken = 1;
+
+    if (chipUart_var.head >= chipUart_var.tail)
+    {
+        if (chipUart_var.head < MAX_BUFFER_SIZE)
+        {
+            //len = hosal_uart_receive(&uart_stdio, chipUart_var.rxbuf + chipUart_var.head, MAX_BUFFER_SIZE - chipUart_var.head);
+            chipUart_var.head = (chipUart_var.head + len) % MAX_BUFFER_SIZE;
+        }
+
+        if (0 == chipUart_var.head)
+        {
+            //len = hosal_uart_receive(&uart_stdio, chipUart_var.rxbuf, chipUart_var.tail - 1);
+            chipUart_var.head += len;
+        }
+    }
+    else
+    {
+        chipUart_var.head +=
+            //hosal_uart_receive(&uart_stdio, chipUart_var.rxbuf + chipUart_var.head, chipUart_var.tail - chipUart_var.head - 1);
+    }
+
+    if (chipUart_var.head != chipUart_var.tail)
+    {
+        xSemaphoreGiveFromISR(chipUart_var.sema, &xHigherPriorityTaskWoken);
+    }
+
+    return 0;
+}
+
+#endif //bouffalo_sdk
 void uartInit(void)
 {
     memset(&chipUart_var, 0, offsetof(chipUart_t, rxbuf));
 
     chipUart_var.sema = xSemaphoreCreateBinaryStatic(&chipUart_var.mutx);
 
+#if !defined BOUFFALO_SDK
     hosal_uart_finalize(&uart_stdio);
     hosal_uart_init(&uart_stdio);
     hosal_uart_callback_set(&uart_stdio, HOSAL_UART_RX_CALLBACK, uartRxCallback, NULL);
     hosal_uart_callback_set(&uart_stdio, HOSAL_UART_TX_CALLBACK, uartTxCallback, NULL);
     hosal_uart_ioctl(&uart_stdio, HOSAL_UART_MODE_SET, (void *) HOSAL_UART_MODE_INT);
+#else
+
+#endif
 }
 
 int16_t uartRead(char * Buf, uint16_t NbBytesToRead)
@@ -122,5 +171,9 @@ int16_t uartRead(char * Buf, uint16_t NbBytesToRead)
 
 int16_t uartWrite(const char * Buf, uint16_t BufLength)
 {
+#if !defined BOUFFALO_SDK
     return hosal_uart_send(&uart_stdio, Buf, BufLength);
+#else
+    return 0;
+#endif
 }

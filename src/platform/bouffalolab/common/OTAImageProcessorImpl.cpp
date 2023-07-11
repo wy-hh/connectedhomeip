@@ -20,10 +20,15 @@
 
 #include "OTAImageProcessorImpl.h"
 extern "C" {
+#ifdef BOUFFALO_SDK
+#include<bl616_glb.h>
+#else
 #include <hal_sys.h>
 #include <hosal_ota.h>
+#endif
 }
 
+#if !defined BOUFFALO_SDK
 using namespace chip::System;
 
 namespace chip {
@@ -160,7 +165,12 @@ void OTAImageProcessorImpl::HandleApply(intptr_t context)
         System::Clock::Seconds32(OTA_AUTO_REBOOT_DELAY),
         [](Layer *, void *) {
             ChipLogProgress(SoftwareUpdate, "Rebooting...");
+#ifdef BOUFFALO_SDK
+            __disable_irq();
+            GLB_SW_POR_Reset();
+#else
             hal_reboot();
+#endif
         },
         nullptr);
 }
@@ -281,3 +291,4 @@ CHIP_ERROR OTAImageProcessorImpl::ReleaseBlock()
 }
 
 } // namespace chip
+#endif

@@ -14,7 +14,7 @@
 
 #import("//build_overrides/bl616_sdk.gni")
 import("//build_overrides/chip.gni")
-#import("//build_overrides/mbedtls.gni")
+import("//build_overrides/mbedtls.gni")
 
 #import("bl616_board.gni")
 
@@ -71,28 +71,25 @@ template("bouffalo_sdk") {
     }
   }
 
-  #config("${sdk_target_name}_lwip_config") {
-  #  _include_dirs = [
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src/include",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src/include/netif",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/ports",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/ports/Ceva-WiFi",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/ports/Ceva-WiFi/include",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/net_al",
-  #    "${bl616_sdk_root}/components/network/wifi6/SW/bl6_lwip/lwip-STABLE-2_0_2_RELEASE_VER/src/include/compat/posix",
-  #  ]
+  config("${sdk_target_name}_lwip_config") {
+    _include_dirs = [
+      "${bl616_sdk_root}/components/net/lwip/lwip/system",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/include",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/compat/posix",
+      "${bl616_sdk_root}/components/net/lwip/lwip/lwip-port",
+      "${bl616_sdk_root}/components/wireless/wifi6/inc",
 
-  #  defines = [
-  #  ]
+    ]
 
-  #  cflags = []
-  #  foreach(include_dir, _include_dirs) {
-  #    cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
-  #  }
-  #}
+    defines = [
+      "CONFIG_LWIP",
+    ]
+
+    cflags = []
+    foreach(include_dir, _include_dirs) {
+      cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
+    }
+  }
 
   config("${sdk_target_name}_std_drv_config") {
     _include_dirs = [
@@ -117,7 +114,7 @@ template("bouffalo_sdk") {
     ]
 
     defines = [
-     "WL_BL616"
+     "WL_BL616=1"
     ]
 
     cflags = []
@@ -246,6 +243,8 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/components/utils/log/bflog",
       "${bl616_sdk_root}/components/utils/bflb_mtd/include",
       "${bl616_sdk_root}/components/utils/partition",
+      "${bl616_sdk_root}/components/utils/getopt",
+      "${bl616_sdk_root}/components/utils/ring_buffer",
 
     ]
 
@@ -263,112 +262,50 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config") {
     include_dirs = [
-      "${bl616_sdk_root}/components/security/blcrypto_suite/inc/blcrypto_suite",
-      "${bl616_sdk_root}/components/sys/bltime/include",
-      "${bl616_sdk_root}/components/sys/blmtd/include",
-      "${bl616_sdk_root}/components/os/bl616_os_adapter/include",
-      "${bl616_sdk_root}/components/security/blcrypto_suite/inc/blcrypto_suite",
-      "${bl616_sdk_root}/components/security/blcrypto_suite/inc",
-      "${bl616_sdk_root}/components/security/blcrypto_suite/priv_inc",
-      "${bl616_sdk_root}/components/network/wifi_hosal/include",
-      "${bl616_sdk_root}/components/os/bl_os_adapter/bl_os_adapter",
-      "${bl616_sdk_root}/components/os/bl_os_adapter/bl_os_adapter/include",
-      "${bl616_sdk_root}/components/os/bl_os_adapter/bl_os_adapter/include/bl_os_adapter",
-      "${bl616_sdk_root}/components/security/wpa_supplicant/include/bl_supplicant",
-      "${bl616_sdk_root}/security/wpa_supplicant/src/",
-      "${bl616_sdk_root}/components/network/ble/blestack/src/common/include",
 
-      #fhost include
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_fhost/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_fhost/src/application",
-
-      #macsw include
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rwnx",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/mac/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/common/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/compiler/thead_e907",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/dbg/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf_build_reg",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/boot/thead_e907",
-
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/include",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/common/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/dbg/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/ke/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/scan",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rwnx",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tx",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rx",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/mm",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/chan",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tdls",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/p2p",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/ps",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/sta",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/vif",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tx/txl",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rx/rxl",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/hal",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/rd",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/uf",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/td",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/tpc", 
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/lmac/src/bfr",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/mac/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/macif/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/modules/rtos/src",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/compiler/thead_e907",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf_build_reg",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/boot",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/boot/thead_e907",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/arch/risc-v/ll/thead_e907",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/reg",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/crm",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/phy",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/intc/risc-v",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/extint",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/sysctrl",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/ipc_fhost",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/dma",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/la",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/time",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/button",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/plf/refip/src/driver/led",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/scanu",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/rxu",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/me",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/sm",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/apm",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/txu",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/llc",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/bam",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/mfp",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/rc",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/hsu",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/rm",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/twt",
-      "${bl616_sdk_root}/components/network/wifi6/SW/bl6_macsw/ip/umac/src/ftm",
+      #wifi include
+      "${bl616_sdk_root}/components/wireless/wifi6/inc",
 
       #bt ble stack
-      "${bl616_sdk_root}/components/network/ble/blestack/src/include",
-      "${bl616_sdk_root}/components/network/ble/blestack/src/include/bluetooth",
-      "${bl616_sdk_root}/components/network/ble/blestack/src/port/include",
-      "${bl616_sdk_root}/components/network/ble/blestack/src/port/include",
-      "${bl616_sdk_root}/components/network/ble/blestack/src/common/include/zephyr",
-      "${bl616_sdk_root}/components/network/ble/blestack/src/host",
-      "${bl616_sdk_root}/components/network/ble/btblecontroller/ble_inc",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include/bluetooth",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/port/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/src/port/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/zephyr",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host",
+      "${bl616_sdk_root}/components/wireless/bluetooth/btblecontroller/btble_inc",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include/drivers/bluetooth",
+
 
       #mbedtls include
-      "${bl616_sdk_root}/components/security/mbedtls_lts/mbedtls/include",
+      "${chip_root}/third_party/mbedtls/repo/include",
+      #"${bl616_sdk_root}/components/security/mbedtls_lts/mbedtls/include",
       #"${chip_root}/third_party/mbedtls/repo/include",
       "${bl616_sdk_root}/components/network/ble/blestack/src/include/drivers/bluetooth",
+      #lwip include
+      "${bl616_sdk_root}/components/net/lwip/lwip/system",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/include",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/compat/posix",
+      "${bl616_sdk_root}/components/net/lwip/lwip/lwip-port",
+      "${chip_root}/examples/platform/bouffalolab/bl616",
+      #bl os adapter
+      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/include",
+      #utils
+      "${bl616_sdk_root}/components/utils/getopt",
+
+      #easyflash
+      "${bl616_sdk_root}/components/easyflash4/inc",
+
+      "${bl616_sdk_root}/components/shell",
     ]
-    libs = []
+
+    libs = [
+      "${bl616_sdk_root}/components/wireless/wifi6/lib/libwifi6_matter.a",
+      "${bl616_sdk_root}/drivers/soc/bl616/rf/lib/librf.a",
+    ]
+
     if (defined(invoker.include_dirs)) {
       include_dirs += invoker.include_dirs
     }
@@ -379,26 +316,24 @@ template("bouffalo_sdk") {
 
     bl_sdk_ver = getenv("BL_SDK_VER")
     defines = [
-      #"MBEDTLS_CONFIG_FILE=\"bl616-chip-mbedtls-config.h\"",
+      "MBEDTLS_CONFIG_FILE=\"bl616-chip-mbedtls-config.h\"",
       "__STARTUP_CLEAR_BSS",
       "HARD_FAULT_LOG_ENABLE",
       "RETARGET_VCOM",
       "RETARGET_USART0",
       "ARCH_RISCV",
       "portasmHANDLE_INTERRUPT=interrupt_entry",
-
+      "default_interrupt_handler=freertos_risc_v_trap_handler",
       "SYS_APP_TASK_STACK_SIZE=4096",
       "SYS_APP_TASK_PRIORITY=28",
       "BL_SDK_VER=\"$bl_sdk_ver\"",
 
       "SYS_BLOG_ENABLE=1",
       "SYS_VFS_ENABLE=1",
-      "SYS_AOS_LOOP_ENABLE=1",
-      "BL602_USE_HAL_DRIVER=1",
+      "BL616_USE_HAL_DRIVER=1",
       "CFG_TXDESC=2",
 
       "CONFIG_RENDEZVOUS_MODE=2",
-
       # bluetooth
       "CONFIG_SET_TX_PWR",
       "CFG_BLE_ENABLE",
@@ -445,11 +380,11 @@ template("bouffalo_sdk") {
 
       #include defines
       "OS_USING_FREERTOS",
-      "BL602_MATTER_SUPPORT",
+      "BL616_MATTER_SUPPORT",
       "TD_DIAGNOSIS_STA",
 
       #bl616 defines
-      "BL616",
+      "BL616=BL616",
       "CFG_CPU_E907",
       "CFG_BL616",
       #"CPU_M0",
@@ -457,12 +392,14 @@ template("bouffalo_sdk") {
       "CFG_FHOST",
       "CFG_UMAC",
       "CFG_STATS",
-      "CFG_DBG=2",
+      "CFG_kBG=2",
       "CFG_BCN",
       "CFG_AGG",
       "CFG_AMSDU_4K",
       "CFG_VIF_MAX=2",
       "CFG_STA_MAX=4",
+      "CONFIG_VIF_MAX=2",
+      "CONFIG_STA_MAX=4",
       "CFG_SPC=16",
       "CFG_TXDESC0=4",
       "CFG_TXDESC1=8",
@@ -498,7 +435,8 @@ template("bouffalo_sdk") {
       "CFG_IPERF",
       "CFG_SMARTCONFIG",
       "CONFIG_NO_STDOUT_DEBUG",
-      "BL616_IOTSDK ",
+      #"BL616_IOTSDK ",
+      "BOUFFALO_SDK",
 
       "CONFIG_USE_STD_DRIVER:=1",
 
@@ -526,7 +464,7 @@ template("bouffalo_sdk") {
       "CONFIG_MBEDTLS_BIGNUM_USE_HW=1",
       "CONFIG_MBEDTLS_ECC_USE_HW=1",
 
-      "LOG_ENABLED_COMPONENTS= hosal",
+      #"LOG_ENABLED_COMPONENTS= hosal",
       "CONF_ENABLE_COREDUMP=1",
       "CONFIG_COMPONENT_BUGKILLER_ENABLE=1",
       "CONFIG_COMPONENT_BL616_CLI_DEMO=1",
@@ -585,13 +523,33 @@ template("bouffalo_sdk") {
       "AGG=on",
       "TRACE_COMPO_FHOST=off",
       "CONFIG_CHIP_CODE=BL616",
-      "CONFIG_LINK_NOPSRAM=0",
+      #"CONFIG_LINK_NOPSRAM=0",
+      #"CONFIG_PSRAM",
+      "BFLB_TIMESTAMP_TIMEZONE=8",
+      "BFLB_USE_HAL_DRIVER",
+      "BFLB_USE_ROM_DRIVER",
+      "CONFIG_CLI_CMD_ENABLE",
+      "CONFIG_FREERTOS",
+      "CONFIG_IRQ_NUM=80",
+      "CONFIG_LIBC_FLOAT=1",
+      "CONFIG_LIBC_FLOAT_EX=1",
+      "CONFIG_LIBC_LONG_LONG=1",
+      #"CONFIG_LOG_LEVEL=3",
+      "CONFIG_LWIP",
+      "CONFIG_SHELL",
+      "CONFIG_TLSF",
+      "RFPARAM_BL616",
+      "WL_BL616=1",
+      "WL_BL618M=0",
+      "WL_WB03=0",
+      "configSTACK_ALLOCATION_FROM_SEPARATE_HEAP=1",
     ]
 
     cflags = [
       "-Wno-maybe-uninitialized",
       "-Wno-shadow",
       "-Wno-error",
+      "-Wno-undef",
       "-fcommon",
       "-fno-jump-tables",
       #"-std=gnu99",
@@ -603,12 +561,39 @@ template("bouffalo_sdk") {
       "-Wno-old-style-declaration",
       "-mtune=e907",
       "-mcmodel=medany",
+      "-fms-extensions",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "-fmessage-length=0",
+      "-Wchar-subscripts",
+      "-Wformat",
+      "-Winit-self",
+      "-Wignored-qualifiers",
+      "-fstrict-volatile-bitfields",
+      "-MMD",
+      "-Wno-error=deprecated-declarations",
+      "-fstack-usage",
+      "-fno-builtin",
+      "-g3",
       "-Wl,--gc-sections",
       "-Wl,-static",
-      "-Wl,--start-group",
-      "-Wl,--end-group",
+      "-Wl,--whole-archive",
+      "-Wl,--no-whole-archive",
       "-Wl,-EL",
+      "-Wl,--cref",
+      "-Wl,--gc-sections",
+      "-nostartfiles",
+      "-fms-extensions",
+      "-ffunction-sections",
+      "-fdata-sections",
+      "--specs=nano.specs",
+      "-Wl,-wrap,snprintf",
+      "-Wl,-wrap,sprintf",
+      "-ucmd_ping",
+      "-march=rv32imafcpzpsfoperand_xtheade",
+      "-mabi=ilp32f",
       "-lm",
+      "-lc",
     ]
 
     cflags += [ "-Wno-implicit-function-declaration", "-Wno-incompatible-pointer-types", "-Wno-unused-variable" ]
@@ -628,17 +613,17 @@ template("bouffalo_sdk") {
     cflags_cc += [ "-lstdc++",
       "-Wl,--gc-sections",
       "-Wl,-static",
-      "-Wl,--start-group",
-      "-Wl,--end-group",
+      "-Wl,--whole-archive",
+      "-Wl,--no-whole-archive",
       "-Wl,-EL",
       "-lm",
     ]
 
     cflags += [
-      "-O1"
+      "-O2"
     ]
     cflags_cc += [
-      "-O1"
+      "-O2"
     ]
 
     if (defined(invoker.defines)) {
@@ -678,7 +663,7 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_std_drv_config",
       ":${sdk_target_name}_startup_config",
       ":${sdk_target_name}_os_config",
-      #":${sdk_target_name}_config",
+      ":${sdk_target_name}_config",
       #":${sdk_target_name}_lwip_config",
       #":${sdk_target_name}_freertos_config",
     ]
@@ -704,7 +689,7 @@ template("bouffalo_sdk") {
       #use rom api default
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_e907.c",
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_patch.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_clock.c",
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_common.c",
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_ef_cfg.c",
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_sdh.c",
@@ -715,7 +700,7 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_efuse.c",
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_flash.c",
       "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_media.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_clock.c",
+      "${bl616_sdk_root}/drivers/soc/bl616/std/port/bl616_clock.c",
     ]
 
     cflags = [
@@ -812,7 +797,7 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_std_drv_config",
       ":${sdk_target_name}_startup_config",
       ":${sdk_target_name}_os_config",
-      #":${sdk_target_name}_config",
+      ":${sdk_target_name}_config",
       #":${sdk_target_name}_lwip_config",
       #":${sdk_target_name}_freertos_config",
     ]
@@ -854,8 +839,7 @@ template("bouffalo_sdk") {
 
   source_set("${sdk_target_name}_board") {
     defines = [
-      "CONFIG_PSRAM",
-      "CONFIG_PSRAM_COPY_CODE",
+      #"CONFIG_PSRAM",
     ]
 
     include_dirs = [
@@ -960,6 +944,7 @@ template("bouffalo_sdk") {
     public_configs = [
       ":${sdk_target_name}_mm_config",
       ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_config",
       #":${sdk_target_name}_lwip_config",
       #":${sdk_target_name}_freertos_config",
     ]
@@ -1006,8 +991,8 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_os") {
     defines = [
       "CONFIG_FREERTOS",
-      "portasmHANDLE_INTERRUPT=interrupt_entry",
-      "default_interrupt_handler=freertos_risc_v_trap_handler",
+      #"portasmHANDLE_INTERRUPT=interrupt_entry",
+      #"default_interrupt_handler=freertos_risc_v_trap_handler",
       #"CONFIG_POSIX",
     ]
 
@@ -1054,6 +1039,7 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_std_drv_config",
       ":${sdk_target_name}_startup_config",
       ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_config",
       #":${sdk_target_name}_config",
       #":${sdk_target_name}_lwip_config",
       #":${sdk_target_name}_freertos_config",
@@ -1105,6 +1091,8 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/components/utils/bflog",
       "${bl616_sdk_root}/components/utils/bflb_mtd/include",
       "${bl616_sdk_root}/components/utils/partition",
+      "${bl616_sdk_root}/components/utils/getopt",
+      "${bl616_sdk_root}/components/utils/ring_buffer",
     ]
 
     include_dirs += [
@@ -1116,6 +1104,8 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/components/utils/log/log_freertos.c",
       "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
       "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
+      "${bl616_sdk_root}/components/utils/getopt/utils_getopt.c",
+      "${bl616_sdk_root}/components/utils/ring_buffer/ring_buffer.c",
     ]
 
     cflags = []
@@ -1191,6 +1181,126 @@ template("bouffalo_sdk") {
     cflags_c = []
   }
 
+  source_set("${sdk_target_name}_lwip") {
+    defines = [
+    ]
+
+    include_dirs = [
+      "${bl616_sdk_root}/components/net/lwip/lwip/system",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/include",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/compat/posix",
+      "${bl616_sdk_root}/components/net/lwip/lwip/lwip-port",
+      "${bl616_sdk_root}/components/wireless/wifi6/inc",
+      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/include",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/apps/lwiperf/lwiperf.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/apps/http/fs.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/api_msg.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/err.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/netbuf.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/netdb.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/netifapi.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/sockets.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/tcpip.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/api_lib.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/autoip.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/dhcp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/etharp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/icmp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/igmp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4_addr.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4_frag.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4.c",
+
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/dhcp6.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ethip6.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/icmp6.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/inet6.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6_addr.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6_frag.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/mld6.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/nd6.c",
+
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/def.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/dns.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/inet_chksum.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/init.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ip.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/mem.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/memp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/netif.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/pbuf.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/raw.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/stats.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/sys.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/tcp_in.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/tcp_out.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/tcp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/timeouts.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/udp.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/netif/ethernet.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/src/apps/mdns/mdns.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip/lwip-port/FreeRTOS/sys_arch.c",
+      "${bl616_sdk_root}/components/net/lwip/lwip_apps/dhcpd/dhcp_server_raw.c",
+      #"${bl616_sdk_root}/components/net/lwip/lwip/system/os/sys_arch.c",
+      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/src/rtos_al.c",
+      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/src/platform_bouffalo_sdk.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_utils_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_mm_config",
+      ":${sdk_target_name}_config",
+    ]
+  }
+
+  source_set("${sdk_target_name}_app") {
+    defines = [
+      "CONFIG_CLI_CMD_ENABLE",
+      "CONFIG_SHELL",
+    ]
+
+    include_dirs = [
+      "${bl616_sdk_root}/examples/wifi/sta/wifi_tcp",
+      "${bl616_sdk_root}/components/shell",
+    ]
+
+    include_dirs += [
+    ]
+
+    sources = [
+      "${bl616_sdk_root}/examples/wifi/sta/wifi_tcp/main.c",
+      "${bl616_sdk_root}/components/shell/shell.c",
+      "${bl616_sdk_root}/components/shell/shell_freertos.c",
+    ]
+
+    cflags = []
+    cflags_c = []
+
+    public_configs = [
+      ":${sdk_target_name}_rfparam_config",
+      ":${sdk_target_name}_utils_config",
+      ":${sdk_target_name}_std_drv_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_mm_config",
+      ":${sdk_target_name}_rf_config",
+      ":${sdk_target_name}_config",
+
+    ]
+  }
 
   group(sdk_target_name) {
     public_deps = [
@@ -1205,6 +1315,8 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_easyflash4",
       ":${sdk_target_name}_thirdparty_mbedlts",
       ":${sdk_target_name}_utils",
+      ":${sdk_target_name}_lwip",
+      ":${sdk_target_name}_app",
     ]
   }
 }

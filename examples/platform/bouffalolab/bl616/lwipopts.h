@@ -32,6 +32,7 @@
 #ifndef LWIP_HDR_LWIPOPTS_H__
 #define LWIP_HDR_LWIPOPTS_H__
 
+#include <stdbool.h>
 #define LWIP_NETIF_API     1
 #define LWIP_DEBUG         1
 #define LWIP_STATS_DISPLAY 1
@@ -72,7 +73,7 @@
 #define MEMP_NUM_NETCONN              16
 #define MEMP_NUM_UDP_PCB              16
 #define MEMP_NUM_REASSDATA            LWIP_MIN((IP_REASS_MAX_PBUFS), 5)
-#define CONFIG_MAC_TXQ_DEPTH          32
+#define CONFIG_MAC_TXQ_DEPTH          16
 #define CONFIG_MAC_RXQ_DEPTH          12
 #define MAC_TXQ_DEPTH                 CONFIG_MAC_TXQ_DEPTH
 #define MAC_RXQ_DEPTH                 CONFIG_MAC_RXQ_DEPTH
@@ -131,7 +132,9 @@
 #define PBUF_POOL_BUFSIZE 1600
 #define CONFIG_ENABLE_IPV6_ADDR_CALLBACK
 #define CONFIG_LWIP_HOOK_IP6_ROUTE_DEFAULT
-#define CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT
+//#define CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT
+
+#define LWIP_ERRNO_STDINCLUDE 1
 
 #if defined(__cplusplus)
 extern "C" long random(void);

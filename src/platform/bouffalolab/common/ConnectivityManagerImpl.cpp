@@ -33,6 +33,9 @@
 #ifdef BL602
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
 #endif
+#ifdef BL616
+#include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
+#endif
 #endif
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE

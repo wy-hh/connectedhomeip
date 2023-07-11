@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("bl602_board.gni")
+#import("bl602_board.gni")
 
 riscv_arch = "rv32imafcpzpsfoperand_xtheade"
 riscv_abi = "ilp32f"

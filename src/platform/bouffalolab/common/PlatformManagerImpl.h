@@ -19,7 +19,9 @@
 #pragma once
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if !defined BOUFFALO_SDK
 #include <aos/yloop.h>
+#endif
 #endif
 #include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.h>
 
@@ -59,7 +61,11 @@ private:
     friend PlatformManagerImpl & PlatformMgrImpl(void);
     friend class Internal::BLEManagerImpl;
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#ifdef BOUFFALO_SDK
+    friend void OnWiFiPlatformEvent(uint32_t code, void * private_data);
+#else
     friend void OnWiFiPlatformEvent(input_event_t * event, void * private_data);
+#endif
 #endif
 
     System::Clock::Timestamp mStartTime = System::Clock::kZero;
