@@ -102,7 +102,7 @@ template("bouffalo_sdk") {
       "BFLB_USE_HAL_DRIVER",
     ]
 
-    cflags = []
+    cflags = ["-Wsign-compare"]
     foreach(include_dir, _include_dirs) {
       cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
     }
@@ -133,11 +133,6 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/drivers/lhal/src/flash",
       "${bl616_sdk_root}/drivers/lhal/config/bl616",
     ]
-
-    defines = [
-      "BL616"
-    ]
-
 
     cflags = []
     foreach(include_dir, _include_dirs) {
@@ -545,6 +540,16 @@ template("bouffalo_sdk") {
       "configSTACK_ALLOCATION_FROM_SEPARATE_HEAP=1",
     ]
 
+    cflags_c = [
+      "-Wno-old-style-declaration",
+      "-Wno-implicit-function-declaration",
+      "-Wno-incompatible-pointer-types",
+      "-Wno-int-conversion",
+      "-Wno-sign-compare",
+      "-Wno-unused-function",
+      "-Wno-type-limits"
+    ]
+
     cflags = [
       "-Wno-maybe-uninitialized",
       "-Wno-shadow",
@@ -552,13 +557,11 @@ template("bouffalo_sdk") {
       "-Wno-undef",
       "-fcommon",
       "-fno-jump-tables",
-      #"-std=gnu99",
       "-gdwarf",
       "-ffunction-sections",
       "-fdata-sections",
       "-fstrict-volatile-bitfields",
       "-fshort-enums",
-      "-Wno-old-style-declaration",
       "-mtune=e907",
       "-mcmodel=medany",
       "-fms-extensions",
@@ -566,7 +569,6 @@ template("bouffalo_sdk") {
       "-fdata-sections",
       "-fmessage-length=0",
       "-Wchar-subscripts",
-      "-Wformat",
       "-Winit-self",
       "-Wignored-qualifiers",
       "-fstrict-volatile-bitfields",
@@ -594,13 +596,13 @@ template("bouffalo_sdk") {
       "-mabi=ilp32f",
       "-lm",
       "-lc",
+      "-Wno-sign-compare"
     ]
 
-    cflags += [ "-Wno-implicit-function-declaration", "-Wno-incompatible-pointer-types", "-Wno-unused-variable" ]
+    cflags += ["-Wno-unused-variable", "-Wno-conversion"]
 
     cflags_cc = [ "-fpermissive" ]
-    cflags_cc += [ "-std=c++17" ]
-    cflags_cc += [ "-D _GNU_SOURCE" ]
+    cflags_cc += [ "-Wno-conversion" ]
 
     foreach(include_dir, _include_dirs) {
       cflags += [ "-isystem" + rebase_path(include_dir, root_build_dir) ]
@@ -723,7 +725,6 @@ template("bouffalo_sdk") {
 
   source_set("${sdk_target_name}_lhal") {
     defines = [
-      "BL616",
       "CPU_M0",
       "CONFIG_IRQ_NUM=80",
     ]
@@ -840,6 +841,7 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_board") {
     defines = [
       #"CONFIG_PSRAM",
+      "BL616"
     ]
 
     include_dirs = [
@@ -1049,14 +1051,12 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_easyflash4") {
     defines = [
       "CONFIG_EASYFLASH4",
+      "BL616"
     ]
 
     include_dirs = [
       #memory heap
       "${bl616_sdk_root}/components/easyflash4/inc",
-    ]
-
-    include_dirs += [
     ]
 
     sources = [

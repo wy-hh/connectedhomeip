@@ -14,10 +14,10 @@
 import("//build_overrides/bouffalolab_iot_sdk.gni")
 import("//build_overrides/build.gni")
 import("//build_overrides/chip.gni")
-
-import("${bouffalolab_iot_sdk_build_root}/bl616/bl616_sdk.gni")
+import("${bouffalolab_iot_sdk_build_root}/bl616/bouffalo_sdk.gni")
 import("${bouffalolab_iot_sdk_build_root}/common/bouffalolab_executable.gni")
 import("${build_root}/config/defaults.gni")
+import("${chip_root}/src/lib/lib.gni")
 import("${chip_root}/examples/common/pigweed/pigweed_rpcs.gni")
 import("${chip_root}/src/platform/device.gni")
 
@@ -55,8 +55,6 @@ declare_args() {
   baudrate = 2000000
 }
 
-  #FIXME:define chip_build_libshell
-  chip_build_libshell = false
 bouffalo_sdk("sdk") {
 
   include_dirs = [
@@ -103,8 +101,8 @@ bouffalolab_executable("lighting_app") {
 
   bl_plat_name = "bl616"
   sources = [
-    "${examples_plat_dir}/route_hook/bl_route_hook.c",
-    "${examples_plat_dir}/route_hook/bl_route_table.c",
+    "${examples_plat_common_dir}/route_hook/bl_route_hook.c",
+    "${examples_plat_common_dir}/route_hook/bl_route_table.c",
   ]
 
   if ("BL616-Matter-Dvk" == board) {
@@ -135,8 +133,9 @@ bouffalolab_executable("lighting_app") {
   ]
 
   include_dirs = [
-    "${chip_root}/src/platform/bouffalolab/BL616",
     "${example_common_dir}",
+    "${chip_root}/src/platform/bouffalolab/BL616",
+    "${examples_plat_common_dir}/route_hook",
     "${examples_plat_common_dir}/plat",
     "${examples_plat_dir}",
   ]

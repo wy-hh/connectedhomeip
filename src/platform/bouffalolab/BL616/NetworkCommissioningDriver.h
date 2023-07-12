@@ -114,7 +114,7 @@ public:
 
     CHIP_ERROR ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, const char * key, uint8_t keyLen);
     CHIP_ERROR ReConnectWiFiNetwork(void);
-    void OnConnectWiFiNetwork();
+    void OnConnectWiFiNetwork(bool isConnected);
     void OnScanWiFiNetworkDone();
     void OnNetworkStatusChange();
 

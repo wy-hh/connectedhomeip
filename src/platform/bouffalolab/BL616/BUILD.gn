@@ -29,19 +29,20 @@ static_library("BL616") {
   ]
 
   common_sources = [
-    "${chip_root}/src/credentials/CHIPCert.h",
-    "${chip_root}/src/credentials/DeviceAttestationCredsProvider.h",
     "../../FreeRTOS/SystemTimeSupport.cpp",
     "../../SingletonConfigurationManager.cpp",
     "../common/BLConfig.cpp",
     "../common/ConfigurationManagerImpl.cpp",
     "../common/ConnectivityManagerImpl.cpp",
     "../common/DiagnosticDataProviderImpl.cpp",
-    "../common/FactoryDataProvider.cpp",
-    "../common/FactoryDataProvider.h",
     "../common/KeyValueStoreManagerImpl.cpp",
     "../common/Logging.cpp",
     "../common/PlatformManagerImpl.cpp",
+
+# "${chip_root}/src/credentials/CHIPCert.h",
+# "${chip_root}/src/credentials/DeviceAttestationCredsProvider.h",
+#      "../common/FactoryDataProvider.cpp",
+#      "../common/FactoryDataProvider.h",
   ]
 
   if (chip_enable_ota_requestor) {

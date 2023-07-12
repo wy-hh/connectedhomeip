@@ -385,7 +385,6 @@ extern "C" size_t get_heap_size(void)
 extern "C" void app_init(void)
 {
 #if !defined BOUFFALO_SDK
-
     bl_sys_early_init();
 
 #ifdef BL702L_ENABLE
@@ -393,30 +392,12 @@ extern "C" void app_init(void)
     rom_hal_init();
     rom_lmac154_hook_init();
 #endif
-#endif
 
     hosal_uart_init(&uart_stdio);
 
-    hosal_uart_init(&uart_stdio);
-#endif
     ChipLogProgress(NotSpecified, "==================================================");
     ChipLogProgress(NotSpecified, "bouffalolab chip-lighting-example, built at " __DATE__ " " __TIME__);
     ChipLogProgress(NotSpecified, "==================================================");
-#if !defined BOUFFALO_SDK
-    blog_init();
-    bl_irq_init();
-    bl_sec_init();
-#ifdef BL702_ENABLE
-    bl_timer_init();
-#endif
-#ifdef CFG_USE_PSRAM
-    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
-                    &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
-                    &_heap3_start + (unsigned int) &_heap3_size);
-#else
-    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
-                    &_heap_start + (unsigned int) &_heap_size);
-#endif
 
     blog_init();
     bl_irq_init();
@@ -426,6 +407,15 @@ extern "C" void app_init(void)
     bl_sec_init();
 #if defined(BL702_ENABLE)
     bl_timer_init();
+#endif
+
+#ifdef CFG_USE_PSRAM
+    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
+                    &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
+                    &_heap3_start + (unsigned int) &_heap3_size);
+#else
+    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
+                    &_heap_start + (unsigned int) &_heap_size);
 #endif
 
     hal_boot2_init();
@@ -438,6 +428,13 @@ extern "C" void app_init(void)
 #endif
 #ifdef BL602_ENABLE
     wifi_td_diagnosis_init();
+#endif
+
+#else
+
+    ChipLogProgress(NotSpecified, "==================================================");
+    ChipLogProgress(NotSpecified, "bouffalolab chip-lighting-example, built at " __DATE__ " " __TIME__);
+    ChipLogProgress(NotSpecified, "==================================================");
 #endif
 }
 

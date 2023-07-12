@@ -63,7 +63,7 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #if defined(BL602_ENABLE)
 #include <wifi_mgmr_ext.h>
-#else
+#elif defined(BL702_ENABLE)
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
 #else

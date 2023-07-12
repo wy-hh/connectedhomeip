@@ -211,7 +211,7 @@ CHIP_ERROR BLWiFiDriver::ReConnectWiFiNetwork(void)
     return CHIP_NO_ERROR;
 }
 
-void BLWiFiDriver::OnConnectWiFiNetwork()
+void BLWiFiDriver::OnConnectWiFiNetwork(bool isConnected)
 {
     if (mpConnectCallback)
     {
@@ -365,7 +365,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
         return;
     }
 
-    if (ConnectivityManagerImpl::mWiFiStationState == ConnectivityManager::kWiFiStationState_Connected)
+    if (ConnectivityManagerImpl().GetWiFiStationState() == ConnectivityManager::kWiFiStationState_Connected)
     {
         staConnected = true;
     }
@@ -377,7 +377,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
         return;
     }
     mpStatusChangeCallback->OnNetworkingStatusChange(
-        Status::kSuccess, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)),
+        Status::kUnknownError, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)),
         MakeOptional(GetLastDisconnectReason()));
 }
 

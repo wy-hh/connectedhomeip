@@ -64,77 +64,6 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetBootReason(BootReasonType & bootReason
     return CHIP_NO_ERROR;
 }
 
-static int bl_netif_get_all_ip6(struct netif * netif, ip6_addr_t if_ip6[])
-{
-    if (netif == NULL || if_ip6 == NULL)
-    {
-        return 0;
-    }
-
-    int addr_count = 0;
-    for (int i = 0; (i < LWIP_IPV6_NUM_ADDRESSES) && (i < kMaxIPv6AddrCount); i++)
-    {
-        if (!ip_addr_cmp(&netif->ip6_addr[i], IP6_ADDR_ANY))
-        {
-            memcpy(&if_ip6[addr_count++], &netif->ip6_addr[i], sizeof(ip6_addr_t));
-        }
-    }
-
-    return addr_count;
-}
-
-CHIP_ERROR DiagnosticDataProviderImpl::GetNetworkInterfaces(NetworkInterface ** netifpp)
-{
-    //FIXME:no netif can get
-#if 0
-    NetworkInterface * ifp = new NetworkInterface();
-    struct netif * netif = NULL;
-
-    netif = (struct netif *)&wifiMgmr.wlan_sta.netif;
-    if (netif)
-    {
-        Platform::CopyString(ifp->Name, netif->name);
-        ifp->name          = CharSpan::fromCharString(ifp->Name);
-        ifp->isOperational = true;
-        ifp->type          = EMBER_ZCL_INTERFACE_TYPE_ENUM_WI_FI;
-        ifp->offPremiseServicesReachableIPv4.SetNull();
-        ifp->offPremiseServicesReachableIPv6.SetNull();
-        bflb_efuse_read_mac_address_opt(0, ifp->MacAddress, 1);
-        ifp->hardwareAddress = ByteSpan(ifp->MacAddress, 6);
-
-        uint32_t ip, gw, mask, dns;
-        wifi_sta_ip4_addr_get(&ip, &mask, &gw, &dns);
-
-        memcpy(ifp->Ipv4AddressesBuffer[0], &ip, kMaxIPv4AddrSize);
-        ifp->Ipv4AddressSpans[0] = ByteSpan(ifp->Ipv4AddressesBuffer[0], kMaxIPv4AddrSize);
-        ifp->IPv4Addresses       = chip::app::DataModel::List<chip::ByteSpan>(ifp->Ipv4AddressSpans, 1);
-
-        uint8_t ipv6_addr_count = 0;
-        ip6_addr_t ip6_addr[kMaxIPv6AddrCount];
-        ipv6_addr_count = bl_netif_get_all_ip6(netif, ip6_addr);
-        for (uint8_t idx = 0; idx < ipv6_addr_count; ++idx)
-        {
-            memcpy(ifp->Ipv6AddressesBuffer[idx], ip6_addr[idx].addr, kMaxIPv6AddrSize);
-            ifp->Ipv6AddressSpans[idx] = ByteSpan(ifp->Ipv6AddressesBuffer[idx], kMaxIPv6AddrSize);
-        }
-        ifp->IPv6Addresses = chip::app::DataModel::List<chip::ByteSpan>(ifp->Ipv6AddressSpans, ipv6_addr_count);
-    }
-
-    *netifpp = ifp;
-#endif
-    return CHIP_NO_ERROR;
-}
-
-void DiagnosticDataProviderImpl::ReleaseNetworkInterfaces(NetworkInterface * netifp)
-{
-    while (netifp)
-    {
-        NetworkInterface * del = netifp;
-        netifp                 = netifp->Next;
-        delete del;
-    }
-}
-
 CHIP_ERROR DiagnosticDataProviderImpl::GetWiFiBssId(MutableByteSpan & BssId)
 {
     return CopySpanToMutableSpan(ByteSpan(wifiMgmr.wifi_mgmr_stat_info.bssid), BssId);
@@ -167,7 +96,7 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetWiFiSecurityType(app::Clusters::WiFiNe
 
         return CHIP_NO_ERROR;
     }
-
+    
     return CHIP_ERROR_READ_FAILED;
 }
 

@@ -43,7 +43,7 @@ template("bouffalolab_executable") {
     "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_2M.toml",
   ]
 
-  if (invoker.bl_plat_name == "bl602") {
+  if (invoker.bl_plat_name == "bl602" || invoker.bl_plat_name == "bl616") {
     flashing_script_inputs += [ "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_4M.toml" ]
   }
 

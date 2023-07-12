@@ -153,6 +153,7 @@ if (current_os == "zephyr" || current_os == "mbed") {
   group("lwip") {
     public_deps = [ ":lwip_buildconfig" ]
     public_deps += [ "${bouffalolab_iot_sdk_build_root}/bl702:bl_iot_sdk" ]
+  }
 } else if (lwip_platform == "bl616") {
   group("lwip") {
     public_deps = [ ":lwip_buildconfig" ]

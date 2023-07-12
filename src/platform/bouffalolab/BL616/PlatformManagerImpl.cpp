@@ -70,7 +70,7 @@ static void WifiStaDisconect(void)
         chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCauseEnum::kUnknown);
     WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
 
-    if (ConnectivityManagerImpl::mWiFiStationState == ConnectivityManager::kWiFiStationState_Disconnecting)
+    if (ConnectivityManagerImpl().GetWiFiStationState() == ConnectivityManager::kWiFiStationState_Disconnecting)
     {
         return;
     }
@@ -146,7 +146,7 @@ static void WifiStaConnected(void)
     char ap_ssid[64];
     WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
 
-    if (ConnectivityManagerImpl::mWiFiStationState == ConnectivityManager::kWiFiStationState_Connected)
+    if (ConnectivityManagerImpl().GetWiFiStationState() == ConnectivityManager::kWiFiStationState_Connected)
     {
         return;
     }
@@ -157,8 +157,8 @@ static void WifiStaConnected(void)
     // wifi_mgmr_get_scan_result_filter(ap_info, ap_ssid);
 
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
-    ConnectivityMgrImpl().WifiStationStateChange();
-    ConnectivityMgrImpl().OnStationConnected();
+    ConnectivityMgrImpl().OnWiFiStationStateChanged();
+    ConnectivityMgrImpl().OnWiFiStationConnected();
     if (delegate)
     {
         delegate->OnConnectionStatusChanged(
@@ -270,10 +270,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     CHIP_ERROR err                 = CHIP_NO_ERROR;
     static uint8_t stack_wifi_init = 0;
     TaskHandle_t backup_eventLoopTask;
-
-    // Initialize the configuration system.
-    err = Internal::BLConfig::Init();
-    SuccessOrExit(err);
 
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
