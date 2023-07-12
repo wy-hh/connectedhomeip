@@ -21,12 +21,6 @@
 
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
 
-#include <lib/core/CHIPVendorIdentifiers.hpp>
-#include <platform/DiagnosticDataProvider.h>
-
-#include <lib/support/CodeUtils.h>
-#include <lib/support/logging/CHIPLogging.h>
-
 extern "C" {
 #ifdef BOUFFALO_SDK
 #include <bl616_glb.h>

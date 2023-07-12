@@ -4,6 +4,7 @@
  * Contact information:
  * web site:    https://www.bouffalolab.com/
  */
+#include <stdio.h>
 
 #include "demo_pwm.h"
 #include "board.h"
