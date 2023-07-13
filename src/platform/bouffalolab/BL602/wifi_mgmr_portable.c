@@ -18,7 +18,7 @@ int wifi_mgmr_get_bssid(uint8_t * bssid)
 {
     int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < sizeof(wifiMgmr.wifi_mgmr_stat_info.bssid); i++)
     {
         bssid[i] = wifiMgmr.wifi_mgmr_stat_info.bssid[i];
     }

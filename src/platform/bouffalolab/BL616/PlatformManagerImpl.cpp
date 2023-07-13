@@ -157,7 +157,6 @@ static void WifiStaConnected(void)
     // wifi_mgmr_get_scan_result_filter(ap_info, ap_ssid);
 
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
-    ConnectivityMgrImpl().OnWiFiStationStateChanged();
     ConnectivityMgrImpl().OnWiFiStationConnected();
     if (delegate)
     {
@@ -222,14 +221,13 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     }
     break;
     default: {
-        ChipLogProgress(DeviceLayer, "WiFi station gets unknow code %u.", code);
+        ChipLogProgress(DeviceLayer, "WiFi station gets unknow code %lu.", code);
         /*nothing*/
     }
     }
 }
 
-extern void wifi_event_handler(uint32_t code);
-void wifi_event_handler(uint32_t code)
+extern "C" void wifi_event_handler(uint32_t code)
 {
     OnWiFiPlatformEvent(code, NULL);
 }

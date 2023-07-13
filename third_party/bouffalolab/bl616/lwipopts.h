@@ -85,7 +85,6 @@
 #define TCP_QUEUE_OOSEQ               1
 #define MEMP_NUM_TCP_SEG              ((4 * TCP_SND_BUF) / TCP_MSS)
 #define MEMP_NUM_PBUF                 (TCP_SND_BUF / TCP_MSS)
-#define PBUF_POOL_SIZE                0
 #define LWIP_WND_SCALE                1
 #define TCP_RCV_SCALE                 2
 #define TCP_SNDLOWAT                  LWIP_MIN(LWIP_MAX(((TCP_SND_BUF) / 4), (2 * TCP_MSS) + 1), (TCP_SND_BUF)-1)
@@ -103,8 +102,6 @@
 #define MEM_SIZE 8192
 #endif
 #endif
-
-#define LWIP_HOOK_FILENAME        "lwiphooks.h"
 
 #define LWIP_RAW                  1
 #define LWIP_MULTICAST_TX_OPTIONS 1
@@ -130,9 +127,6 @@
 #define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 1
 #define MEMP_NUM_MLD6_GROUP 10
 #define PBUF_POOL_BUFSIZE 1600
-#define CONFIG_ENABLE_IPV6_ADDR_CALLBACK
-#define CONFIG_LWIP_HOOK_IP6_ROUTE_DEFAULT
-//#define CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT
 
 #define LWIP_ERRNO_STDINCLUDE 1
 

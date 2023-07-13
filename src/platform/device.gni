@@ -66,7 +66,7 @@ declare_args() {
       chip_device_platform == "webos" || chip_device_platform == "cc32xx" ||
       chip_device_platform == "bl602" || chip_device_platform == "mw320" ||
       chip_device_platform == "beken" || chip_device_platform == "mt793x" ||
-      chip_device_platform == "asr" || chip_device_platform == "bl616" ||
+      chip_device_platform == "asr" || 
       (chip_device_platform == "darwin" && current_os == "mac")
 
   # Enable ble support.
@@ -111,7 +111,7 @@ declare_args() {
   }
 }
 
-if (chip_device_platform == "bl702" || chip_device_platform == "bl702l") {
+if (chip_device_platform == "bl702" || chip_device_platform == "bl702l" || chip_device_platform == "bl616") {
   if (chip_enable_openthread) {
     chip_mdns = "platform"
   } else {

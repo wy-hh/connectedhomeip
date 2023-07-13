@@ -207,7 +207,6 @@ void ConfigurationManagerImpl::DoFactoryReset(intptr_t arg)
 #else
     bl_sys_reset_por();
 #endif
-    
 }
 
 ConfigurationManager & ConfigurationMgrImpl()

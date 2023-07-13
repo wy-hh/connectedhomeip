@@ -23,15 +23,14 @@
 #include <lwip/tcpip.h>
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
+extern "C" {
 #include <wifi_mgmr_ext.h>
 #include <wifi_mgmr_portable.h>
+}
 
 #include <limits>
 #include <stdint.h>
 #include <string>
-#if !defined BOUFFALO_SDK
-#include <utils_log.h>
-#endif
 
 #define WIFI_STA_DISCONNECT_DELAY (pdMS_TO_TICKS(200))
 
@@ -171,16 +170,16 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
     char passwd[64]    = { 0 };
     int state          = 0;
 
-    wifi_sta_disconnect();
-    vTaskDelay(WIFI_STA_DISCONNECT_DELAY);
+    // wifi_sta_disconnect();
+    // vTaskDelay(WIFI_STA_DISCONNECT_DELAY);
 
     //wifi_mgmr_sta_disable(NULL);
-    state = wifi_mgmr_sta_state_get();
-    while (state)
-    {
-        state = wifi_mgmr_sta_state_get();
-        vTaskDelay(100);
-    }
+    // state = wifi_mgmr_sta_state_get();
+    // while (state)
+    // {
+    //     state = wifi_mgmr_sta_state_get();
+    //     vTaskDelay(100);
+    // }
 
     memcpy(wifi_ssid, ssid, ssidLen);
     memcpy(passwd, key, keyLen);
@@ -188,8 +187,8 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
    // wifi_interface = wifi_mgmr_sta_enable();
     //wifi_mgmr_sta_connect(&wifi_interface, wifi_ssid, passwd, NULL, NULL, 0, 0);
 
-    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
-    ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
+    // wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
+    // ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
 
     return ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Enabled);
 }
@@ -264,11 +263,11 @@ CHIP_ERROR BLWiFiDriver::StartScanWiFiNetworks(ByteSpan ssid)
         scan_type = 0;
     }
 
-    err = (CHIP_ERROR) wifi_mgmr_sta_scan(&config);
-    if (err != CHIP_NO_ERROR)
-    {
-        return CHIP_ERROR_INTERNAL;
-    }
+    // err = (CHIP_ERROR) wifi_mgmr_sta_scan(&config);
+    // if (err != CHIP_NO_ERROR)
+    // {
+    //     return CHIP_ERROR_INTERNAL;
+    // }
     return CHIP_NO_ERROR;
 }
 

@@ -19,7 +19,7 @@ int wifi_mgmr_get_bssid(uint8_t * bssid)
 {
     int i;
 
-    for (i = 0; i < 8; i++)
+    for (i = 0; i < sizeof(wifiMgmr.wifi_mgmr_stat_info.bssid); i++)
     {
         bssid[i] = wifiMgmr.wifi_mgmr_stat_info.bssid[i];
     }
@@ -34,13 +34,13 @@ int wifi_mgmr_get_scan_ap_num(void)
     num   = sizeof(wifiMgmr.scan_items) / sizeof(wifiMgmr.scan_items[0]);
     count = 0;
 
-    for (int i = 0; i < num; i++)
-    {
-        if (wifiMgmr.scan_items[i].is_used && (!wifi_mgmr_scan_item_is_timeout(&wifiMgmr, &wifiMgmr.scan_items[i])))
-        {
-            count++;
-        }
-    }
+    // for (int i = 0; i < num; i++)
+    // {
+    //     if (wifiMgmr.scan_items[i].is_used && (!wifi_mgmr_scan_item_is_timeout(&wifiMgmr, &wifiMgmr.scan_items[i])))
+    //     {
+    //         count++;
+    //     }
+    // }
 
     return count;
 }
@@ -52,28 +52,28 @@ void wifi_mgmr_get_scan_result(wifi_mgmr_scan_item_t * result, int * num, uint8_
     count = sizeof(wifiMgmr.scan_items) / sizeof(wifiMgmr.scan_items[0]);
     iter  = 0;
 
-    for (i = 0; i < count; i++)
-    {
-        if (wifiMgmr.scan_items[i].is_used && (!wifi_mgmr_scan_item_is_timeout(&wifiMgmr, &wifiMgmr.scan_items[i])))
-        {
-            if (scan_type)
-            {
-                if (memcmp(ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len) != 0)
-                {
-                    continue;
-                }
-            }
-            memcpy(result[iter].ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len);
-            result[iter].ssid[wifiMgmr.scan_items[i].ssid_len] = 0;
-            result[iter].ssid_tail[0]                          = 0;
-            result[iter].ssid_len                              = wifiMgmr.scan_items[i].ssid_len;
-            memcpy((&(result[iter]))->bssid, wifiMgmr.scan_items[i].bssid, 6);
-            result[iter].channel = wifiMgmr.scan_items[i].channel;
-            result[iter].auth    = wifiMgmr.scan_items[i].auth;
-            result[iter].rssi    = wifiMgmr.scan_items[i].rssi;
-            iter++;
-        }
-    }
+    // for (i = 0; i < count; i++)
+    // {
+    //     if (wifiMgmr.scan_items[i].is_used && (!wifi_mgmr_scan_item_is_timeout(&wifiMgmr, &wifiMgmr.scan_items[i])))
+    //     {
+    //         if (scan_type)
+    //         {
+    //             if (memcmp(ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len) != 0)
+    //             {
+    //                 continue;
+    //             }
+    //         }
+    //         memcpy(result[iter].ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len);
+    //         result[iter].ssid[wifiMgmr.scan_items[i].ssid_len] = 0;
+    //         result[iter].ssid_tail[0]                          = 0;
+    //         result[iter].ssid_len                              = wifiMgmr.scan_items[i].ssid_len;
+    //         memcpy((&(result[iter]))->bssid, wifiMgmr.scan_items[i].bssid, 6);
+    //         result[iter].channel = wifiMgmr.scan_items[i].channel;
+    //         result[iter].auth    = wifiMgmr.scan_items[i].auth;
+    //         result[iter].rssi    = wifiMgmr.scan_items[i].rssi;
+    //         iter++;
+    //     }
+    // }
 
     *num = iter;
 }
@@ -85,19 +85,19 @@ int wifi_mgmr_get_scan_result_filter(wifi_mgmr_scan_item_t * result, char * ssid
     count = sizeof(wifiMgmr.scan_items) / sizeof(wifiMgmr.scan_items[0]);
     for (i = 0; i < count; i++)
     {
-        if (wifiMgmr.scan_items[i].is_used && (!wifi_mgmr_scan_item_is_timeout(&wifiMgmr, &wifiMgmr.scan_items[i])) &&
-            !strncmp(ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len))
-        {
-            memcpy(result->ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len);
-            result->ssid[wifiMgmr.scan_items[i].ssid_len] = 0;
-            result->ssid_tail[0]                          = 0;
-            result->ssid_len                              = wifiMgmr.scan_items[i].ssid_len;
-            memcpy(result->bssid, wifiMgmr.scan_items[i].bssid, 6);
-            result->channel = wifiMgmr.scan_items[i].channel;
-            result->auth    = wifiMgmr.scan_items[i].auth;
-            result->rssi    = wifiMgmr.scan_items[i].rssi;
-            return 0;
-        }
+        // if (wifiMgmr.scan_items[i].is_used && (!wifi_mgmr_scan_item_is_timeout(&wifiMgmr, &wifiMgmr.scan_items[i])) &&
+        //     !strncmp(ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len))
+        // {
+        //     memcpy(result->ssid, wifiMgmr.scan_items[i].ssid, wifiMgmr.scan_items[i].ssid_len);
+        //     result->ssid[wifiMgmr.scan_items[i].ssid_len] = 0;
+        //     result->ssid_tail[0]                          = 0;
+        //     result->ssid_len                              = wifiMgmr.scan_items[i].ssid_len;
+        //     memcpy(result->bssid, wifiMgmr.scan_items[i].bssid, 6);
+        //     result->channel = wifiMgmr.scan_items[i].channel;
+        //     result->auth    = wifiMgmr.scan_items[i].auth;
+        //     result->rssi    = wifiMgmr.scan_items[i].rssi;
+        //     return 0;
+        // }
     }
 
     return -1;
@@ -153,4 +153,10 @@ bool wifi_mgmr_security_type_is_wpa3(void)
     }
 #endif
     return false;
+}
+
+struct netif * deviceInterface_getNetif(void)
+{
+    // return wifi_mgmr_sta_netif_get();
+    return NULL;
 }

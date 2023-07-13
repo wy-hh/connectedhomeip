@@ -65,6 +65,24 @@ using namespace ::chip::DeviceLayer::Internal;
 
 namespace chip {
 namespace DeviceLayer {
+void ConnectivityManagerImpl::OnWiFiStationDisconnected()
+{
+    // ChipDeviceEvent event;
+    // event.Type                          = DeviceEventType::kWiFiConnectivityChange;
+    // event.WiFiConnectivityChange.Result = kConnectivity_Lost;
+    // PlatformMgr().PostEventOrDie(&event);
 
+    // NetworkCommissioning::BLWiFiDriver::GetInstance().SetLastDisconnectReason(NULL);
+    // uint16_t reason = NetworkCommissioning::BLWiFiDriver::GetInstance().GetLastDisconnectReason();
+    // uint8_t associationFailureCause = chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::AssociationFailureCauseEnum::kUnknown);
+    // WiFiDiagnosticsDelegate * delegate = GetDiagnosticDataProvider().GetWiFiDiagnosticsDelegate();
+    // if (delegate)
+    // {
+    //     delegate->OnDisconnectionDetected(reason);
+    //     delegate->OnAssociationFailureDetected(associationFailureCause, reason);
+    //     delegate->OnConnectionStatusChanged(
+    //         chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::ConnectionStatusEnum::kNotConnected));
+    // }
+}
 } // namespace DeviceLayer
 } // namespace chip

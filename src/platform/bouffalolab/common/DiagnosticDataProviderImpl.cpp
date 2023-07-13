@@ -41,35 +41,35 @@ DiagnosticDataProviderImpl & DiagnosticDataProviderImpl::GetDefaultInstance()
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapFree(uint64_t & currentHeapFree)
 {
-#ifdef CFG_USE_PSRAM
-    size_t freeHeapSize = xPortGetFreeHeapSize() + xPortGetFreeHeapSizePsram();
-#else
-    size_t freeHeapSize      = xPortGetFreeHeapSize();
-#endif
+// #ifdef CFG_USE_PSRAM
+//     size_t freeHeapSize = xPortGetFreeHeapSize() + xPortGetFreeHeapSizePsram();
+// #else
+//     size_t freeHeapSize      = xPortGetFreeHeapSize();
+// #endif
 
-    currentHeapFree = static_cast<uint64_t>(freeHeapSize);
+//     currentHeapFree = static_cast<uint64_t>(freeHeapSize);
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapUsed(uint64_t & currentHeapUsed)
 {
-#ifdef CFG_USE_PSRAM
-    currentHeapUsed = (get_heap_size() + get_heap3_size() - xPortGetFreeHeapSize() - xPortGetFreeHeapSizePsram());
-#else
-    currentHeapUsed          = (get_heap_size() - xPortGetFreeHeapSize());
-#endif
+// #ifdef CFG_USE_PSRAM
+//     currentHeapUsed = (get_heap_size() + get_heap3_size() - xPortGetFreeHeapSize() - xPortGetFreeHeapSizePsram());
+// #else
+//     currentHeapUsed          = (get_heap_size() - xPortGetFreeHeapSize());
+// #endif
 
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapHighWatermark(uint64_t & currentHeapHighWatermark)
 {
-#ifdef CFG_USE_PSRAM
-    currentHeapHighWatermark =
-        get_heap_size() + get_heap3_size() - xPortGetMinimumEverFreeHeapSize() - xPortGetMinimumEverFreeHeapSizePsram();
-#else
-    currentHeapHighWatermark = get_heap_size() - xPortGetMinimumEverFreeHeapSize();
-#endif
+// #ifdef CFG_USE_PSRAM
+//     currentHeapHighWatermark =
+//         get_heap_size() + get_heap3_size() - xPortGetMinimumEverFreeHeapSize() - xPortGetMinimumEverFreeHeapSizePsram();
+// #else
+//     currentHeapHighWatermark = get_heap_size() - xPortGetMinimumEverFreeHeapSize();
+// #endif
 
     return CHIP_NO_ERROR;
 }

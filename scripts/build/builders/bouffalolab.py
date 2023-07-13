@@ -138,6 +138,10 @@ class BouffalolabBuilder(GnBuilder):
         elif bouffalo_chip == "bl702l":
             self.argsOpt.append('chip_enable_openthread=true')
             self.argsOpt.append('chip_enable_wifi=false')
+        elif bouffalo_chip == "bl616":
+            self.argsOpt.append('chip_enable_openthread=false')
+            self.argsOpt.append('chip_enable_wifi=true')
+            self.argsOpt.append('chip_config_network_layer_ble=false')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":
