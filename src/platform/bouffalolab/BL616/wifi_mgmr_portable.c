@@ -160,3 +160,9 @@ struct netif * deviceInterface_getNetif(void)
     // return wifi_mgmr_sta_netif_get();
     return NULL;
 }
+
+void hal_reboot (void) 
+{
+    taskDISABLE_INTERRUPTS();
+    GLB_SW_POR_Reset();
+}

@@ -35,10 +35,10 @@
 #include <wifi_mgmr_ext.h>
 
 extern "C" {
-#include <bl616.h>
+// #include <bl616.h>
 #include <bl_fw_api.h>
-#include <bl616_glb.h>
-#include <rfparam_adapter.h>
+// #include <bl616_glb.h>
+// #include <rfparam_adapter.h>
 }
 
 #define WIFI_STACK_SIZE  (1536)

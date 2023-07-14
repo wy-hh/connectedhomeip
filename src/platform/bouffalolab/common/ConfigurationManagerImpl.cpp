@@ -22,11 +22,11 @@
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
 
 extern "C" {
-#ifdef BOUFFALO_SDK
-#include <bl616_glb.h>
-#else
+#if !defined (BOUFFALO_SDK)
 #include <bl_sys.h>
 #endif
+
+void hal_reboot (void);
 }
 
 namespace chip {
@@ -202,8 +202,7 @@ void ConfigurationManagerImpl::DoFactoryReset(intptr_t arg)
     // Restart the system.
     ChipLogProgress(DeviceLayer, "System restarting");
 #ifdef BOUFFALO_SDK
-    __disable_irq();
-    GLB_SW_System_Reset();
+    hal_reboot();
 #else
     bl_sys_reset_por();
 #endif

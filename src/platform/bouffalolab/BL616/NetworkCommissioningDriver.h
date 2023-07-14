@@ -44,7 +44,7 @@ public:
         }
 
         item.security.SetRaw(mpScanResults[mIternum].auth);
-        item.ssidLen = mpScanResults[mIternum].ssid_len < chip::DeviceLayer::Internal::kMaxWiFiSSIDLength
+        item.ssidLen = (uint32_t)(mpScanResults[mIternum].ssid_len) < chip::DeviceLayer::Internal::kMaxWiFiSSIDLength
             ? mpScanResults[mIternum].ssid_len
             : chip::DeviceLayer::Internal::kMaxWiFiSSIDLength;
         item.channel  = mpScanResults[mIternum].channel;

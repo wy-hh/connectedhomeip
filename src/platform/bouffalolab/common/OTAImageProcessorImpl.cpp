@@ -20,15 +20,11 @@
 
 #include "OTAImageProcessorImpl.h"
 extern "C" {
-#ifdef BOUFFALO_SDK
-#include<bl616_glb.h>
-#else
-#include <hal_sys.h>
-#include <hosal_ota.h>
-#endif
+// #include <hosal_ota.h>
+
+void hal_reboot (void);
 }
 
-#if !defined BOUFFALO_SDK
 using namespace chip::System;
 
 namespace chip {
@@ -138,15 +134,15 @@ void OTAImageProcessorImpl::HandleFinalize(intptr_t context)
         return;
     }
 
-    if (hosal_ota_check() < 0)
-    {
-        imageProcessor->mDownloader->EndDownload(CHIP_ERROR_WRITE_FAILED);
-        ChipLogProgress(SoftwareUpdate, "OTA image verification error");
-    }
-    else
-    {
-        ChipLogProgress(SoftwareUpdate, "OTA image downloaded");
-    }
+    // if (hosal_ota_check() < 0)
+    // {
+    //     imageProcessor->mDownloader->EndDownload(CHIP_ERROR_WRITE_FAILED);
+    //     ChipLogProgress(SoftwareUpdate, "OTA image verification error");
+    // }
+    // else
+    // {
+    //     ChipLogProgress(SoftwareUpdate, "OTA image downloaded");
+    // }
 
     imageProcessor->ReleaseBlock();
 }
@@ -160,17 +156,12 @@ void OTAImageProcessorImpl::HandleApply(intptr_t context)
         return;
     }
 
-    hosal_ota_apply(0);
+    // hosal_ota_apply(0);
     DeviceLayer::SystemLayer().StartTimer(
         System::Clock::Seconds32(OTA_AUTO_REBOOT_DELAY),
         [](Layer *, void *) {
             ChipLogProgress(SoftwareUpdate, "Rebooting...");
-#ifdef BOUFFALO_SDK
-            __disable_irq();
-            GLB_SW_POR_Reset();
-#else
             hal_reboot();
-#endif
         },
         nullptr);
 }
@@ -183,7 +174,7 @@ void OTAImageProcessorImpl::HandleAbort(intptr_t context)
         return;
     }
 
-    hosal_ota_abort();
+    // hosal_ota_abort();
 
     imageProcessor->ReleaseBlock();
 }
@@ -227,21 +218,21 @@ void OTAImageProcessorImpl::HandleProcessBlock(intptr_t context)
         imageProcessor->mParams.totalFileBytes = header.mPayloadSize;
         imageProcessor->mHeaderParser.Clear();
 
-        if (hosal_ota_start(header.mPayloadSize) < 0)
-        {
-            imageProcessor->mDownloader->EndDownload(CHIP_ERROR_OPEN_FAILED);
-            return;
-        }
+        // if (hosal_ota_start(header.mPayloadSize) < 0)
+        // {
+        //     imageProcessor->mDownloader->EndDownload(CHIP_ERROR_OPEN_FAILED);
+        //     return;
+        // }
     }
 
     if (imageProcessor->mParams.totalFileBytes)
     {
-        if (hosal_ota_update(imageProcessor->mParams.totalFileBytes, imageProcessor->mParams.downloadedBytes,
-                             (uint8_t *) block.data(), block.size()) < 0)
-        {
-            imageProcessor->mDownloader->EndDownload(CHIP_ERROR_WRITE_FAILED);
-            return;
-        }
+        // if (hosal_ota_update(imageProcessor->mParams.totalFileBytes, imageProcessor->mParams.downloadedBytes,
+        //                      (uint8_t *) block.data(), block.size()) < 0)
+        // {
+        //     imageProcessor->mDownloader->EndDownload(CHIP_ERROR_WRITE_FAILED);
+        //     return;
+        // }
         imageProcessor->mParams.downloadedBytes += block.size();
     }
 
@@ -291,4 +282,3 @@ CHIP_ERROR OTAImageProcessorImpl::ReleaseBlock()
 }
 
 } // namespace chip
-#endif

@@ -598,7 +598,7 @@ def BuildBouffalolabTarget():
         TargetPart('BL706-WIFI',
                    board=BouffalolabBoard.BL706_WIFI, module_type="BL706C-22"),
         TargetPart('BL704L-DVK', board=BouffalolabBoard.BL704L_DVK, module_type="BL704L"),
-        TargetPart('BL616-MATTER-DVK', board=BouffalolabBoard.BL616_MATTER_DVK, module_type="BL616"),
+        TargetPart('BL616DK', board=BouffalolabBoard.BL616DK, module_type="BL616"),
     ])
 
     # Apps

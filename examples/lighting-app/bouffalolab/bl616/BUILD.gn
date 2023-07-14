@@ -105,11 +105,7 @@ bouffalolab_executable("lighting_app") {
     "${examples_plat_common_dir}/route_hook/bl_route_table.c",
   ]
 
-  if ("BL616-Matter-Dvk" == board) {
-    defines += [ "BL616_MATTER_DVK" ]
-  } else {
-    defines += [ "BL616_MATTER_DVK" ]
-  }
+  defines += [ "BL616DK" ]
 
   sources += [
     "${chip_root}/examples/providers/DeviceInfoProviderImpl.cpp",

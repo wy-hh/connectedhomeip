@@ -151,6 +151,5 @@ extern int * __errno(void);
 #define LWIP_NETIF_TX_SINGLE_PBUF 1
 #endif
 #define LWIP_RAND()                                      ((u32_t)random())
-#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) u8_t variable_name[size] __attribute__((aligned(4))) __attribute__((section("SHAREDRAM")))
 
 #endif /* LWIP_HDR_LWIPOPTS_H__ */
