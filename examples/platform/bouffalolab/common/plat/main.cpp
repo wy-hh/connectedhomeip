@@ -43,18 +43,17 @@ void appError(CHIP_ERROR error)
 
 extern "C" int START_ENTRY(void)
 {
-    /** The following output will print to UART used by bootRom */
+    board_init();
+
     ChipLogProgress(NotSpecified, "==================================================");
     ChipLogProgress(NotSpecified, "bouffalolab chip-lighting-example, built at " __DATE__ " " __TIME__);
     ChipLogProgress(NotSpecified, "==================================================");
 
-    board_init();
+    ChipLogProgress(NotSpecified, "Init CHIP Memory");
+    chip::Platform::MemoryInit(NULL, 0);
 
-    // ChipLogProgress(NotSpecified, "Init CHIP Memory");
-    // chip::Platform::MemoryInit(NULL, 0);
-
-    // ChipLogProgress(NotSpecified, "Starting App Task");
-    // StartAppTask();
+    ChipLogProgress(NotSpecified, "Starting App Task");
+    StartAppTask();
 
     ChipLogProgress(NotSpecified, "Starting OS Scheduler...");
     vTaskStartScheduler();

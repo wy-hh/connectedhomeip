@@ -351,7 +351,7 @@ template("bouffalo_sdk") {
 
     cflags += [ "-save-temps=obj" ]
     cflags += [ "-Wno-maybe-uninitialized" ]
-    #cflags += [ "-latomic" ]
+    cflags += [ "-latomic" ]
 
     cflags_cc += [ "-lstdc++",
       "-Wl,--gc-sections",
@@ -728,6 +728,7 @@ template("bouffalo_sdk") {
     ]
 
     sources = [
+      "${bl616_sdk_root}/components/libc/stdatomic.c",
       "${bl616_sdk_root}/components/os/freertos/croutine.c",
       "${bl616_sdk_root}/components/os/freertos/event_groups.c",
       "${bl616_sdk_root}/components/os/freertos/list.c",
