@@ -359,7 +359,6 @@ template("bouffalo_sdk") {
     sources = [
       "${bl616_sdk_root}/components/libc/newlib/port_memory.c",
       "${bl616_sdk_root}/components/libc/newlib/syscalls_nosys.c",
-      "${bl616_sdk_root}/components/libc/newlib/stdatomic.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_abs.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atof.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoi.c",

@@ -50,7 +50,7 @@ class BouffalolabBoard(Enum):
     BL706_ETH = auto()
     BL706_WIFI = auto()
     BL704L_DVK = auto()
-    BL616_MATTER_DVK = auto()
+    BL616DK = auto()
 
     def GnArgName(self):
         if self == BouffalolabBoard.BL602_IoT_Matter_V1:
@@ -67,8 +67,8 @@ class BouffalolabBoard(Enum):
             return 'BL706-WIFI'
         elif self == BouffalolabBoard.BL704L_DVK:
             return 'BL704L-DVK'
-        elif self == BouffalolabBoard.BL616_MATTER_DVK:
-            return 'BL616-Matter-DVK'
+        elif self == BouffalolabBoard.BL616DK:
+            return 'BL616DK'
         else:
             raise Exception('Unknown board #: %r' % self)
 
