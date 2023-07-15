@@ -15,7 +15,9 @@
  *    limitations under the License.
  */
 
+extern "C" {
 #include <wifi_mgmr.h>
+}
 //#include <wifi_mgmr_api.h>
 //#include <hal_wifi.h>
 #include <lib/support/CodeUtils.h>

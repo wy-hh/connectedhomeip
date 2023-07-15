@@ -23,7 +23,18 @@
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #include <FreeRTOS.h>
+#ifdef BOUFFALO_SDK
+#include <mem.h>
+extern "C" size_t xPortGetFreeHeapSize(void)
+{
+    return kfree_size();
+}
 
+extern "C" size_t xPortGetMinimumEverFreeHeapSize( void )
+{
+    return kfree_size();
+}
+#endif
 namespace chip {
 namespace DeviceLayer {
 

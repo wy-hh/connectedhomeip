@@ -228,13 +228,14 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     }
 }
 
-extern void wifi_event_handler(uint32_t code);
-void wifi_event_handler(uint32_t code)
+//extern void wifi_event_handler(uint32_t code);
+extern "C" void wifi_event_handler(uint32_t code)
 {
     OnWiFiPlatformEvent(code, NULL);
 }
 
-int wifi_start_firmware_task(void)
+extern "C" void interrupt0_handler(void);
+extern "C" int wifi_start_firmware_task(void)
 {
     //LOG_I("Starting wifi ...\r\n");
 
@@ -256,7 +257,6 @@ int wifi_start_firmware_task(void)
 
     /* Enable wifi irq */
 
-    extern void interrupt0_handler(void);
     bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
     bflb_irq_enable(WIFI_IRQn);
 

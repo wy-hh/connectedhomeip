@@ -46,7 +46,8 @@ extern "C" {
 #include <wifi_mgmr_ext.h>
 #endif
 #ifdef BOUFFALO_SDK
-
+#include "board.h"
+#include "bflb_boot2.h"
 #else
 #include <bl_irq.h>
 #include <bl_rtc.h>
@@ -67,7 +68,7 @@ extern "C" {
 #include <rom_lmac154_ext.h>
 #endif
 #endif
-#include "board.h"
+#include "mboard.h"
 }
 
 using namespace ::chip;
@@ -386,9 +387,15 @@ extern "C" void setup_heap()
 #endif
 }
 
+extern "C" uint32_t __HeapBase;
+extern "C" uint32_t __HeapLimit;
 extern "C" size_t get_heap_size(void)
 {
+#if !defined BOUFFALO_SDK
     return (size_t) &_heap_size;
+#else
+    return (size_t) (&__HeapLimit - &__HeapBase);
+#endif
 }
 
 extern "C" void app_init(void)
@@ -432,20 +439,31 @@ extern "C" void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
     //    hosal_dma_init();
+#else
+    board_init();
+    bflb_boot2_init();
 #endif
 #ifdef CFG_USE_PSRAM
     vPortDefineHeapRegionsPsram(xPsramHeapRegions);
     ChipLogProgress(NotSpecified, "Heap %u@%p, %u@%p", (unsigned int) &_heap_size, &_heap_start, (unsigned int) &_heap3_size,
                     &_heap3_start);
 #else
+#if !defined BOUFFALO_SDK
     ChipLogProgress(NotSpecified, "Heap %u@%p", (unsigned int) &_heap_size, &_heap_start);
+#else
+    ChipLogProgress(NotSpecified, "Heap %u@%p", (unsigned int) (&__HeapLimit - &__HeapBase), &__HeapBase);
+#endif
 #endif
 #ifdef BL602_ENABLE
     wifi_td_diagnosis_init();
 #endif
 }
 
+#if !defined BOUFFALO_SDK
 extern "C" void START_ENTRY(void)
+#else
+extern "C" int START_ENTRY(void)
+#endif
 {
     app_init();
 

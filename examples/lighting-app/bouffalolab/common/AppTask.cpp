@@ -424,6 +424,8 @@ void AppTask::TimerEventHandler(app_event_t event)
                     }
                 }
 #else
+#if 0 
+                //FIXME:tmp note for ld fail
                 if (ButtonPressed())
                 {
                     if (!GetAppTask().mIsFactoryResetIndicat &&
@@ -437,6 +439,7 @@ void AppTask::TimerEventHandler(app_event_t event)
                 {
                     GetAppTask().PostEvent(APP_EVENT_BTN_FACTORY_RESET_CANCEL);
                 }
+#endif
 #endif
             }
         }

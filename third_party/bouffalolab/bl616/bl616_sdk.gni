@@ -135,7 +135,7 @@ template("bouffalo_sdk") {
     ]
 
     defines = [
-      "BL616"
+      "BL616=BL616"
     ]
 
 
@@ -260,6 +260,42 @@ template("bouffalo_sdk") {
     }
   }
 
+  config("${sdk_target_name}_ble_config") {
+    include_dirs = [
+      "${bl616_sdk_root}/components/wireless/bluetooth/btblecontroller/btble_inc",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include/bluetooth",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include/drivers/bluetooth",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/zephyr",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/port/include",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host",
+    ]
+
+    defines = [
+      "BFLB_BLE",
+      "CONFIG_SET_TX_PWR",
+      "CFG_CON=1",
+      "CFG_BLE",
+      "CFG_SLEEP",
+      "CFG_BT_RESET",
+      "CONFIG_BT_PERIPHERAL=1",
+      "CFG_BLE_TX_BUFF_DATA=2",
+      "CONFIG_BT_GATT_DYNAMIC_DB",
+      "CONFIG_BT_GATT_SERVICE_CHANGED",
+      "CONFIG_BT_SETTINGS_CCC_LAZY_LOADING",
+      "CONFIG_BT_KEYS_OVERWRITE_OLDEST",
+      "CONFIG_BT_GAP_PERIPHERAL_PREF_PARAMS",
+      "CONFIG_BT_BONDABLE",
+      "CONFIG_BT_ASSERT",
+      "CFG_BLE_STACK_DBG_PRINT",
+      "CONFIG_CHIP_NAME = BL616",
+    ]
+
+    cflags_cc = [ "-Wno-conversion" ]
+  }
+
   config("${sdk_target_name}_config") {
     include_dirs = [
 
@@ -294,11 +330,15 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/include",
       #utils
       "${bl616_sdk_root}/components/utils/getopt",
-
+      "${bl616_sdk_root}/components/utils/partition",
       #easyflash
       "${bl616_sdk_root}/components/easyflash4/inc",
 
       "${bl616_sdk_root}/components/shell",
+      #board
+      "${bl616_sdk_root}/bsp/board/bl616dk",
+      #mem
+      "${bl616_sdk_root}/components/mem",
     ]
 
     libs = [
@@ -723,7 +763,7 @@ template("bouffalo_sdk") {
 
   source_set("${sdk_target_name}_lhal") {
     defines = [
-      "BL616",
+      #"BL616",
       "CPU_M0",
       "CONFIG_IRQ_NUM=80",
     ]
@@ -885,6 +925,7 @@ template("bouffalo_sdk") {
     sources = [
       "${bl616_sdk_root}/components/libc/newlib/port_memory.c",
       "${bl616_sdk_root}/components/libc/newlib/syscalls_nosys.c",
+      "${bl616_sdk_root}/components/libc/newlib/stdatomic.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_abs.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atof.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoi.c",
@@ -944,6 +985,7 @@ template("bouffalo_sdk") {
     public_configs = [
       ":${sdk_target_name}_mm_config",
       ":${sdk_target_name}_lhal_config",
+      ":${sdk_target_name}_os_config",
       ":${sdk_target_name}_config",
       #":${sdk_target_name}_lwip_config",
       #":${sdk_target_name}_freertos_config",
@@ -1105,6 +1147,7 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
       "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
       "${bl616_sdk_root}/components/utils/getopt/utils_getopt.c",
+      "${bl616_sdk_root}/components/utils/partition/partition.c",
       "${bl616_sdk_root}/components/utils/ring_buffer/ring_buffer.c",
     ]
 
@@ -1266,39 +1309,94 @@ template("bouffalo_sdk") {
     ]
   }
 
-  source_set("${sdk_target_name}_app") {
+  source_set("${sdk_target_name}_ble") {
     defines = [
-      "CONFIG_CLI_CMD_ENABLE",
-      "CONFIG_SHELL",
+      "CONFIG_BUILD_BLE_ROM_CODE=1",
+      "CONFIG_BLE_PDS=1",
+      "CONFIG_BT_CONN=1",
+      "CONFIG_BLE_TX_BUFF_DATA=2",
+      "CONFIG_BLE_ACT_MAX=5",
+      "CONFIG_BT_ALLROLES=1",
+      "CONFIG_BT_GAP_PERIPHERAL_PREF_PARAMS=1",
+      "CONFIG_DISABLE_BT_HOST_PRIVACY=1",
+      "CONFIG_DISABLE_CONTROLLER_BLE_PRIVACY=1",
+      "CONFIG_DISABLE_BLE_CONTROLLER_TEST_MODE=1",
+      "CONFIG_EM_SIZE=8",
+      "CONFIG_LONG_RANG=0",
+      "CONFIG_PHY_UPDATE=0",
+      "CONFIG_CLK_ACC=0 ",
+      "CONFIG_LE_PING=0",
+      "CONFIG_CHIP_NAME=BL616",
     ]
+
+    libs = [ "${bl616_sdk_root}/components/wireless/bluetooth/btblecontroller/lib/libbtblecontroller_bl616_ble1m10s1bredr0.a" ]
 
     include_dirs = [
-      "${bl616_sdk_root}/examples/wifi/sta/wifi_tcp",
-      "${bl616_sdk_root}/components/shell",
-    ]
-
-    include_dirs += [
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/bl_hci_wrapper",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/include/tinycrypt",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/misc",
     ]
 
     sources = [
-      "${bl616_sdk_root}/examples/wifi/sta/wifi_tcp/main.c",
-      "${bl616_sdk_root}/components/shell/shell.c",
-      "${bl616_sdk_root}/components/shell/shell_freertos.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/bl_hci_wrapper/bl_hci_wrapper.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/atomic_c.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/buf.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/dec.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/dummy.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/log.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/poll.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/aes_decrypt.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/aes_encrypt.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/cbc_mode.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ccm_mode.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/cmac_mode.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ctr_mode.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ctr_prng.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ecc.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ecc_dh.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ecc_dsa.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/ecc_platform_specific.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/hmac.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/hmac_prng.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/sha256.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/source/utils.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/utils.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/work_q.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/hci_onchip/hci_driver.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/att.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/bl_host_assist.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/conn.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/crypto.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/gatt.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/hci_core.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/l2cap.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/settings.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host/uuid.c",
+      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/port/bl_port.c",
     ]
 
-    cflags = []
-    cflags_c = []
-
     public_configs = [
-      ":${sdk_target_name}_rfparam_config",
-      ":${sdk_target_name}_utils_config",
-      ":${sdk_target_name}_std_drv_config",
-      ":${sdk_target_name}_os_config",
-      ":${sdk_target_name}_lhal_config",
-      ":${sdk_target_name}_mm_config",
-      ":${sdk_target_name}_rf_config",
       ":${sdk_target_name}_config",
+      ":${sdk_target_name}_os_config",
+      ":${sdk_target_name}_ble_config",
+    ]
 
+    cflags_c = [
+      "-Wno-sign-compare",
+      "-Wno-unused-but-set-variable",
+      "-Wno-misleading-indentation",
+      "-Wno-format",
+      "-Wno-format-nonliteral",
+      "-Wno-format-security",
+      "-Wno-unused-function",
+      "-Wno-incompatible-pointer-types",
+      "-Wno-discarded-qualifiers",
+      "-Wno-address-of-packed-member",
+
+      "-Wno-type-limits",
+      "-Wno-shadow",
+      "-Wno-unused-variable",
     ]
   }
 
@@ -1316,7 +1414,7 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_thirdparty_mbedlts",
       ":${sdk_target_name}_utils",
       ":${sdk_target_name}_lwip",
-      ":${sdk_target_name}_app",
+      ":${sdk_target_name}_ble",
     ]
   }
 }

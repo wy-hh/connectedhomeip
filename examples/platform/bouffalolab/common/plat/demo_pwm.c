@@ -6,9 +6,11 @@
  */
 
 #include "demo_pwm.h"
-#include "board.h"
 #if !defined BOUFFALO_SDK
+#include "board.h"
 #include <hosal_pwm.h>
+#else
+#include "mboard.h"
 #endif
 #include <stdio.h>
 
