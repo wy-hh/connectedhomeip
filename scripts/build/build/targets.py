@@ -613,6 +613,9 @@ def BuildBouffalolabTarget():
     target.AppendModifier('resetCnt', enable_resetCnt=True)
     target.AppendModifier('mfd', function_mfd="release")
     target.AppendModifier('mfdtest', function_mfd="test")
+    target.AppendModifier('ethernet', enable_ethernet="test")
+    target.AppendModifier('wifi', enable_wifi="test")
+    target.AppendModifier('thread', enable_thread="test")
 
     return target
 
