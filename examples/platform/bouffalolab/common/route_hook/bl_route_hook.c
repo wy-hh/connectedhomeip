@@ -12,6 +12,8 @@
 #include "bl_route_hook.h"
 #include "bl_route_table.h"
 
+#define log_info    printf
+#define log_error   printf
 typedef struct bl_route_hook_t
 {
     struct netif * netif;
@@ -31,6 +33,66 @@ struct rio_header_t
 PACK_STRUCT_END
 
 typedef struct rio_header_t rio_header_t;
+
+/// MAC address length in bytes.
+#define MAC_ADDR_LEN 6
+
+/// MAC address structure.
+struct mac_addr
+{
+    /// Array of 16-bit words that make up the MAC address.
+    uint16_t array[MAC_ADDR_LEN/2];
+};
+
+/// Net interface
+typedef struct netif        net_if_t;
+
+struct fhost_vif_tag
+{
+    /// RTOS network interface structure
+    net_if_t *net_if;
+    /// MAC address of the VIF
+    struct mac_addr mac_addr;
+    /// Socket for scan events
+    int scan_sock;
+    /// is scanning
+    bool scanning;
+    /// if the socket used for IPC
+    bool is_cntrl_link;
+    /// Socket for connect/disconnect events
+    int conn_sock;
+    /// Socket for ftm events
+    int ftm_sock;
+    /// Pointer to the MAC VIF structure
+    void *mac_vif; /* struct vif_info_tag *mac_vif; */
+    /// Index of the STA being the AP peer of the device - TODO rework
+    uint8_t ap_id;
+    /// Parameter to indicate if admission control is mandatory for any access category - TODO rework
+    uint8_t acm;
+    /// UAPSD queue config for STA interface (bitfield, same format as QoS info)
+    uint8_t uapsd_queues;
+    /// Isolation Mode - Only used for AP
+    bool isolation_mode;
+    #if RW_MESH_EN
+    /// List of mpath
+    struct co_list mpath_list;
+    /// List of available memory nodes
+    struct co_list free_mpath_list;
+    /// Mesh Path Information Pool
+    struct fhost_mesh_path fhost_mesh_path_pool[RW_MESH_PATH_NB];
+    /// Whether a frame is being resent on this interface
+    bool is_resending;
+    #endif
+};
+
+/// Structure used for the inter-task communication
+struct fhost_env_tag
+{
+    /// Table of RTOS network interface structures
+    struct fhost_vif_tag vif[CFG_VIF_MAX];
+    /// Table linking the MAC VIFs to the FHOST VIFs
+    struct fhost_vif_tag *mac2fhost_vif[CFG_VIF_MAX];
+};
 
 static bl_route_hook_t * s_hooks;
 

@@ -27,6 +27,11 @@ int wifi_mgmr_get_bssid(uint8_t * bssid)
     return 0;
 }
 
+static inline int wifi_mgmr_scan_item_is_timeout(wifi_mgmr_t *mgmr, wifi_mgmr_scan_item_t *item)
+{
+    return ((unsigned int)rtos_now(0) - (unsigned int)item->timestamp_lastseen) >= mgmr->scan_item_timeout ? 1 : 0;
+}
+
 int wifi_mgmr_get_scan_ap_num(void)
 {
     int num, count;

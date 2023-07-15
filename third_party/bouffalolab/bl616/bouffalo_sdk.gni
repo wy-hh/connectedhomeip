@@ -40,6 +40,10 @@ template("bouffalo_sdk") {
   config("${sdk_target_name}_config") {
     include_dirs = [
       "${bl616_sdk_root}/components/shell",
+      #board
+      "${bl616_sdk_root}/bsp/board/bl616dk",
+      #mem
+      "${bl616_sdk_root}/components/mem",
     ]
 
     if (defined(invoker.include_dirs)) {
@@ -355,6 +359,7 @@ template("bouffalo_sdk") {
     sources = [
       "${bl616_sdk_root}/components/libc/newlib/port_memory.c",
       "${bl616_sdk_root}/components/libc/newlib/syscalls_nosys.c",
+      "${bl616_sdk_root}/components/libc/newlib/stdatomic.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_abs.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atof.c",
       "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoi.c",
@@ -592,6 +597,7 @@ template("bouffalo_sdk") {
       "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
       "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
       "${bl616_sdk_root}/components/utils/getopt/utils_getopt.c",
+      "${bl616_sdk_root}/components/utils/partition/partition.c",
       "${bl616_sdk_root}/components/utils/ring_buffer/ring_buffer.c",
     ]
 

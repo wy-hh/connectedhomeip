@@ -19,6 +19,7 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 
+#if !defined BOUFFALO_SDK
 #include <board.h>
 
 #if !defined BOUFFALO_SDK

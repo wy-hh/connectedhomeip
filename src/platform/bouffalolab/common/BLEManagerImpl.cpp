@@ -115,6 +115,7 @@ BLEManagerImpl BLEManagerImpl::sInstance;
 
 CHIP_ERROR BLEManagerImpl::_Init()
 {
+#if !defined BOUFFALO_SDK
     mServiceMode = ConnectivityManager::kCHIPoBLEServiceMode_Enabled;
     mFlags.ClearAll().Set(Flags::kAdvertisingEnabled, CHIP_DEVICE_CONFIG_CHIPOBLE_ENABLE_ADVERTISING_AUTOSTART);
     mFlags.Set(Flags::kFastAdvertisingEnabled, true);
@@ -142,6 +143,7 @@ CHIP_ERROR BLEManagerImpl::_Init()
 
     PlatformMgr().ScheduleWork(DriveBLEState, 0);
 
+#endif
     return CHIP_NO_ERROR;
 }
 
