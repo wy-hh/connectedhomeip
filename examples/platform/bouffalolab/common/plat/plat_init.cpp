@@ -26,7 +26,6 @@
 #include <FreeRTOS.h>
 
 #include <AppTask.h>
-#include <easyflash.h>
 #include <plat.h>
 
 extern "C" {
@@ -415,7 +414,4 @@ extern "C" void board_init(void)
     usb_cdc_start(-1);
 #endif
 #endif
-
-    easyflash_init();
-    ef_load_env_cache();
 }

@@ -20,6 +20,7 @@ assert(chip_device_platform == "bl616")
 
 static_library("BL616") {
   sources = [
+    "CHIPMem-Platform.cpp",
     "ConfigurationManagerImpl.cpp",
     "ConnectivityManagerImpl.cpp",
     "DiagnosticDataProviderImpl.cpp",

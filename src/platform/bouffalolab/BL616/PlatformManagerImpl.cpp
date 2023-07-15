@@ -281,7 +281,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 
     //hal_wifi_start_firmware_task();
 
-    wifi_start_firmware_task();
+    // wifi_start_firmware_task();
     stack_wifi_init = 1;
     //aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 
