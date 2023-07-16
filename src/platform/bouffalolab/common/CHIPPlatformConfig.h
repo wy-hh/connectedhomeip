@@ -29,8 +29,13 @@
 #define CHIP_CONFIG_LIFETIIME_PERSISTED_COUNTER_KEY 0x01
 
 // ==================== Security Adaptations ====================
+#ifdef CHIP_DEVICE_LAYER_TARGET_BL616
+//#define CHIP_CONFIG_SHA256_CONTEXT_SIZE sizeof(mbedtls_sha256_context) in hw_acc/sha256_alt.h
+#define CHIP_CONFIG_SHA256_CONTEXT_SIZE (32 + 64 + 64 + 19 * 32)
+#else
 //#define CHIP_CONFIG_SHA256_CONTEXT_SIZE sizeof(bl_sha_ctx_t)
 #define CHIP_CONFIG_SHA256_CONTEXT_SIZE ((1 + 5 + 18 + 16 + 16) * sizeof(unsigned int))
+#endif
 
 #define CHIP_CONFIG_AES_IMPLEMENTATION_OPENSSL 0
 #define CHIP_CONFIG_AES_IMPLEMENTATION_AESNI 0

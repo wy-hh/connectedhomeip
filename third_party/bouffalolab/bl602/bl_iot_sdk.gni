@@ -40,14 +40,12 @@ template("bl_iot_sdk") {
 
       "CFG_CHIP_BL602",
 
-      "MBEDTLS_CONFIG_FILE=\"bl602-chip-mbedtls-config.h\"",
-
       #dump backtrace
       "CONF_ENABLE_FRAME_PTR=1",
       "CONF_ENABLE_FUNC_BACKTRACE_ELF=out/bl602-light/chip-bl602-lighting-example.out",
     ]
 
-    include_dirs = [ "${chip_root}/third_party/mbedtls/repo/include" ]
+    include_dirs = []
     if (defined(invoker.include_dirs)) {
       include_dirs += invoker.include_dirs
     }

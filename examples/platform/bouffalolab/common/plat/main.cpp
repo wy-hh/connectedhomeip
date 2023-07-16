@@ -25,6 +25,7 @@ using namespace ::chip::Inet;
 using namespace ::chip::DeviceLayer;
 
 extern "C" void board_init(void);
+extern "C" void __libc_init_array(void);
 extern "C" void bflb_mtd_init(void);
 
 volatile int apperror_cnt;
@@ -46,7 +47,9 @@ void appError(CHIP_ERROR error)
 extern "C" int START_ENTRY(void)
 {
     board_init();
-    
+
+    __libc_init_array();
+
     bflb_mtd_init();
 
     easyflash_init();

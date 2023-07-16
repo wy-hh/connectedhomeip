@@ -17,6 +17,7 @@ ENTRY(__start)
 StackSize    = 0x1000; /*  4KB */
 HeapMinSize  = 0x1000; /*  4KB */
 psram_min_size = 0x1000;
+nocache_min_size = 20K;
 
 __EM_SIZE = DEFINED(btble_controller_init) ? 32K : 0K;
 __RFTLV_SIZE_OFFSET = 1K;
@@ -26,13 +27,13 @@ __RFTLV_HEAD1_L = (0x41524150); /* PAPA */
 
 MEMORY
 {
-    /*fw_header_memory  (rx)  : ORIGIN = 0xA0000000 - 0x1000, LENGTH = 4K*/
+    fw_header_memory  (rx)  : ORIGIN = 0xA0000000 - 0x1000, LENGTH = 4K
     xip_memory  (rx)  : ORIGIN = 0xA0000000, LENGTH = 4M
     ram_psram  (wxa)   : ORIGIN = 0xA8000000, LENGTH = 4M
-    itcm_memory (rx)  : ORIGIN = 0x62FC0000, LENGTH = 20K
-    dtcm_memory (rx)  : ORIGIN = 0x62FC5000, LENGTH = 4K
-    nocache_ram_memory (!rx) : ORIGIN = 0x22FC6000, LENGTH = 44K+60K
-    ram_memory  (!rx) : ORIGIN = 0x62FE0000, LENGTH = 320K-20K-4K-44K-60K
+    itcm_memory (rx)  : ORIGIN = 0x62FC0000, LENGTH = 12K
+    dtcm_memory (rx)  : ORIGIN = 0x62FC3000, LENGTH = 4K
+    nocache_ram_memory (!rx) : ORIGIN = 0x22FC4000, LENGTH = nocache_min_size
+    ram_memory  (!rx) : ORIGIN = 0x62FC4000 + nocache_min_size, LENGTH = 320K-12K-4K-nocache_min_size
     ram_wifi  (wxa)   : ORIGIN = 0x23010000, LENGTH = 160K - __EM_SIZE
 }
 
@@ -40,12 +41,12 @@ SECTIONS
 {
 
     BOOT2_PT_ADDR = 0x63027c00;
-/*
+
     .fw_header :
     {
         KEEP(*(.fw_header))
     } > fw_header_memory
-*/
+
     .init :
     {
         KEEP (*(SORT_NONE(.init)))
@@ -60,6 +61,23 @@ SECTIONS
         LONG(__RFTLV_HEAD1_H);
         LONG(__RFTLV_HEAD1_L);
         . = ORIGIN(xip_memory) + __RFTLV_SIZE_OFFSET + __RFTLV_SIZE_HOLE;
+    } > xip_memory
+
+    .preinit_array :
+    {
+        . = ALIGN(4);
+        __preinit_array_start = .;
+        KEEP (*(.preinit_array))
+        __preinit_array_end = .;
+    } > xip_memory
+
+    .init_array :
+    {
+        . = ALIGN(4);
+        __init_array_start = .;
+        KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*)))
+        KEEP (*(.init_array))
+        __init_array_end = .;
     } > xip_memory
 
     .text :

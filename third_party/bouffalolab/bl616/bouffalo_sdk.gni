@@ -11,47 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import("//args.gni")
+import("//build_overrides/bouffalolab_iot_sdk.gni")
 import("//build_overrides/chip.gni")
 import("//build_overrides/mbedtls.gni")
-import("//build_overrides/bouffalolab_iot_sdk.gni")
+import("${chip_root}/src/lib/lib.gni")
 
 declare_args() {
   # Location of the bl616 SDK.
-  bl616_sdk_root = "${chip_root}/third_party/bouffalolab/bouffalo_sdk"
+  bouffalo_sdk_root = "${chip_root}/third_party/bouffalolab/bouffalo_sdk"
 }
 
-assert(bl616_sdk_root != "", "bl616_sdk_root must be specified")
+assert(bouffalo_sdk_root != "", "bouffalo_sdk_root must be specified")
 
 # Defines an bl616 SDK build target.
 #
 # Parameters:
-#   bl616_sdk_root - The location of the bl616 SDK.
+#   bouffalo_sdk_root - The location of the bl616 SDK.
 #   sources - The sources files to build.
 template("bouffalo_sdk") {
-  if (defined(invoker.bl616_sdk_root)) {
-    bl616_sdk_root = invoker.bl616_sdk_root
+  if (defined(invoker.bouffalo_sdk_root)) {
+    bouffalo_sdk_root = invoker.bouffalo_sdk_root
   }
 
-  assert(bl616_sdk_root != "", "bl616_sdk_root must be specified")
+  assert(bouffalo_sdk_root != "", "bouffalo_sdk_root must be specified")
 
   sdk_target_name = target_name
 
   config("${sdk_target_name}_config") {
-    include_dirs = [
-      "${bl616_sdk_root}/components/shell",
-      #board
-      "${bl616_sdk_root}/bsp/board/bl616dk",
-      #mem
-      "${bl616_sdk_root}/components/mem",
-    ]
-
-    if (defined(invoker.include_dirs)) {
-      include_dirs += invoker.include_dirs
-    }
 
     defines = [
-      "MBEDTLS_CONFIG_FILE=\"bl616-chip-mbedtls-config.h\"",
       "BL616=BL616",
       "ARCH_RISCV",
       "__STARTUP_CLEAR_BSS",
@@ -70,8 +59,16 @@ template("bouffalo_sdk") {
       "CHIP_SYSTEM_CRYPTO_HEADER_RESERVE_SIZE=128",
 
       "BOUFFALO_SDK",
-
     ]
+
+    include_dirs = []
+    if (defined(invoker.include_dirs)) {
+      include_dirs += invoker.include_dirs
+    }
+
+    if (defined(invoker.defines)) {
+      defines += invoker.defines
+    }
 
     cflags_c = [
       "-Wno-old-style-declaration",
@@ -97,7 +94,7 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_startup") {
     include_dirs = [
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup",
     ]
   }
 
@@ -110,16 +107,16 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #bl616 startup
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup",
     ]
 
     sources = [
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/start.S",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/vector.S",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/riscv_fpu.S",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/interrupt.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/start_load.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/start.S",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/vector.S",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/riscv_fpu.S",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/interrupt.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/start_load.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
     ]
 
     public_configs = [
@@ -133,8 +130,8 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_std_drv") {
     include_dirs = [
-      "${bl616_sdk_root}/drivers/soc/bl616/std/include",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/include/hardware",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/include",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/include/hardware",
     ]
 
     defines = [
@@ -154,26 +151,26 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #bl616 startup
-      "${bl616_sdk_root}/drivers/soc/bl616/std/include",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/include/hardware",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/include",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/include/hardware",
     ]
 
     sources = [
       #use rom api default
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_e907.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_patch.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_clock.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_common.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_ef_cfg.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_sdh.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_tzc_sec.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_psram.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_pm.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_aon.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_efuse.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_flash.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_media.c",
-      "${bl616_sdk_root}/drivers/soc/bl616/std/port/bl616_clock.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_e907.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_romapi_patch.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_clock.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_common.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_ef_cfg.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_sdh.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_tzc_sec.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_psram.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_pm.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_aon.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_efuse.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_flash.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/src/bl616_mfg_media.c",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/std/port/bl616_clock.c",
     ]
 
     cflags_c = [
@@ -193,13 +190,13 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #bl616 lhal
-      "${bl616_sdk_root}/drivers/lhal/include",
-      "${bl616_sdk_root}/drivers/lhal/include/arch",
-      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head",
-      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/Core/Include",
-      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/csi_dsp/include",
-      "${bl616_sdk_root}/drivers/lhal/src/flash",
-      "${bl616_sdk_root}/drivers/lhal/config/bl616",
+      "${bouffalo_sdk_root}/drivers/lhal/include",
+      "${bouffalo_sdk_root}/drivers/lhal/include/arch",
+      "${bouffalo_sdk_root}/drivers/lhal/include/arch/risc-v/t-head",
+      "${bouffalo_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/Core/Include",
+      "${bouffalo_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/csi_dsp/include",
+      "${bouffalo_sdk_root}/drivers/lhal/src/flash",
+      "${bouffalo_sdk_root}/drivers/lhal/config/bl616",
     ]
   }
 
@@ -210,46 +207,46 @@ template("bouffalo_sdk") {
     ]
 
     sources = [
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_common.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_adc.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_acomp.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_cks.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_ef_ctrl.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_gpio.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_i2c.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_dma.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_rtc.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_sec_aes.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_sec_sha.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_sec_trng.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_spi.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_timer.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_uart.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_wdg.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_flash.c",
-      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_sf_cfg.c",
-      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_xip_sflash.c",
-      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_sflash.c",
-      "${bl616_sdk_root}/drivers/lhal/src/flash/bflb_sf_ctrl.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_dac.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_emac.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_ir.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_mjpeg.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_pwm_v2.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_cam.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_i2s.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_sdio2.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_dbi.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_audac.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_auadc.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_platform_dma.c",
-      #"${bl616_sdk_root}/drivers/lhal/src/bflb_usb_v2.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_irq.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_l1c.c",
-      "${bl616_sdk_root}/drivers/lhal/src/bflb_mtimer.c",
-      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/rv_hart.c",
-      "${bl616_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/rv_pmp.c",
-      "${bl616_sdk_root}/drivers/lhal/config/bl616/device_table.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_common.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_adc.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_acomp.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_cks.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_ef_ctrl.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_gpio.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_i2c.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_dma.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_rtc.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_sec_aes.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_sec_sha.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_sec_trng.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_spi.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_timer.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_uart.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_wdg.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_flash.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/flash/bflb_sf_cfg.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/flash/bflb_xip_sflash.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/flash/bflb_sflash.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/flash/bflb_sf_ctrl.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_dac.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_emac.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_ir.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_mjpeg.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_pwm_v2.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_cam.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_i2s.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_sdio2.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_dbi.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_audac.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_auadc.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_platform_dma.c",
+      #"${bouffalo_sdk_root}/drivers/lhal/src/bflb_usb_v2.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_irq.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_l1c.c",
+      "${bouffalo_sdk_root}/drivers/lhal/src/bflb_mtimer.c",
+      "${bouffalo_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/rv_hart.c",
+      "${bouffalo_sdk_root}/drivers/lhal/include/arch/risc-v/t-head/rv_pmp.c",
+      "${bouffalo_sdk_root}/drivers/lhal/config/bl616/device_table.c",
     ]
 
     cflags = [
@@ -268,8 +265,8 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_rf") {
     include_dirs = [
-      "${bl616_sdk_root}/drivers/soc/bl616/rf/inc",
-      "${bl616_sdk_root}/drivers/rfparam/Inc",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/rf/inc",
+      "${bouffalo_sdk_root}/drivers/rfparam/Inc",
     ]
 
     defines = [
@@ -284,16 +281,16 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #bl616 rfparam
-      "${bl616_sdk_root}/drivers/rfparam/Inc",
+      "${bouffalo_sdk_root}/drivers/rfparam/Inc",
     ]
 
     sources = [
-      "${bl616_sdk_root}/drivers/rfparam/Src/rfparam_adapter.c",
-      "${bl616_sdk_root}/drivers/rfparam/Src/rfparam_rftlv.c",
+      "${bouffalo_sdk_root}/drivers/rfparam/Src/rfparam_adapter.c",
+      "${bouffalo_sdk_root}/drivers/rfparam/Src/rfparam_rftlv.c",
     ]
 
     libs = [
-      "${bl616_sdk_root}/drivers/soc/bl616/rf/lib/librf.a",
+      "${bouffalo_sdk_root}/drivers/soc/bl616/rf/lib/librf.a",
     ]
 
     cflags_c = [
@@ -313,7 +310,7 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_board") {
     include_dirs = [
-      "${bl616_sdk_root}/bsp/board/bl616dk",
+      "${bouffalo_sdk_root}/bsp/board/bl616dk",
     ]
   }
 
@@ -324,12 +321,12 @@ template("bouffalo_sdk") {
     ]
 
     include_dirs = [
-      "${bl616_sdk_root}/bsp/board/bl616dk",
+      "${bouffalo_sdk_root}/bsp/board/bl616dk",
     ]
 
     sources = [
-      "${bl616_sdk_root}/bsp/board/bl616dk/board.c",
-      "${bl616_sdk_root}/bsp/board/bl616dk/board_rf.c",
+      "${bouffalo_sdk_root}/bsp/board/bl616dk/board.c",
+      "${bouffalo_sdk_root}/bsp/board/bl616dk/board_rf.c",
     ]
 
     cflags_c = [
@@ -353,59 +350,60 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_libc") {
 
     include_dirs = [
-      "${bl616_sdk_root}/components/libc",
+      "${bouffalo_sdk_root}/components/libc",
     ]
 
     sources = [
-      "${bl616_sdk_root}/components/libc/newlib/port_memory.c",
-      "${bl616_sdk_root}/components/libc/newlib/syscalls_nosys.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_abs.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atof.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoi.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atol.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoll.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_bsearch.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_checkbase.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_itoa.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_llabs.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_lldiv.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_qsort.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/stdlib/lib_strtod.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_ffs.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_ffsl.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_ffsll.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_fls.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_flsl.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_flsll.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_index.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memccpy.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memchr.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memcmp.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memmove.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memrchr.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_memset.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_stpcpy.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_stpncpy.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcasecmp.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcasestr.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcat.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strchr.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcmp.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strcspn.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strdup.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strnlen.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strpbrk.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strsep.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strspn.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strstr.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strtok.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_strtokr.c",
-      "${bl616_sdk_root}/components/libc/nuttx/libc/string/lib_vikmemcpy.c",
-      "${bl616_sdk_root}/components/libc/vsnprintf.c",
-      "${bl616_sdk_root}/components/libc/snprintf.c",
-      "${bl616_sdk_root}/components/libc/sprintf.c",
-      "${bl616_sdk_root}/components/libc/vsprintf.c",
-      "${bl616_sdk_root}/components/libc/printf.c",
+      "${bouffalo_sdk_root}/components/libc/newlib/port_init_fini.c",
+      "${bouffalo_sdk_root}/components/libc/newlib/port_memory.c",
+      "${bouffalo_sdk_root}/components/libc/newlib/syscalls_nosys.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_abs.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atof.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoi.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atol.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_atoll.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_bsearch.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_checkbase.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_itoa.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_llabs.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_lldiv.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_qsort.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/stdlib/lib_strtod.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_ffs.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_ffsl.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_ffsll.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_fls.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_flsl.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_flsll.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_index.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_memccpy.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_memchr.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_memcmp.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_memmove.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_memrchr.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_memset.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_stpcpy.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_stpncpy.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strcasecmp.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strcasestr.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strcat.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strchr.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strcmp.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strcspn.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strdup.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strnlen.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strpbrk.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strsep.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strspn.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strstr.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strtok.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_strtokr.c",
+      "${bouffalo_sdk_root}/components/libc/nuttx/libc/string/lib_vikmemcpy.c",
+      "${bouffalo_sdk_root}/components/libc/vsnprintf.c",
+      "${bouffalo_sdk_root}/components/libc/snprintf.c",
+      "${bouffalo_sdk_root}/components/libc/sprintf.c",
+      "${bouffalo_sdk_root}/components/libc/vsprintf.c",
+      "${bouffalo_sdk_root}/components/libc/printf.c",
     ]
 
     cflags = [
@@ -428,10 +426,10 @@ template("bouffalo_sdk") {
     ]
 
     include_dirs = [
-      "${bl616_sdk_root}/components/os/freertos/include",
-      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
-      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
-      #"${bl616_sdk_root}/components/os/freertos/posix/include",
+      "${bouffalo_sdk_root}/components/os/freertos/include",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
+      #"${bouffalo_sdk_root}/components/os/freertos/posix/include",
       "${chip_root}/examples/platform/bouffalolab/bl616",
     ]
   }
@@ -446,24 +444,24 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #memory heap
-      "${bl616_sdk_root}/components/os/freertos/include",
-      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
-      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
-      #"${bl616_sdk_root}/components/os/freertos/posix/include",
+      "${bouffalo_sdk_root}/components/os/freertos/include",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
+      #"${bouffalo_sdk_root}/components/os/freertos/posix/include",
     ]
 
     sources = [
-      "${bl616_sdk_root}/components/libc/stdatomic.c",
-      "${bl616_sdk_root}/components/os/freertos/croutine.c",
-      "${bl616_sdk_root}/components/os/freertos/event_groups.c",
-      "${bl616_sdk_root}/components/os/freertos/list.c",
-      "${bl616_sdk_root}/components/os/freertos/queue.c",
-      "${bl616_sdk_root}/components/os/freertos/tasks.c",
-      "${bl616_sdk_root}/components/os/freertos/timers.c",
-      "${bl616_sdk_root}/components/os/freertos/freertos_port.c",
-      "${bl616_sdk_root}/components/os/freertos/portable/MemMang/heap_3.c",
-      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/port.c",
-      "${bl616_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/portASM.S",
+      "${bouffalo_sdk_root}/components/libc/stdatomic.c",
+      "${bouffalo_sdk_root}/components/os/freertos/croutine.c",
+      "${bouffalo_sdk_root}/components/os/freertos/event_groups.c",
+      "${bouffalo_sdk_root}/components/os/freertos/list.c",
+      "${bouffalo_sdk_root}/components/os/freertos/queue.c",
+      "${bouffalo_sdk_root}/components/os/freertos/tasks.c",
+      "${bouffalo_sdk_root}/components/os/freertos/timers.c",
+      "${bouffalo_sdk_root}/components/os/freertos/freertos_port.c",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/MemMang/heap_3.c",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/port.c",
+      "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/portASM.S",
     ]
 
     cflags_c = [
@@ -478,8 +476,8 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_mm") {
     include_dirs = [
-      "${bl616_sdk_root}/components/mm",
-      "${bl616_sdk_root}/components/mm/tlsf",
+      "${bouffalo_sdk_root}/components/mm",
+      "${bouffalo_sdk_root}/components/mm/tlsf",
     ]
   }
 
@@ -491,14 +489,14 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #memory heap
-      "${bl616_sdk_root}/components/mm",
-      "${bl616_sdk_root}/components/mm/tlsf",
+      "${bouffalo_sdk_root}/components/mm",
+      "${bouffalo_sdk_root}/components/mm/tlsf",
     ]
 
     sources = [
-      "${bl616_sdk_root}/components/mm/mem.c",
-      "${bl616_sdk_root}/components/mm/tlsf/tlsf.c",
-      "${bl616_sdk_root}/components/mm/tlsf/bflb_tlsf.c",
+      "${bouffalo_sdk_root}/components/mm/mem.c",
+      "${bouffalo_sdk_root}/components/mm/tlsf/tlsf.c",
+      "${bouffalo_sdk_root}/components/mm/tlsf/bflb_tlsf.c",
     ]
 
     cflags_c = [       
@@ -518,7 +516,7 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_easyflash4") {
     include_dirs = [
-      "${bl616_sdk_root}/components/easyflash4/inc",
+      "${bouffalo_sdk_root}/components/easyflash4/inc",
     ]
   }
 
@@ -530,17 +528,17 @@ template("bouffalo_sdk") {
 
     include_dirs = [
       #memory heap
-      "${bl616_sdk_root}/components/easyflash4/inc",
+      "${bouffalo_sdk_root}/components/easyflash4/inc",
     ]
 
     sources = [
-      "${bl616_sdk_root}/components/easyflash4/src/easyflash.c",
-      "${bl616_sdk_root}/components/easyflash4/src/ef_env.c",
-      "${bl616_sdk_root}/components/easyflash4/src/ef_env_legacy_wl.c",
-      "${bl616_sdk_root}/components/easyflash4/src/ef_env_legacy.c",
-      "${bl616_sdk_root}/components/easyflash4/src/ef_port.c",
-      "${bl616_sdk_root}/components/easyflash4/src/ef_utils.c",
-      "${bl616_sdk_root}/components/easyflash4/src/easyflash_cli.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/easyflash.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/ef_env.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/ef_env_legacy_wl.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/ef_env_legacy.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/ef_port.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/ef_utils.c",
+      "${bouffalo_sdk_root}/components/easyflash4/src/easyflash_cli.c",
     ]
 
     cflags_c = [
@@ -557,12 +555,12 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_utils") {
     include_dirs = [
-      "${bl616_sdk_root}/components/utils/log",
-      "${bl616_sdk_root}/components/utils/log/bflog",
-      "${bl616_sdk_root}/components/utils/bflb_mtd/include",
-      "${bl616_sdk_root}/components/utils/partition",
-      "${bl616_sdk_root}/components/utils/getopt",
-      "${bl616_sdk_root}/components/utils/ring_buffer",
+      "${bouffalo_sdk_root}/components/utils/log",
+      "${bouffalo_sdk_root}/components/utils/log/bflog",
+      "${bouffalo_sdk_root}/components/utils/bflb_mtd/include",
+      "${bouffalo_sdk_root}/components/utils/partition",
+      "${bouffalo_sdk_root}/components/utils/getopt",
+      "${bouffalo_sdk_root}/components/utils/ring_buffer",
 
     ]
 
@@ -581,23 +579,23 @@ template("bouffalo_sdk") {
     ]
 
     include_dirs = [
-      "${bl616_sdk_root}/components/utils/log",
-      "${bl616_sdk_root}/components/utils/bflog",
-      "${bl616_sdk_root}/components/utils/bflb_mtd/include",
-      "${bl616_sdk_root}/components/utils/partition",
-      "${bl616_sdk_root}/components/utils/getopt",
-      "${bl616_sdk_root}/components/utils/ring_buffer",
+      "${bouffalo_sdk_root}/components/utils/log",
+      "${bouffalo_sdk_root}/components/utils/bflog",
+      "${bouffalo_sdk_root}/components/utils/bflb_mtd/include",
+      "${bouffalo_sdk_root}/components/utils/partition",
+      "${bouffalo_sdk_root}/components/utils/getopt",
+      "${bouffalo_sdk_root}/components/utils/ring_buffer",
     ]
 
     sources = [
-      "${bl616_sdk_root}/components/utils/log/log.c",
-      "${bl616_sdk_root}/components/utils/log/bflog/bflog.c",
-      "${bl616_sdk_root}/components/utils/log/log_freertos.c",
-      "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
-      "${bl616_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
-      "${bl616_sdk_root}/components/utils/getopt/utils_getopt.c",
-      "${bl616_sdk_root}/components/utils/partition/partition.c",
-      "${bl616_sdk_root}/components/utils/ring_buffer/ring_buffer.c",
+      "${bouffalo_sdk_root}/components/utils/log/log.c",
+      "${bouffalo_sdk_root}/components/utils/log/bflog/bflog.c",
+      "${bouffalo_sdk_root}/components/utils/log/log_freertos.c",
+      "${bouffalo_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
+      "${bouffalo_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
+      "${bouffalo_sdk_root}/components/utils/getopt/utils_getopt.c",
+      "${bouffalo_sdk_root}/components/utils/partition/partition.c",
+      "${bouffalo_sdk_root}/components/utils/ring_buffer/ring_buffer.c",
     ]
 
     cflags_c = [
@@ -619,64 +617,86 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_mbedtls") {
     include_dirs = [
-      "${chip_root}/third_party/mbedtls/repo/include",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/include",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/include/mbedtls",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc",
     ]
+
+    defines = [ "MBEDTLS_CONFIG_FILE=\"bl616-chip-mbedtls-config.h\"" ]
   }
 
   source_set("${sdk_target_name}_mbedtls") {
-
     defines = [
-      "MBEDTLS_NO_PLATFORM_ENTROPY",
+      "CONFIG_FREERTOS"
     ]
 
-    include_dirs = [
-      "${chip_root}/third_party/mbedtls/repo/include",
-      #"${bl616_sdk_root}/components/security/mbedtls_lts/mbedtls/include",
+    include_dirs = [ 
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library",
     ]
+
+#    sources = [
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/aes_alt.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/bignum_alt.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/bignum_ext.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/ecp_alt.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/ecp_curves_alt.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha1_alt.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha256_alt.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha512_alt.c",
+#    ]
 
     sources = [
-      "${chip_root}/third_party/mbedtls/repo/library/aes.c",
-      "${chip_root}/third_party/mbedtls/repo/library/asn1parse.c",
-      "${chip_root}/third_party/mbedtls/repo/library/asn1write.c",
-      "${chip_root}/third_party/mbedtls/repo/library/bignum.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ccm.c",
-      "${chip_root}/third_party/mbedtls/repo/library/cipher.c",
-      "${chip_root}/third_party/mbedtls/repo/library/cipher_wrap.c",
-      "${chip_root}/third_party/mbedtls/repo/library/constant_time.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ctr_drbg.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ecdh.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ecdsa.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ecp.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ecp_curves.c",
-      "${chip_root}/third_party/mbedtls/repo/library/entropy.c",
-      "${chip_root}/third_party/mbedtls/repo/library/hkdf.c",
-      "${chip_root}/third_party/mbedtls/repo/library/hmac_drbg.c",
-      "${chip_root}/third_party/mbedtls/repo/library/md.c",
-      "${chip_root}/third_party/mbedtls/repo/library/oid.c",
-      "${chip_root}/third_party/mbedtls/repo/library/pk.c",
-      "${chip_root}/third_party/mbedtls/repo/library/pk_wrap.c",
-      "${chip_root}/third_party/mbedtls/repo/library/pkcs5.c",
-      "${chip_root}/third_party/mbedtls/repo/library/pkwrite.c",
-      "${chip_root}/third_party/mbedtls/repo/library/platform.c",
-      "${chip_root}/third_party/mbedtls/repo/library/platform_util.c",
-      "${chip_root}/third_party/mbedtls/repo/library/sha256.c",
-      "${chip_root}/third_party/mbedtls/repo/library/sha512.c",
-      "${chip_root}/third_party/mbedtls/repo/library/x509_create.c",
-      "${chip_root}/third_party/mbedtls/repo/library/x509write_csr.c",
-      "${chip_root}/third_party/mbedtls/repo/library/chachapoly.c",
-      "${chip_root}/third_party/mbedtls/repo/library/gcm.c",
-      "${chip_root}/third_party/mbedtls/repo/library/chacha20.c",
-      "${chip_root}/third_party/mbedtls/repo/library/des.c",
-      "${chip_root}/third_party/mbedtls/repo/library/camellia.c",
-      "${chip_root}/third_party/mbedtls/repo/library/blowfish.c",
-      "${chip_root}/third_party/mbedtls/repo/library/arc4.c",
-      "${chip_root}/third_party/mbedtls/repo/library/md5.c",
-      "${chip_root}/third_party/mbedtls/repo/library/psa_crypto_hash.c",
-      "${chip_root}/third_party/mbedtls/repo/library/rsa.c",
-      "${chip_root}/third_party/mbedtls/repo/library/poly1305.c",
-      "${chip_root}/third_party/mbedtls/repo/library/ripemd160.c",
-      "${chip_root}/third_party/mbedtls/repo/library/rsa_internal.c",
-      "${chip_root}/third_party/mbedtls/repo/library/sha1.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/bignum.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/entropy_poll_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/net_sockets.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/sec_mutex.c",
+    ]
+
+    sources += [
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/aes.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/asn1parse.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/asn1write.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/base64.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/bignum.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ccm.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/cipher.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/cipher_wrap.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/cmac.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/constant_time.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ctr_drbg.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ecdh.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ecdsa.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ecp.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ecp_curves.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/entropy.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/hkdf.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/hmac_drbg.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/md.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/oid.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/pem.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/pk.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/pk_wrap.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/pkcs5.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/pkwrite.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/platform.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/platform_util.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/sha256.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/sha512.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/x509.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/x509_create.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/x509_crt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/x509write_csr.c",
+    ]
+
+    configs += [
+      ":${sdk_target_name}_config",
+      ":${sdk_target_name}_config_lhal",
+      ":${sdk_target_name}_config_freertos",
+    ]
+
+    cflags_c = [
+      "-Wno-sign-compare",
     ]
 
     public_configs = [
@@ -687,10 +707,10 @@ template("bouffalo_sdk") {
   config("${sdk_target_name}_config_lwip") {
     include_dirs = [
       "${bouffalolab_iot_sdk_build_root}/bl616",
-      "${bl616_sdk_root}/components/net/lwip/lwip/system",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/include",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/compat/posix",
-      "${bl616_sdk_root}/components/net/lwip/lwip/lwip-port",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/system",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/include",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/compat/posix",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/lwip-port",
     ]
 
     defines = [
@@ -717,57 +737,57 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_lwip") {
 
     sources = [
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/apps/lwiperf/lwiperf.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/apps/http/fs.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/api_msg.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/err.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/netbuf.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/netdb.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/netifapi.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/sockets.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/tcpip.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/api/api_lib.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/autoip.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/dhcp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/etharp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/icmp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/igmp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4_addr.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4_frag.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/apps/lwiperf/lwiperf.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/apps/http/fs.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/api_msg.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/err.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/netbuf.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/netdb.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/netifapi.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/sockets.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/tcpip.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/api/api_lib.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/autoip.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/dhcp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/etharp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/icmp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/igmp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4_addr.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4_frag.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv4/ip4.c",
 
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/dhcp6.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ethip6.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/icmp6.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/inet6.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6_addr.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6_frag.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/mld6.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ipv6/nd6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/dhcp6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ethip6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/icmp6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/inet6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6_addr.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/ip6_frag.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/mld6.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ipv6/nd6.c",
 
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/def.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/dns.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/inet_chksum.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/init.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/ip.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/mem.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/memp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/netif.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/pbuf.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/raw.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/stats.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/sys.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/tcp_in.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/tcp_out.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/tcp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/timeouts.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/core/udp.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/netif/ethernet.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/src/apps/mdns/mdns.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip/lwip-port/FreeRTOS/sys_arch.c",
-      "${bl616_sdk_root}/components/net/lwip/lwip_apps/dhcpd/dhcp_server_raw.c",
-      #"${bl616_sdk_root}/components/net/lwip/lwip/system/os/sys_arch.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/def.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/dns.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/inet_chksum.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/init.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/ip.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/mem.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/memp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/netif.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/pbuf.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/raw.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/stats.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/sys.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/tcp_in.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/tcp_out.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/tcp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/timeouts.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/core/udp.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/netif/ethernet.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/src/apps/mdns/mdns.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip/lwip-port/FreeRTOS/sys_arch.c",
+      "${bouffalo_sdk_root}/components/net/lwip/lwip_apps/dhcpd/dhcp_server_raw.c",
+      #"${bouffalo_sdk_root}/components/net/lwip/lwip/system/os/sys_arch.c",
     ]
 
 
@@ -790,19 +810,19 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_wifi") {
     include_dirs = [
-      "${bl616_sdk_root}/components/wireless/wifi6/inc",
-      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/include",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/inc",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/bl6_os_adapter/include",
     ]
   }
 
   source_set("${sdk_target_name}_wifi") {
     libs = [
-      "${bl616_sdk_root}/components/wireless/wifi6/lib/libwifi6_matter.a",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/lib/libwifi6_matter.a",
     ]
 
     sources = [
-      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/src/rtos_al.c",
-      "${bl616_sdk_root}/components/wireless/wifi6/bl6_os_adapter/src/platform_bouffalo_sdk.c",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/bl6_os_adapter/src/rtos_al.c",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/bl6_os_adapter/src/platform_bouffalo_sdk.c",
     ]
 
     configs += [
@@ -839,16 +859,16 @@ template("bouffalo_sdk") {
     ]
 
     include_dirs = [
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include/bluetooth",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/port/include",
-      "${bl616_sdk_root}/components/wireless/bluetooth/src/port/include",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/zephyr",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/host",
-      "${bl616_sdk_root}/components/wireless/bluetooth/btblecontroller/btble_inc",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/common/include",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src",
-      "${bl616_sdk_root}/components/wireless/bluetooth/blestack/src/include/drivers/bluetooth",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/include",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/include/bluetooth",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/port/include",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/src/port/include",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/zephyr",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/btblecontroller/btble_inc",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/include",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/include/drivers/bluetooth",
     ]
   }
 
