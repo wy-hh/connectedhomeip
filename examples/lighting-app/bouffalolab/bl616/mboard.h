@@ -37,34 +37,10 @@
 #define CHIP_UART_PORT 0
 #define CHIP_UART_RX_BUFFSIZE 256
 
-#ifdef BL602_NIGHT_LIGHT
-
-#define LED_B_PIN_PORT 2
-#define LED_B_PIN 17
-
-#define LED_R_PIN_PORT 4
-#define LED_R_PIN 14
-
-#define LED_G_PIN_PORT 1
-#define LED_G_PIN 11
-
-// comment out for last hardware
-//#define LED_R_PIN_PORT 0
-//#define LED_R_PIN 20
-//#define LED_G_PIN 21
-
-#define MAX_PWM_CHANNEL 3
-
-#else
-
 #define LED_PIN_PORT 0
 #define LED_PIN 0
 
 #define MAX_PWM_CHANNEL 1
-
-#endif
-
-#define LED_BTN_RESET 8
 
 #define CHIP_UART_PIN_RX 7
 #define CHIP_UART_PIN_TX 16

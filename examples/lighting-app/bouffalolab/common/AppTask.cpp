@@ -45,15 +45,19 @@
 #include <LEDWidget.h>
 #include <plat.h>
 
-extern "C" {
-#include "board.h"
 #include <easyflash.h>
-#if !defined BOUFFALO_SDK
+
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#ifdef BOOT_PIN_RESET
+#include <bflb_gpio.h>
+#endif
+#include "mboard.h"
+#else
 #include <bl_gpio.h>
 #include <hal_gpio.h>
 #include <hosal_gpio.h>
+#include "board.h"
 #endif
-}
 
 #include "AppTask.h"
 
@@ -273,7 +277,6 @@ void AppTask::LightingUpdate(app_event_t status)
                 {
                     if (v.IsNull())
                     {
-                        // Just pick something.
                         v.SetNonNull(254);
                     }
 #if defined(BL706_NIGHT_LIGHT) || defined(BL602_NIGHT_LIGHT)
@@ -405,14 +408,35 @@ void AppTask::ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction)
 }
 
 #ifdef BOOT_PIN_RESET
-#if !defined BOUFFALO_SDK
-hosal_gpio_dev_t gpio_key = { .port = BOOT_PIN_RESET, .config = INPUT_HIGH_IMPEDANCE, .priv = NULL };
+
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+static struct bflb_device_s * app_task_gpio_var = NULL;
+static void app_task_gpio_isr(int irq, void *arg) 
+{
+    bool intstatus = bflb_gpio_get_intstatus(app_task_gpio_var, BOOT_PIN_RESET);
+    if (intstatus) {
+        bflb_gpio_int_clear(app_task_gpio_var, BOOT_PIN_RESET);
+    }
+
+    GetAppTask().ButtonEventHandler(arg);
+}
+#else
+static hosal_gpio_dev_t gpio_key = { .port = BOOT_PIN_RESET, .config = INPUT_HIGH_IMPEDANCE, .priv = NULL };
 #endif
 
 void AppTask::ButtonInit(void)
 {
     GetAppTask().mButtonPressedTime = 0;
-#if !defined BOUFFALO_SDK
+
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+    app_task_gpio_var = bflb_device_get_by_name("gpio");
+
+    bflb_gpio_int_init(app_task_gpio_var, BOOT_PIN_RESET, GPIO_INT_TRIG_MODE_SYNC_FALLING_RISING_EDGE);
+    bflb_gpio_int_mask(app_task_gpio_var, BOOT_PIN_RESET, false);
+
+    bflb_irq_attach(app_task_gpio_var->irq_num, app_task_gpio_isr, app_task_gpio_var);
+    bflb_irq_enable(app_task_gpio_var->irq_num);
+#else
     hosal_gpio_init(&gpio_key);
     hosal_gpio_irq_set(&gpio_key, HOSAL_IRQ_TRIG_POS_PULSE, GetAppTask().ButtonEventHandler, NULL);
 #endif
@@ -420,25 +444,28 @@ void AppTask::ButtonInit(void)
 
 bool AppTask::ButtonPressed(void)
 {
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+    return bflb_gpio_read(app_task_gpio_var, BOOT_PIN_RESET);
+#else
     uint8_t val = 1;
-#if !defined BOUFFALO_SDK
+
     hosal_gpio_input_get(&gpio_key, &val);
-#endif
+
     return val == 1;
+#endif
 }
 
 void AppTask::ButtonEventHandler(void * arg)
 {
     uint32_t presstime;
+
     if (ButtonPressed())
     {
-
-#if !defined BOUFFALO_SDK
-#ifdef BL702L_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#elif CHIP_DEVICE_LAYER_TARGET_BL702L
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_NEG_LEVEL);
 #else
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_NEG_LEVEL);
-#endif
 #endif
         GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
         GetAppTask().mTimerIntvl        = APP_BUTTON_PRESS_JITTER;
@@ -446,13 +473,12 @@ void AppTask::ButtonEventHandler(void * arg)
     }
     else
     {
-#if !defined BOUFFALO_SDK
-#ifdef BL702L_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#elif CHIP_DEVICE_LAYER_TARGET_BL702L
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_POS_PULSE);
 #else
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_POS_PULSE);
 #endif
-#endif 
 
         if (GetAppTask().mButtonPressedTime)
         {

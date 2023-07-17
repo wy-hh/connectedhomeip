@@ -52,8 +52,7 @@ template("bouffalo_sdk") {
     ]
 
     defines += [
-      "portasmHANDLE_INTERRUPT=interrupt_entry",
-      "default_interrupt_handler=freertos_risc_v_trap_handler",
+
 
       #dump backtrace
       "CHIP_SYSTEM_CRYPTO_HEADER_RESERVE_SIZE=128",
@@ -437,8 +436,8 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_freertos") {
     defines = [
       "CONFIG_FREERTOS",
-      #"portasmHANDLE_INTERRUPT=interrupt_entry",
-      #"default_interrupt_handler=freertos_risc_v_trap_handler",
+      "portasmHANDLE_INTERRUPT=interrupt_entry",
+      "default_interrupt_handler=freertos_risc_v_trap_handler",
       #"CONFIG_POSIX",
     ]
 

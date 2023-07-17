@@ -70,20 +70,20 @@
 #define configUSE_MALLOC_FAILED_HOOK            1
 #define configUSE_APPLICATION_TASK_TAG          1
 #define configUSE_COUNTING_SEMAPHORES           1
-#define configGENERATE_RUN_TIME_STATS           0
+#define configGENERATE_RUN_TIME_STATS           1
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 #define configUSE_TICKLESS_IDLE                 0
 #define configUSE_POSIX_ERRNO                   1
 
 /* Co-routine definitions. */
-#define configUSE_CO_ROUTINES           0
-#define configMAX_CO_ROUTINE_PRIORITIES (2)
+#define configUSE_CO_ROUTINES                   0
+#define configMAX_CO_ROUTINE_PRIORITIES         (2)
 
 /* Software timer definitions. */
-#define configUSE_TIMERS             1
-#define configTIMER_TASK_PRIORITY    (configMAX_PRIORITIES - 1)
-#define configTIMER_QUEUE_LENGTH     4
-#define configTIMER_TASK_STACK_DEPTH (1024)
+#define configUSE_TIMERS                        1
+#define configTIMER_TASK_PRIORITY               (configMAX_PRIORITIES - 1)
+#define configTIMER_QUEUE_LENGTH                4
+#define configTIMER_TASK_STACK_DEPTH            (1024)
 
 /* Task priorities.  Allow these to be overridden. */
 #ifndef uartPRIMARY_PRIORITY
@@ -124,5 +124,15 @@ void vApplicationSleep(uint32_t xExpectedIdleTime);
 #endif
 
 // #define portUSING_MPU_WRAPPERS
+
+#if (configGENERATE_RUN_TIME_STATS == 1)
+#ifdef __cplusplus
+extern "C" uint64_t bflb_mtimer_get_time_us();
+#else
+extern uint64_t bflb_mtimer_get_time_us();
+#endif
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() ((void)0)
+#define portGET_RUN_TIME_COUNTER_VALUE()         bflb_mtimer_get_time_us()
+#endif
 
 #endif /* FREERTOS_CONFIG_H */

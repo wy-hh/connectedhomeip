@@ -46,12 +46,13 @@ declare_args() {
   ota_auto_reboot_delay_seconds = 5
 
   enable_heap_monitoring = false
+  enable_reset_counter = false
 
   setupPinCode = 20202021
   setupDiscriminator = 3840
 
-  board = "BL616-Matter-Dvk"
-  module_type = "BL616"
+  board = "BL616DK"
+  module_type = "BL602"
   baudrate = 2000000
 }
 
@@ -98,6 +99,10 @@ bouffalolab_executable("lighting_app") {
     "BL616_ENABLE",
     "START_ENTRY=main",
   ]
+
+  if (false == enable_reset_counter) {
+    defines += [ "BOOT_PIN_RESET=2" ]
+  }
 
   bl_plat_name = "bl616"
   sources = [

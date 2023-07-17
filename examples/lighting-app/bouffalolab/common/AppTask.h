@@ -81,6 +81,9 @@ public:
     EndpointId GetEndpointId(void) { return mEndpointId; }
     void PostEvent(app_event_t event);
     void ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction);
+#ifdef BOOT_PIN_RESET
+    void ButtonEventHandler(void * arg);
+#endif
 
     static void IdentifyStartHandler(Identify *);
     static void IdentifyStopHandler(Identify *);
@@ -106,7 +109,6 @@ private:
 #ifdef BOOT_PIN_RESET
     static void ButtonInit(void);
     static bool ButtonPressed(void);
-    static void ButtonEventHandler(void * arg);
 #endif
 
     static void ScheduleInit(intptr_t arg);
