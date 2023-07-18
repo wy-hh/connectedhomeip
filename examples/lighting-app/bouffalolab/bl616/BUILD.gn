@@ -60,11 +60,10 @@ bouffalo_sdk("sdk") {
 
   include_dirs = [
     "${chip_root}/src/platform/bouffalolab/BL616",
+    "${examples_plat_dir}",
     "${example_dir}",
     "${example_dir}/include",
   ]
-
-  #freertos_config = "${examples_plat_dir}/FreeRTOSConfig.h"
 
   defines = [
     "INCLUDE_xSemaphoreGetMutexHolder=1",

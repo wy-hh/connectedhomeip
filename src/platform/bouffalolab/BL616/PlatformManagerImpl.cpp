@@ -26,19 +26,12 @@
 
 #include <lwip/tcpip.h>
 
-//#include <aos/kernel.h>
-//#include <bl60x_fw_api.h>
-//#include <bl_sec.h>
-//#include <event_device.h>
-//#include <hal_wifi.h>
-#include <lwip/tcpip.h>
 #include <wifi_mgmr_ext.h>
 
 extern "C" {
-// #include <bl616.h>
 #include <bl_fw_api.h>
 // #include <bl616_glb.h>
-// #include <rfparam_adapter.h>
+#include <rfparam_adapter.h>
 }
 
 #define WIFI_STACK_SIZE  (1536)
@@ -268,22 +261,12 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     CHIP_ERROR err                 = CHIP_NO_ERROR;
     static uint8_t stack_wifi_init = 0;
     TaskHandle_t backup_eventLoopTask;
+    int iret_rfInit = -1;
+
+    VerifyOrDieWithMsg(0 == (iret_rfInit = rfparam_init(0, NULL, 0)), DeviceLayer, "rfparam_init failed with %d", iret_rfInit);
 
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
-    //aos_register_event_filter(EV_WIFI, OnWiFiPlatformEvent, NULL);
-
-    if (1 == stack_wifi_init)
-    {
-        ChipLogError(DeviceLayer, "Wi-Fi already initialized!");
-        return CHIP_NO_ERROR;
-    }
-
-    //hal_wifi_start_firmware_task();
-
-    // wifi_start_firmware_task();
-    stack_wifi_init = 1;
-    //aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);

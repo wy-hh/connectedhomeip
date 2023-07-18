@@ -33,13 +33,13 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/internal/GenericConnectivityManagerImpl_WiFi.ipp>
-#ifdef BL602
+#if CHIP_DEVICE_LAYER_TARGET_BL602
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
 #endif
-#ifdef BL702
+#if CHIP_DEVICE_LAYER_TARGET_BL702
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #endif
-#ifdef BL616
+#if CHIP_DEVICE_LAYER_TARGET_BL616
 #include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
 #endif
 #endif

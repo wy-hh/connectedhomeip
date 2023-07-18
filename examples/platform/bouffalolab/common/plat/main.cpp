@@ -27,6 +27,7 @@ using namespace ::chip::DeviceLayer;
 extern "C" void board_init(void);
 extern "C" void __libc_init_array(void);
 extern "C" void bflb_mtd_init(void);
+extern "C" int btblecontroller_em_config(void);
 
 volatile int apperror_cnt;
 // ================================================================================
@@ -47,6 +48,8 @@ void appError(CHIP_ERROR error)
 extern "C" int START_ENTRY(void)
 {
     board_init();
+
+    btblecontroller_em_config();
 
     __libc_init_array();
 

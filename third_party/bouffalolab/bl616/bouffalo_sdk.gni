@@ -560,7 +560,6 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/utils/partition",
       "${bouffalo_sdk_root}/components/utils/getopt",
       "${bouffalo_sdk_root}/components/utils/ring_buffer",
-
     ]
 
     defines = [
@@ -858,28 +857,79 @@ template("bouffalo_sdk") {
     ]
 
     include_dirs = [
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/btblecontroller/btble_inc",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/include",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/include/bluetooth",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/port/include",
-      "${bouffalo_sdk_root}/components/wireless/bluetooth/src/port/include",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/zephyr",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host",
-      "${bouffalo_sdk_root}/components/wireless/bluetooth/btblecontroller/btble_inc",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/include",
-      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src",
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/include/drivers/bluetooth",
     ]
   }
 
   source_set("${sdk_target_name}_ble") {
-    libs = [
+    defines = [
+      "CONFIG_BT_L2CAP_DYNAMIC_CHANNEL",
+      "CONFIG_BT_GATT_CLIENT",
+      "CONFIG_BT_CONN=1",
+      "CONFIG_BT_GATT_DIS_PNP",
+      "CONFIG_BT_GATT_DIS_SERIAL_NUMBER",
+      "CONFIG_BT_GATT_DIS_FW_REV",
+      "CONFIG_BT_GATT_DIS_HW_REV",
+      "CONFIG_BT_GATT_DIS_SW_REV",
+      "CONFIG_BT_ECC",
+      "CONFIG_BT_KEYS_SAVE_AGING_COUNTER_ON_PAIRING",
+      "CONFIG_BT_HCI_VS_EVT_USER",
+      "CONFIG_BT_SETTINGS_USE_PRINTK",
+    ]
+
+    libs = [ "${bouffalo_sdk_root}/components/wireless/bluetooth/btblecontroller/lib/libbtblecontroller_bl616_ble1m0s1bredr0.a" ]
+
+    include_dirs = [
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/bl_hci_wrapper",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/include",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/include/misc",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/tinycrypt/include/tinycrypt",
     ]
 
     sources = [
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/bl_hci_wrapper/bl_hci_wrapper.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/atomic_c.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/buf.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/dec.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/log.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/poll.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/common/work_q.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/hci_onchip/hci_driver.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/att.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/bl_host_assist.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/conn.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/crypto.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/gatt.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/hci_core.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/l2cap.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/settings.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/host/uuid.c",
+      "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/port/bl_port.c",
     ]
 
+    configs += [
+      ":${sdk_target_name}_config",
+      ":${sdk_target_name}_config_utils",
+      ":${sdk_target_name}_config_freertos"
+    ]
     public_configs = [
+      ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_ble",
+    ]
+    
+    cflags_c = [
+      "-Wno-format",
+      "-Wno-format-nonliteral",
+      "-Wno-format-security",
     ]
   }
 

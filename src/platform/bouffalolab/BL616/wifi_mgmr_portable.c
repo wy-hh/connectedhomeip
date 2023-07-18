@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string.h>
+#include <bl616_glb.h>
 
 #include <wifi_mgmr.h>
 //#include <wifi_mgmr_profile.h>
@@ -13,6 +14,27 @@
 #include <wpa_supplicant/src/common/wpa_common.h>
 #include <wpa_supplicant/src/rsn_supp/wpa_i.h>
 #endif
+
+int btblecontroller_em_config(void)
+{
+    extern uint8_t __LD_CONFIG_EM_SEL;
+    volatile uint32_t em_size;
+
+    em_size = (uint32_t)&__LD_CONFIG_EM_SEL;
+
+    if (em_size == 0) {
+        GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
+    } else if (em_size == 32*1024) {
+        GLB_Set_EM_Sel(GLB_WRAM128KB_EM32KB);
+    } else if (em_size == 64*1024) {
+        GLB_Set_EM_Sel(GLB_WRAM96KB_EM64KB);
+    } else {
+        GLB_Set_EM_Sel(GLB_WRAM96KB_EM64KB);
+    }
+
+    return 0;
+}
+
 extern struct wpa_sm gWpaSm;
 
 int wifi_mgmr_get_bssid(uint8_t * bssid)

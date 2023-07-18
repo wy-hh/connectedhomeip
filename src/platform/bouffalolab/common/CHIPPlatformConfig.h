@@ -20,7 +20,12 @@
 #include <stdint.h>
 
 // ==================== General Platform Adaptations ====================
-#define ChipDie() abort()
+#ifdef __cplusplus
+extern "C" void vAssertCalled(void);
+#else
+extern void vAssertCalled(void);
+#endif
+#define CHIP_CONFIG_ABORT() vAssertCalled()
 
 #define CHIP_CONFIG_PERSISTED_STORAGE_KEY_TYPE const char *
 #define CHIP_CONFIG_PERSISTED_STORAGE_ENC_MSG_CNTR_ID 1

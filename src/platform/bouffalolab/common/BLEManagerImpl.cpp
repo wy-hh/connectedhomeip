@@ -28,7 +28,7 @@
 #endif
 
 extern "C" {
-#if defined BL702L || defined BL616
+#if CHIP_DEVICE_LAYER_TARGET_BLBL702L || CHIP_DEVICE_LAYER_TARGET_BL616
 #include <btble_lib_api.h>
 #else
 #include <ble_lib_api.h>
@@ -115,7 +115,6 @@ BLEManagerImpl BLEManagerImpl::sInstance;
 
 CHIP_ERROR BLEManagerImpl::_Init()
 {
-#if !defined BOUFFALO_SDK
     mServiceMode = ConnectivityManager::kCHIPoBLEServiceMode_Enabled;
     mFlags.ClearAll().Set(Flags::kAdvertisingEnabled, CHIP_DEVICE_CONFIG_CHIPOBLE_ENABLE_ADVERTISING_AUTOSTART);
     mFlags.Set(Flags::kFastAdvertisingEnabled, true);
@@ -124,7 +123,7 @@ CHIP_ERROR BLEManagerImpl::_Init()
     memset(mSubscribedConns, 0, sizeof(mSubscribedConns));
 
     ReturnErrorOnFailure(InitRandomStaticAddress());
-#if defined BL702L || defined BL616
+#if CHIP_DEVICE_LAYER_TARGET_BL702L || CHIP_DEVICE_LAYER_TARGET_BL616
     btble_controller_init(configMAX_PRIORITIES - 1);
 #else
     ble_controller_init(configMAX_PRIORITIES - 1);
@@ -143,7 +142,6 @@ CHIP_ERROR BLEManagerImpl::_Init()
 
     PlatformMgr().ScheduleWork(DriveBLEState, 0);
 
-#endif
     return CHIP_NO_ERROR;
 }
 

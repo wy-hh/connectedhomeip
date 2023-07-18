@@ -21,13 +21,8 @@
 
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
 
-extern "C" {
-#if !defined (BOUFFALO_SDK)
-#include <bl_sys.h>
-#endif
-
-void hal_reboot (void);
-}
+extern "C" int bl_sys_reset_por(void);
+extern "C" void hal_reboot (void);
 
 namespace chip {
 namespace DeviceLayer {
@@ -201,7 +196,8 @@ void ConfigurationManagerImpl::DoFactoryReset(intptr_t arg)
 
     // Restart the system.
     ChipLogProgress(DeviceLayer, "System restarting");
-#ifdef BOUFFALO_SDK
+
+#if CHIP_DEVICE_LAYER_TARGET_BL616
     hal_reboot();
 #else
     bl_sys_reset_por();
