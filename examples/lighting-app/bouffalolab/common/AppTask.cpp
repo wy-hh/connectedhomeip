@@ -408,7 +408,6 @@ void AppTask::ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction)
 }
 
 #ifdef BOOT_PIN_RESET
-
 #if CHIP_DEVICE_LAYER_TARGET_BL616
 static struct bflb_device_s * app_task_gpio_var = NULL;
 static void app_task_gpio_isr(int irq, void *arg) 
@@ -461,10 +460,9 @@ void AppTask::ButtonEventHandler(void * arg)
 
     if (ButtonPressed())
     {
-#if CHIP_DEVICE_LAYER_TARGET_BL616
-#elif CHIP_DEVICE_LAYER_TARGET_BL702L
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_NEG_LEVEL);
-#else
+#elif !CHIP_DEVICE_LAYER_TARGET_BL616
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_NEG_LEVEL);
 #endif
         GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
@@ -473,10 +471,9 @@ void AppTask::ButtonEventHandler(void * arg)
     }
     else
     {
-#if CHIP_DEVICE_LAYER_TARGET_BL616
-#elif CHIP_DEVICE_LAYER_TARGET_BL702L
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_POS_PULSE);
-#else
+#elif !CHIP_DEVICE_LAYER_TARGET_BL616
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_POS_PULSE);
 #endif
 

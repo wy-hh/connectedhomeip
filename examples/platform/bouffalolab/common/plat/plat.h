@@ -29,3 +29,5 @@ void appError(CHIP_ERROR error);
 #else
 void appError(int err);
 #endif
+
+void platform_port_init(void);

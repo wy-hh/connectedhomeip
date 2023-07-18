@@ -390,7 +390,7 @@ extern "C" void app_init(void)
 #endif
 }
 
-extern "C" void board_init(void)
+void platform_port_init(void)
 {
     app_init();
 
