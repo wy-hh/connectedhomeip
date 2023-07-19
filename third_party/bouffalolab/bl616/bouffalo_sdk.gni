@@ -709,6 +709,7 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/net/lwip/lwip/src/include",
       "${bouffalo_sdk_root}/components/net/lwip/lwip/src/compat/posix",
       "${bouffalo_sdk_root}/components/net/lwip/lwip/lwip-port",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/inc",
     ]
 
     defines = [
@@ -728,7 +729,7 @@ template("bouffalo_sdk") {
       "PBUF_POOL_BUFSIZE=1600",
       "CONFIG_ENABLE_IPV6_ADDR_CALLBACK",
       "CONFIG_LWIP_HOOK_IP6_ROUTE_DEFAULT",
-      "CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT",
+      #"CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT",
     ]
   }
 
