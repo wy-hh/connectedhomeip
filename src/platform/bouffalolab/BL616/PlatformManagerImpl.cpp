@@ -264,8 +264,8 @@ void test_wifi(void *param)
 
     char wifi_ssid[64] = { 0 };
     char passwd[65]    = { 0 };
-    memcpy(wifi_ssid, "PDCN", 4);
-    memcpy(passwd, "12344321", 8);
+    memcpy(wifi_ssid, "bl_test_089P", strlen("bl_test_089P"));
+    memcpy(passwd, "12345678", strlen("12345678"));
     wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
     while(1){
         vTaskDelay(10 * 1000);

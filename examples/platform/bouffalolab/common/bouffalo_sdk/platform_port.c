@@ -25,6 +25,7 @@
 
 extern void __libc_init_array(void);
 
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 static int btblecontroller_em_config(void)
 {
     extern uint8_t __LD_CONFIG_EM_SEL;
@@ -44,12 +45,15 @@ static int btblecontroller_em_config(void)
 
     return 0;
 }
+#endif
 
 void platform_port_init(void)
 {
     board_init();
 
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
     btblecontroller_em_config();
+#endif
 
     __libc_init_array();
 

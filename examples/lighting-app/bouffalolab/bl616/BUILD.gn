@@ -102,7 +102,7 @@ bouffalolab_executable("lighting_app") {
   ]
 
   if (false == enable_reset_counter) {
-    #defines += [ "BOOT_PIN_RESET=2" ]
+    defines += [ "BOOT_PIN_RESET=2" ]
   }
 
   bl_plat_name = "bl616"

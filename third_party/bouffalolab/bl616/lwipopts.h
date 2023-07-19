@@ -102,7 +102,6 @@
 #define MEM_SIZE 8192
 #endif
 #endif
-#define LWIP_HOOK_FILENAME        "lwiphooks.h"
 
 #define LWIP_RAW                  1
 #define LWIP_MULTICAST_TX_OPTIONS 1
@@ -130,8 +129,6 @@
 #define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 1
 #define MEMP_NUM_MLD6_GROUP 10
 #define PBUF_POOL_BUFSIZE 1600
-//#define CONFIG_ENABLE_IPV6_ADDR_CALLBACK
-//#define CONFIG_LWIP_HOOK_IP6_ROUTE_DEFAULT
 
 #define LWIP_ERRNO_STDINCLUDE 1
 

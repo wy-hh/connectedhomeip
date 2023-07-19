@@ -158,7 +158,7 @@ class BouffalolabBuilder(GnBuilder):
                 self.argsOpt.append('chip_enable_wifi=false')
                 self.argsOpt.append('chip_enable_openthread=true')
 
-            self.argsOpt.append('chip_config_network_layer_ble=true')
+            self.argsOpt.append('chip_config_network_layer_ble=false')
         else:
             self.argsOpt.append('chip_config_network_layer_ble=false')
             self.argsOpt.append('chip_enable_openthread=false')

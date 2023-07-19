@@ -4,14 +4,14 @@
 #include "lwip/err.h"
 #include "lwip/ip_addr.h"
 
-#ifdef CONFIG_LWIP_HOOK_IP6_ROUTE_DEFAULT
-extern struct netif * lwip_hook_ip6_route(const ip6_addr_t * src, const ip6_addr_t * dest);
-#define LWIP_HOOK_IP6_ROUTE lwip_hook_ip6_route
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#include "lwiphooks.h"
 #endif
 
-#ifdef CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT
+extern struct netif * lwip_hook_ip6_route(const ip6_addr_t * src, const ip6_addr_t * dest);
+#define LWIP_HOOK_IP6_ROUTE lwip_hook_ip6_route
+
 extern const ip6_addr_t * lwip_hook_nd6_get_gw(struct netif * netif, const ip6_addr_t * dest);
 #define LWIP_HOOK_ND6_GET_GW lwip_hook_nd6_get_gw
-#endif
 
 #endif /* _LWIP_DEFAULT_HOOKS_H_ */
