@@ -19,7 +19,7 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 
-#include <board.h>
+#include <mboard.h>
 
 #if !defined BOUFFALO_SDK
 #ifdef CFG_USB_CDC_ENABLE

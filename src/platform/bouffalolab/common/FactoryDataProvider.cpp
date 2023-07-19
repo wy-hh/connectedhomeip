@@ -333,6 +333,7 @@ CHIP_ERROR FactoryDataProvider::GetSpake2pSalt(MutableByteSpan & saltBuf)
     {
         return CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND;
     }
+
     saltBuf = MutableByteSpan(saltBuf.data(), aSpake2pSaltLen);
 
     return CHIP_NO_ERROR;

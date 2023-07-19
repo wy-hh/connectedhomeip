@@ -18,9 +18,8 @@
 
 #include <bl616_glb.h>
 
-#include <AppTask.h>
 #include <easyflash.h>
-#include <include/bflb_mtd.h>
+#include <bflb_mtd.h>
 #include <bl616dk/board.h>
 #include <plat.h>
 

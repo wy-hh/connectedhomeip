@@ -309,7 +309,7 @@ template("bouffalo_sdk") {
 
   config("${sdk_target_name}_config_board") {
     include_dirs = [
-      "${bouffalo_sdk_root}/bsp/board/bl616dk",
+      "${bouffalo_sdk_root}/bsp/board",
     ]
   }
 
@@ -727,8 +727,7 @@ template("bouffalo_sdk") {
       "PBUF_POOL_SIZE=20",
       "PBUF_POOL_BUFSIZE=1600",
       "CONFIG_ENABLE_IPV6_ADDR_CALLBACK",
-      "CONFIG_LWIP_HOOK_IP6_ROUTE_DEFAULT",
-      "CONFIG_LWIP_HOOK_ND6_GET_GW_DEFAULT",
+      "LWIP_HOOK_FILENAME=\"bl_lwip_hooks.h\""
     ]
   }
 

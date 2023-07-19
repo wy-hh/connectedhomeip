@@ -6,14 +6,10 @@
  */
 #include <stdio.h>
 
-#include "demo_pwm.h"
-#if !defined BOUFFALO_SDK
-#include "board.h"
-#include <hosal_pwm.h>
-#else
+// #include <hosal_pwm.h>
+
 #include "mboard.h"
-#endif
-#include <stdio.h>
+#include "demo_pwm.h"
 
 #define PWM_FREQ 1000
 #define PWM_DUTY_CYCLE 10000

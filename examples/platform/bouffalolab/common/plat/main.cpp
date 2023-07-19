@@ -54,6 +54,15 @@ extern "C" int START_ENTRY(void)
     ChipLogProgress(NotSpecified, "Starting App Task");
     StartAppTask();
 
+// #ifdef CFG_USE_PSRAM
+//     ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
+//                     &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
+//                     &_heap3_start + (unsigned int) &_heap3_size);
+// #else
+//     ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
+//                     &_heap_start + (unsigned int) &_heap_size);
+// #endif
+
     ChipLogProgress(NotSpecified, "Starting OS Scheduler...");
     vTaskStartScheduler();
 

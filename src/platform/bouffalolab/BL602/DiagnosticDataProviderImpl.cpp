@@ -17,8 +17,9 @@
 
 #include <lib/support/CHIPMemString.h>
 #include <platform/DiagnosticDataProvider.h>
-#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
+
+#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 extern "C" {
 #include <bl_sys.h>

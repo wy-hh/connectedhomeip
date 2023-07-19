@@ -54,8 +54,7 @@ class BouffalolabBoard(Enum):
     BL602_NIGHT_LIGHT = auto()
     XT_ZB6_DevKit = auto()
     BL706_NIGHT_LIGHT = auto()
-    BL706_ETH = auto()
-    BL706_WIFI = auto()
+    BL706DK = auto()
     BL704L_DVK = auto()
     BL616DK = auto()
 
@@ -68,10 +67,8 @@ class BouffalolabBoard(Enum):
             return 'XT-ZB6-DevKit'
         elif self == BouffalolabBoard.BL706_NIGHT_LIGHT:
             return 'BL706-NIGHT-LIGHT'
-        elif self == BouffalolabBoard.BL706_ETH:
-            return 'BL706-ETH'
-        elif self == BouffalolabBoard.BL706_WIFI:
-            return 'BL706-WIFI'
+        elif self == BouffalolabBoard.BL706DK:
+            return 'BL706DK'
         elif self == BouffalolabBoard.BL704L_DVK:
             return 'BL704L-DVK'
         elif self == BouffalolabBoard.BL616DK:
@@ -131,25 +128,14 @@ class BouffalolabBuilder(GnBuilder):
         self.argsOpt.append('baudrate=\"{}\"'.format(baudrate))
 
         if bouffalo_chip == "bl602":
-            self.argsOpt.append('chip_enable_openthread=false')
-            self.argsOpt.append('chip_enable_wifi=true')
 
+            enable_wifi = True
             if enable_ethernet or enable_thread:
                 raise_exception('SoC %s doesn\'t connectivity Ethernet/Thread.' % bouffalo_chip)
 
-        if bouffalo_chip == "bl702":
+        elif bouffalo_chip == "bl702":
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
-            if board == BouffalolabBoard.BL706_ETH:
-                if enable_wifi:
-                    raise_exception('Board %s doesn\'t connectivity Wi-Fi.' % board)
-                if enable_ethernet or enable_thread:
-                    raise_exception('Board %s doesn\'t connectivity Ethernet and Thread together.' % board)
-            elif board == BouffalolabBoard.BL706_WIFI:
-                if enable_ethernet:
-                    raise_exception('Board %s doesn\'t connectivity Ethernet.' % board)
-                if enable_ethernet or enable_wifi:
-                    raise_exception('Board %s doesn\'t connectivity Ethernet and Wi-Fi together.' % board)
-            else:
+            if board != BouffalolabBoard.BL706DK:
                 if enable_ethernet:
                     raise_exception('Board %s doesn\'t connectivity Wi-Fi.' % board)
                 if enable_wifi:
@@ -159,8 +145,6 @@ class BouffalolabBuilder(GnBuilder):
                 raise_exception('Board %s doesn\'t connectivity Ethernet/Wi-Fi.' % bouffalo_chip)
             if bouffalo_chip != "bl702":
                 raise_exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
-            if board == BouffalolabBoard.BL706_ETH:
-                raise_exception('Board %s does NOT support USB CDC' % self.board.GnArgName())
         elif bouffalo_chip == "bl616":
             if not enable_ethernet and not enable_wifi and not enable_thread:
                 raise_exception('No connectivity specified. Connectivity option -wifi supports for %s.' % bouffalo_chip)
@@ -183,8 +167,8 @@ class BouffalolabBuilder(GnBuilder):
         if enable_cdc:
             if bouffalo_chip != "bl702":
                 self.raise_exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
-            if board == BouffalolabBoard.BL706_ETH:
-                self.raise_exception('Board %s does NOT support USB CDC' % self.board.GnArgName())
+            if enable_ethernet:
+                self.raise_exception('BL706 Ethernet does NOT support USB CDC')
 
             self.argsOpt.append('enable_cdc_module=true')
 

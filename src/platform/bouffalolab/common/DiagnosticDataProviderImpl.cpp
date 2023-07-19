@@ -23,7 +23,7 @@
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #include <FreeRTOS.h>
-#ifdef BOUFFALO_SDK
+#if CHIP_DEVICE_LAYER_TARGET_BL616
 #include <mem.h>
 extern "C" size_t xPortGetFreeHeapSize(void)
 {
@@ -52,35 +52,46 @@ DiagnosticDataProviderImpl & DiagnosticDataProviderImpl::GetDefaultInstance()
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapFree(uint64_t & currentHeapFree)
 {
-// #ifdef CFG_USE_PSRAM
-//     size_t freeHeapSize = xPortGetFreeHeapSize() + xPortGetFreeHeapSizePsram();
-// #else
-//     size_t freeHeapSize      = xPortGetFreeHeapSize();
-// #endif
-
-//     currentHeapFree = static_cast<uint64_t>(freeHeapSize);
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+    size_t freeHeapSize = kfree_size();
+#else
+#ifdef CFG_USE_PSRAM
+    size_t freeHeapSize = xPortGetFreeHeapSize() + xPortGetFreeHeapSizePsram();
+#else
+    size_t freeHeapSize = xPortGetFreeHeapSize();
+#endif
+#endif
+    currentHeapFree = static_cast<uint64_t>(freeHeapSize);
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapUsed(uint64_t & currentHeapUsed)
 {
-// #ifdef CFG_USE_PSRAM
-//     currentHeapUsed = (get_heap_size() + get_heap3_size() - xPortGetFreeHeapSize() - xPortGetFreeHeapSizePsram());
-// #else
-//     currentHeapUsed          = (get_heap_size() - xPortGetFreeHeapSize());
-// #endif
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+
+#else
+#ifdef CFG_USE_PSRAM
+    currentHeapUsed = (get_heap_size() + get_heap3_size() - xPortGetFreeHeapSize() - xPortGetFreeHeapSizePsram());
+#else
+    currentHeapUsed = (get_heap_size() - xPortGetFreeHeapSize());
+#endif
+#endif
 
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapHighWatermark(uint64_t & currentHeapHighWatermark)
 {
-// #ifdef CFG_USE_PSRAM
-//     currentHeapHighWatermark =
-//         get_heap_size() + get_heap3_size() - xPortGetMinimumEverFreeHeapSize() - xPortGetMinimumEverFreeHeapSizePsram();
-// #else
-//     currentHeapHighWatermark = get_heap_size() - xPortGetMinimumEverFreeHeapSize();
-// #endif
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+
+#else
+#ifdef CFG_USE_PSRAM
+    currentHeapHighWatermark =
+        get_heap_size() + get_heap3_size() - xPortGetMinimumEverFreeHeapSize() - xPortGetMinimumEverFreeHeapSizePsram();
+#else
+    currentHeapHighWatermark = get_heap_size() - xPortGetMinimumEverFreeHeapSize();
+#endif
+#endif
 
     return CHIP_NO_ERROR;
 }

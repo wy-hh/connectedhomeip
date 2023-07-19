@@ -24,8 +24,8 @@
 #include <lwip/tcpip.h>
 
 #include <bl_sec.h>
-
 #include <hal_wifi.h>
+
 #include <wifi_mgmr_ext.h>
 
 namespace chip {

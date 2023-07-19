@@ -15,12 +15,13 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
+#include <stdio.h>
 
 #if !defined BOUFFALO_SDK
 #include <bl_gpio.h>
 #include <bl_sys.h>
 #endif
-#include <board.h>
+#include <mboard.h>
 #include <demo_pwm.h>
 #if !defined BOUFFALO_SDK
 #include <hosal_gpio.h>

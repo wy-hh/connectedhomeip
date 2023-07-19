@@ -24,10 +24,14 @@
 #define EXT_DISCOVERY_TIMEOUT_SECS 20
 
 #ifdef __cplusplus
+
 #include <lib/core/CHIPError.h>
 void appError(CHIP_ERROR error);
-#else
-void appError(int err);
-#endif
 
+extern "C" void platform_port_init(void);
+#else
+
+void appError(int err);
 void platform_port_init(void);
+
+#endif

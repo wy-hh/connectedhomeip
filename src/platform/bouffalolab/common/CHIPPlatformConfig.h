@@ -31,10 +31,10 @@ extern void vAssertCalled(void);
 #define CHIP_CONFIG_PERSISTED_STORAGE_ENC_MSG_CNTR_ID 1
 #define CHIP_CONFIG_PERSISTED_STORAGE_MAX_KEY_LENGTH 2
 
-#define CHIP_CONFIG_LIFETIIME_PERSISTED_COUNTER_KEY 0x01
+#define CHIP_CONFIG_LIFETIIME_PERSISTED_COUNTER_KEY BLConfig::kConfigKey_LifeTimeCounter
 
 // ==================== Security Adaptations ====================
-#ifdef CHIP_DEVICE_LAYER_TARGET_BL616
+#if CHIP_DEVICE_LAYER_TARGET_BL616
 //#define CHIP_CONFIG_SHA256_CONTEXT_SIZE sizeof(mbedtls_sha256_context) in hw_acc/sha256_alt.h
 #define CHIP_CONFIG_SHA256_CONTEXT_SIZE (32 + 64 + 64 + 19 * 32)
 #else

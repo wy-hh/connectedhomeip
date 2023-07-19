@@ -25,11 +25,6 @@
 
 #include <FreeRTOS.h>
 
-#include <AppTask.h>
-#include <plat.h>
-
-extern "C" {
-
 #include <blog.h>
 
 #ifdef BL702_ENABLE
@@ -64,27 +59,19 @@ extern "C" {
 
 #include <uart.h>
 
-#include <AppTask.h>
 #include <plat.h>
-#include "board.h"
-}
-
-using namespace ::chip;
-using namespace ::chip::Inet;
-using namespace ::chip::DeviceLayer;
-
-#define UNUSED_PARAMETER(a) (a = a)
+#include "mboard.h"
 
 HOSAL_UART_DEV_DECL(uart_stdio, CHIP_UART_PORT, CHIP_UART_PIN_TX, CHIP_UART_PIN_RX, CHIP_UART_BAUDRATE);
 
 #ifdef SYS_AOS_LOOP_ENABLE
-extern "C" void aos_loop_start(void);
+void aos_loop_start(void);
 #endif
 
 // ================================================================================
 // FreeRTOS Callbacks
 // ================================================================================
-extern "C" unsigned int sleep(unsigned int seconds)
+unsigned int sleep(unsigned int seconds)
 {
     const TickType_t xDelay = 1000 * seconds / portTICK_PERIOD_MS;
     vTaskDelay(xDelay);
@@ -92,31 +79,31 @@ extern "C" unsigned int sleep(unsigned int seconds)
 }
 
 #ifndef BL702L_ENABLE
-extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
-    ChipLogProgress(NotSpecified, "Stack Overflow checked. Stack name %s", pcTaskName);
+    // ChipLogProgress(NotSpecified, "Stack Overflow checked. Stack name %s", pcTaskName);
     while (true)
     {
         /*empty here*/
     }
 }
 
-extern "C" void vApplicationMallocFailedHook(void)
+void vApplicationMallocFailedHook(void)
 {
-    ChipLogProgress(NotSpecified, "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
+    // ChipLogProgress(NotSpecified, "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
     while (true)
     {
         /*empty here*/
     }
 }
 
-extern "C" void vApplicationIdleHook(void)
+void vApplicationIdleHook(void)
 {
     //    bl_wdt_feed();
     __asm volatile("   wfi     ");
 }
 
-extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuffer, StackType_t ** ppxIdleTaskStackBuffer,
+void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuffer, StackType_t ** ppxIdleTaskStackBuffer,
                                               uint32_t * pulIdleTaskStackSize)
 {
     /* If the buffers to be provided to the Idle task are declared inside this
@@ -139,7 +126,7 @@ extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuff
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
 application must provide an implementation of vApplicationGetTimerTaskMemory()
 to provide the memory that is used by the Timer service task. */
-extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBuffer, StackType_t ** ppxTimerTaskStackBuffer,
+void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBuffer, StackType_t ** ppxTimerTaskStackBuffer,
                                                uint32_t * pulTimerTaskStackSize)
 {
     /* If the buffers to be provided to the Timer task are declared inside this
@@ -160,7 +147,7 @@ extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBu
 }
 
 #if (configUSE_TICK_HOOK != 0)
-extern "C" void vApplicationTickHook(void)
+void vApplicationTickHook(void)
 {
 #if defined(CFG_USB_CDC_ENABLE)
     extern void usb_cdc_monitor(void);
@@ -171,7 +158,7 @@ extern "C" void vApplicationTickHook(void)
 
 void vApplicationSleep(TickType_t xExpectedIdleTime) {}
 
-extern "C" void vAssertCalled(void)
+void vAssertCalled(void)
 {
     void * ra = (void *) __builtin_return_address(0);
 
@@ -191,7 +178,7 @@ extern "C" void vAssertCalled(void)
 #endif
 
 #ifdef BL702L_ENABLE
-extern "C" void __attribute__((weak)) user_vAssertCalled(void)
+void __attribute__((weak)) user_vAssertCalled(void)
 {
     void * ra = (void *) __builtin_return_address(0);
 
@@ -209,7 +196,7 @@ extern "C" void __attribute__((weak)) user_vAssertCalled(void)
         ;
 }
 
-extern "C" void __attribute__((weak)) user_vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
+void __attribute__((weak)) user_vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
     puts("Stack Overflow checked\r\n");
     if (pcTaskName)
@@ -222,7 +209,7 @@ extern "C" void __attribute__((weak)) user_vApplicationStackOverflowHook(TaskHan
     }
 }
 
-extern "C" void __attribute__((weak)) user_vApplicationMallocFailedHook(void)
+void __attribute__((weak)) user_vApplicationMallocFailedHook(void)
 {
     printf("Memory Allocate Failed. Current left size is %d bytes\r\n", xPortGetFreeHeapSize());
 #if defined(CFG_USE_PSRAM)
@@ -235,14 +222,14 @@ extern "C" void __attribute__((weak)) user_vApplicationMallocFailedHook(void)
 }
 
 #else
-extern "C" void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
+void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
 #endif
 
 // ================================================================================
 // Main Code
 // ================================================================================
-extern "C" uint8_t _heap_start;
-extern "C" size_t _heap_size; // @suppress("Type cannot be resolved")
+uint8_t _heap_start;
+size_t _heap_size; // @suppress("Type cannot be resolved")
 
 #ifdef BL602_ENABLE
 extern uint8_t _heap_wifi_start;
@@ -265,23 +252,23 @@ static constexpr HeapRegion_t xHeapRegions[] = {
 #endif
 
 #ifdef CFG_USE_PSRAM
-extern "C" uint32_t __psram_bss_init_start;
-extern "C" uint32_t __psram_bss_init_end;
+uint32_t __psram_bss_init_start;
+uint32_t __psram_bss_init_end;
 
 static uint32_t __attribute__((section(".rsvd_data"))) psram_reset_count;
 
-extern "C" uint8_t _heap3_start;
-extern "C" size_t _heap3_size; // @suppress("Type cannot be resolved")
+uint8_t _heap3_start;
+size_t _heap3_size; // @suppress("Type cannot be resolved")
 static constexpr HeapRegion_t xPsramHeapRegions[] = {
     { &_heap3_start, (size_t) &_heap3_size }, { NULL, 0 } /* Terminates the array. */
 };
 
-extern "C" size_t get_heap3_size(void)
+size_t get_heap3_size(void)
 {
     return (size_t) &_heap3_size;
 }
 
-extern "C" void do_psram_test()
+void do_psram_test()
 {
     static constexpr char teststr[] = "bouffalolab psram test string";
 
@@ -325,7 +312,7 @@ extern "C" void do_psram_test()
 }
 #endif
 
-extern "C" void setup_heap()
+void setup_heap()
 {
     bl_sys_init();
 
@@ -350,12 +337,12 @@ extern "C" void setup_heap()
 #endif
 }
 
-extern "C" size_t get_heap_size(void)
+size_t get_heap_size(void)
 {
     return (size_t) &_heap_size;
 }
 
-extern "C" void app_init(void)
+void app_init(void)
 {
     bl_sys_early_init();
 
@@ -393,15 +380,6 @@ extern "C" void app_init(void)
 void platform_port_init(void)
 {
     app_init();
-
-#ifdef CFG_USE_PSRAM
-    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
-                    &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
-                    &_heap3_start + (unsigned int) &_heap3_size);
-#else
-    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
-                    &_heap_start + (unsigned int) &_heap_size);
-#endif
 
 #if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
     uartInit();

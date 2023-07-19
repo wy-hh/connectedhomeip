@@ -51,14 +51,15 @@
 #ifdef BOOT_PIN_RESET
 #include <bflb_gpio.h>
 #endif
-#include "mboard.h"
 #else
+extern "C" {
 #include <bl_gpio.h>
 #include <hal_gpio.h>
 #include <hosal_gpio.h>
-#include "board.h"
+}
 #endif
 
+#include "mboard.h"
 #include "AppTask.h"
 
 using namespace ::chip;

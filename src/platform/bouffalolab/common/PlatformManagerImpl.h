@@ -18,12 +18,12 @@
 
 #pragma once
 
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#if !defined BOUFFALO_SDK
+
+#include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.h>
+
+#if CHIP_DEVICE_LAYER_TARGET_BL602
 #include <aos/yloop.h>
 #endif
-#endif
-#include <platform/internal/GenericPlatformManagerImpl_FreeRTOS.h>
 
 namespace chip {
 namespace DeviceLayer {
@@ -60,12 +60,10 @@ private:
     friend PlatformManager & PlatformMgr(void);
     friend PlatformManagerImpl & PlatformMgrImpl(void);
     friend class Internal::BLEManagerImpl;
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#ifdef BOUFFALO_SDK
+#if CHIP_DEVICE_LAYER_TARGET_BL616 && CHIP_DEVICE_CONFIG_ENABLE_WIFI
     friend void OnWiFiPlatformEvent(uint32_t code, void * private_data);
-#else
+#elif CHIP_DEVICE_LAYER_TARGET_BL602
     friend void OnWiFiPlatformEvent(input_event_t * event, void * private_data);
-#endif
 #endif
 
     System::Clock::Timestamp mStartTime = System::Clock::kZero;
