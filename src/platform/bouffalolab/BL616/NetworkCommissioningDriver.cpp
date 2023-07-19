@@ -18,8 +18,6 @@
 extern "C" {
 #include <wifi_mgmr.h>
 }
-//#include <wifi_mgmr_api.h>
-//#include <hal_wifi.h>
 #include <lib/support/CodeUtils.h>
 #include <lib/support/SafeInt.h>
 #include <lwip/tcpip.h>
@@ -189,7 +187,7 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
    // wifi_interface = wifi_mgmr_sta_enable();
     //wifi_mgmr_sta_connect(&wifi_interface, wifi_ssid, passwd, NULL, NULL, 0, 0);
 
-    // wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
+    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
     // ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
 
     return ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Enabled);

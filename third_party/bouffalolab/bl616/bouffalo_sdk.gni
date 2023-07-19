@@ -709,6 +709,7 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/net/lwip/lwip/src/include",
       "${bouffalo_sdk_root}/components/net/lwip/lwip/src/compat/posix",
       "${bouffalo_sdk_root}/components/net/lwip/lwip/lwip-port",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/inc",
     ]
 
     defines = [
