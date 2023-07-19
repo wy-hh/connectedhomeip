@@ -35,10 +35,10 @@
 #include <wifi_mgmr_ext.h>
 
 extern "C" {
-// #include <bl616.h>
+#include <bl616.h>
 #include <bl_fw_api.h>
-// #include <bl616_glb.h>
-// #include <rfparam_adapter.h>
+#include <bl616_glb.h>
+#include <rfparam_adapter.h>
 }
 
 #define WIFI_STACK_SIZE  (1536)
@@ -61,6 +61,7 @@ static int app_entropy_source(void * data, unsigned char * output, size_t len, s
     return 0;
 }
 
+#if 0
 static void WifiStaDisconect(void)
 {
     NetworkCommissioning::BLWiFiDriver::GetInstance().SetLastDisconnectReason(NULL);
@@ -164,7 +165,7 @@ static void WifiStaConnected(void)
             chip::to_underlying(chip::app::Clusters::WiFiNetworkDiagnostics::ConnectionStatusEnum::kConnected));
     }
 }
-
+#endif
 void OnWiFiPlatformEvent(uint32_t code, void * private_data)
 {
     switch (code)
@@ -181,9 +182,9 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     }
     break;
     case CODE_WIFI_ON_SCAN_DONE: {
-        chip::DeviceLayer::PlatformMgr().LockChipStack();
+        //chip::DeviceLayer::PlatformMgr().LockChipStack();
         NetworkCommissioning::BLWiFiDriver::GetInstance().OnScanWiFiNetworkDone();
-        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
+        //chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_ON_CONNECTING: {
@@ -193,10 +194,9 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     case CODE_WIFI_ON_DISCONNECT: {
         //ChipLogProgress(DeviceLayer, "WiFi station disconnect, reason %s.", wifi_mgmr_status_code_str(event->value));
         ChipLogProgress(DeviceLayer, "WiFi station disconnect, reason .");
-
-        chip::DeviceLayer::PlatformMgr().LockChipStack();
-        WifiStaDisconect();
-        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
+        //chip::DeviceLayer::PlatformMgr().LockChipStack();
+        //WifiStaDisconect();
+        //chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_CMD_RECONNECT: {
@@ -206,18 +206,18 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     case CODE_WIFI_ON_GOT_IP: {
 
         ChipLogProgress(DeviceLayer, "WiFi station gets IPv4 address.");
-
-        chip::DeviceLayer::PlatformMgr().LockChipStack();
-        WifiStaConnected();
-        chip::DeviceLayer::PlatformMgr().UnlockChipStack();
+        //chip::DeviceLayer::PlatformMgr().LockChipStack();
+        //WifiStaConnected();
+        //chip::DeviceLayer::PlatformMgr().UnlockChipStack();
     }
     break;
     case CODE_WIFI_ON_GOT_IP6: {
         ChipLogProgress(DeviceLayer, "WiFi station gets IPv6 address.");
-
+/*
         chip::DeviceLayer::PlatformMgr().LockChipStack();
         ConnectivityMgrImpl().OnIPv6AddressAvailable();
         chip::DeviceLayer::PlatformMgr().UnlockChipStack();
+        */
     }
     break;
     default: {
@@ -232,35 +232,51 @@ extern "C" void wifi_event_handler(uint32_t code)
     OnWiFiPlatformEvent(code, NULL);
 }
 
+extern "C" void interrupt0_handler(void);
 int wifi_start_firmware_task(void)
 {
     //LOG_I("Starting wifi ...\r\n");
+    printf("Starting wifi ...\r\n");
 
     /* enable wifi clock */
 
-    // GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
-    // GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
+    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
+    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
 
-    // /* set ble controller EM Size */
+    /* set ble controller EM Size */
 
-    // GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
+    GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
 
-    // if (0 != rfparam_init(0, NULL, 0)) {
-    //     //LOG_I("PHY RF init failed!\r\n");
-    //     return 0;
-    // }
+    if (0 != rfparam_init(0, NULL, 0)) {
+        printf("PHY RF init failed!\r\n");
+        return 0;
+    }
 
-    // //LOG_I("PHY RF init success!\r\n");
+    printf("PHY RF init success!\r\n");
 
-    // /* Enable wifi irq */
+    /* Enable wifi irq */
 
-    // extern void interrupt0_handler(void);
-    // bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
-    // bflb_irq_enable(WIFI_IRQn);
+    bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
+    bflb_irq_enable(WIFI_IRQn);
 
     xTaskCreate(wifi_main, (char *)"fw", WIFI_STACK_SIZE, NULL, TASK_PRIORITY_FW, &wifi_fw_task);
 
     return 0;
+}
+
+void test_wifi(void *param)
+{
+    vTaskDelay(5 * 1000);
+
+    char wifi_ssid[64] = { 0 };
+    char passwd[65]    = { 0 };
+    memcpy(wifi_ssid, "PDCN", 4);
+    memcpy(passwd, "12344321", 8);
+    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
+    while(1){
+        vTaskDelay(10 * 1000);
+        printf("hello \r\n");
+    }
 }
 
 CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
@@ -281,7 +297,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 
     //hal_wifi_start_firmware_task();
 
-    // wifi_start_firmware_task();
+    wifi_start_firmware_task();
     stack_wifi_init = 1;
     //aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 
@@ -295,6 +311,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     err                  = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_InitChipStack();
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
+    xTaskCreate(test_wifi, "connect wifi", 512, NULL, 15, NULL);
 
 exit:
     return err;
