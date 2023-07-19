@@ -73,8 +73,7 @@
 #define MEMP_NUM_NETCONN              16
 #define MEMP_NUM_UDP_PCB              16
 #define MEMP_NUM_REASSDATA            LWIP_MIN((IP_REASS_MAX_PBUFS), 5)
-#define CONFIG_MAC_TXQ_DEPTH          16
-#define CONFIG_MAC_RXQ_DEPTH          12
+
 #define MAC_TXQ_DEPTH                 CONFIG_MAC_TXQ_DEPTH
 #define MAC_RXQ_DEPTH                 CONFIG_MAC_RXQ_DEPTH
 
@@ -85,6 +84,7 @@
 #define TCP_QUEUE_OOSEQ               1
 #define MEMP_NUM_TCP_SEG              ((4 * TCP_SND_BUF) / TCP_MSS)
 #define MEMP_NUM_PBUF                 (TCP_SND_BUF / TCP_MSS)
+#define PBUF_POOL_SIZE                0
 #define LWIP_WND_SCALE                1
 #define TCP_RCV_SCALE                 2
 #define TCP_SNDLOWAT                  LWIP_MIN(LWIP_MAX(((TCP_SND_BUF) / 4), (2 * TCP_MSS) + 1), (TCP_SND_BUF)-1)
@@ -119,18 +119,6 @@
 #define LWIP_SO_SNDTIMEO          1
 #define SO_REUSE                  1
 #define LWIP_TCP_KEEPALIVE        1
-
-#define LWIP_IPV6 1
-#define LWIP_IPV4 1
-#define LWIP_IPV6_DHCP6 1
-#define LWIP_IPV6_SCOPES 0
-#define LWIP_AUTOIP 1
-#define LWIP_IPV6_MLD 1
-#define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 1
-#define MEMP_NUM_MLD6_GROUP 10
-#define PBUF_POOL_BUFSIZE 1600
-
-#define LWIP_ERRNO_STDINCLUDE 1
 
 #if defined(__cplusplus)
 extern "C" long random(void);
