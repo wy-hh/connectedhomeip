@@ -51,6 +51,11 @@ void platform_port_init(void)
 {
     board_init();
 
+#if CONFIG_ENABLE_CHIP_SHELL
+    struct bflb_device_s *uart0 = bflb_device_get_by_name("uart0");
+    shell_init_with_task(uart0);
+#endif
+
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
     btblecontroller_em_config();
 #endif

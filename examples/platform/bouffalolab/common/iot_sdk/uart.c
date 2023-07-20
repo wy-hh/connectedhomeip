@@ -21,7 +21,6 @@
 
 #include <mboard.h>
 
-#if !defined BOUFFALO_SDK
 #ifdef CFG_USB_CDC_ENABLE
 #include <aos/kernel.h>
 #include <aos/yloop.h>
@@ -34,7 +33,6 @@
 #include <bl_uart.h>
 #include <hosal_uart.h>
 extern hosal_uart_dev_t uart_stdio;
-#endif
 #endif
 
 #if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
@@ -53,7 +51,6 @@ typedef struct _chipUart
 
 static chipUart_t chipUart_var;
 
-#if !defined BOUFFALO_SDK
 #ifndef CFG_USB_CDC_ENABLE
 static int uartTxCallback(void * p_arg)
 {
@@ -128,8 +125,6 @@ void aosUartRxCallback(int fd, void * param)
 }
 #endif
 
-//bl_iot_sdk
-#else
 static int uartTxCallback(void * p_arg)
 {
 
@@ -169,23 +164,18 @@ static int uartRxCallback(void * p_arg)
     return 0;
 }
 
-#endif //bouffalo_sdk
 void uartInit(void)
 {
     memset(&chipUart_var, 0, offsetof(chipUart_t, rxbuf));
 
     chipUart_var.sema = xSemaphoreCreateBinaryStatic(&chipUart_var.mutx);
 
-#if !defined BOUFFALO_SDK
 #ifndef CFG_USB_CDC_ENABLE
     hosal_uart_finalize(&uart_stdio);
     hosal_uart_init(&uart_stdio);
     hosal_uart_callback_set(&uart_stdio, HOSAL_UART_RX_CALLBACK, uartRxCallback, NULL);
     hosal_uart_callback_set(&uart_stdio, HOSAL_UART_TX_CALLBACK, uartTxCallback, NULL);
     hosal_uart_ioctl(&uart_stdio, HOSAL_UART_MODE_SET, (void *) HOSAL_UART_MODE_INT);
-#endif
-#else
-
 #endif
 }
 
@@ -217,11 +207,7 @@ int16_t uartRead(char * Buf, uint16_t NbBytesToRead)
 #ifndef CFG_USB_CDC_ENABLE
 int16_t uartWrite(const char * Buf, uint16_t BufLength)
 {
-#if !defined BOUFFALO_SDK
     return hosal_uart_send(&uart_stdio, Buf, BufLength);
-#else
-    return 0;
-#endif
 }
 #else
 int16_t uartWrite(const char * Buf, uint16_t BufLength)

@@ -53,7 +53,6 @@ template("bouffalo_sdk") {
 
     defines += [
 
-
       #dump backtrace
       "CHIP_SYSTEM_CRYPTO_HEADER_RESERVE_SIZE=128",
 
@@ -68,6 +67,7 @@ template("bouffalo_sdk") {
     if (defined(invoker.defines)) {
       defines += invoker.defines
     }
+    cflags = ["-fshort-enums"]
 
     cflags_c = [
       "-Wno-old-style-declaration",
@@ -80,9 +80,7 @@ template("bouffalo_sdk") {
       "-Waggressive-loop-optimizations",
     ]
     cflags_cc = ["-Wno-permissive", "-Wno-stringop-truncation"]
-    cflags = [
-      
-    ]
+
     cflags += ["-Wno-unused-variable", "-Wno-conversion"]
     cflags += [ "-Wno-maybe-uninitialized", "-Wno-unused-but-set-variable" ]
 
@@ -173,7 +171,7 @@ template("bouffalo_sdk") {
     ]
 
     cflags_c = [
-      "-Wno-error"
+      "-Wno-enum-conversion"
     ]
 
     public_configs = [
@@ -262,6 +260,86 @@ template("bouffalo_sdk") {
     ]
   }
 
+  config("${sdk_target_name}_config_board") {
+    include_dirs = [
+      "${bouffalo_sdk_root}/bsp/board",
+    ]
+  }
+
+  source_set("${sdk_target_name}_board") {
+    defines = [
+      #"CONFIG_PSRAM",
+      "BL616"
+    ]
+
+    include_dirs = [
+      "${bouffalo_sdk_root}/bsp/board/bl616dk",
+    ]
+
+    sources = [
+      "${bouffalo_sdk_root}/bsp/board/bl616dk/board.c",
+      "${bouffalo_sdk_root}/bsp/board/bl616dk/board_rf.c",
+    ]
+
+    cflags_c = [
+      "-Wno-shadow",
+      "-Wno-enum-conversion",
+      "-Wno-format-security",
+      "-Wno-format-truncation"
+    ]
+
+    public_configs = [
+      ":${sdk_target_name}_config_lhal",
+      ":${sdk_target_name}_config_std_drv",
+      ":${sdk_target_name}_config_startup",
+      ":${sdk_target_name}_config_freertos",
+      ":${sdk_target_name}_config_mm",
+      ":${sdk_target_name}_config_rf",
+      ":${sdk_target_name}_config_board",
+    ]
+  }
+
+  config("${sdk_target_name}_config_shell") {
+    include_dirs = [
+      "${bouffalo_sdk_root}/components/shell",
+    ]
+  }
+
+  source_set("${sdk_target_name}_shell") {
+    defines = [
+      #"CONFIG_PSRAM",
+      "BL616"
+    ]
+
+    include_dirs = [
+      "${bouffalo_sdk_root}/bsp/board/bl616dk",
+    ]
+
+    sources = [
+      "${bouffalo_sdk_root}/components/shell/shell.c",
+      "${bouffalo_sdk_root}/components/shell/shell_freertos.c",
+    ]
+
+    cflags_c = [
+      "-Wno-shadow",
+      "-Wno-enum-conversion",
+      "-Wno-format-security",
+      "-Wno-format-truncation",
+      "-Wno-format-nonliteral"
+    ]
+
+    configs += [
+      ":${sdk_target_name}_config_lhal",
+      ":${sdk_target_name}_config_utils",
+      ":${sdk_target_name}_config_board",
+      ":${sdk_target_name}_config_freertos",
+      ":${sdk_target_name}_config_mm",
+    ]
+    public_configs = [
+      ":${sdk_target_name}_config_shell",
+    ]
+  }
+
   config("${sdk_target_name}_config_rf") {
     include_dirs = [
       "${bouffalo_sdk_root}/drivers/soc/bl616/rf/inc",
@@ -304,45 +382,6 @@ template("bouffalo_sdk") {
     ]
     public_configs = [
       ":${sdk_target_name}_config_rf",
-    ]
-  }
-
-  config("${sdk_target_name}_config_board") {
-    include_dirs = [
-      "${bouffalo_sdk_root}/bsp/board",
-    ]
-  }
-
-  source_set("${sdk_target_name}_board") {
-    defines = [
-      #"CONFIG_PSRAM",
-      "BL616"
-    ]
-
-    include_dirs = [
-      "${bouffalo_sdk_root}/bsp/board/bl616dk",
-    ]
-
-    sources = [
-      "${bouffalo_sdk_root}/bsp/board/bl616dk/board.c",
-      "${bouffalo_sdk_root}/bsp/board/bl616dk/board_rf.c",
-    ]
-
-    cflags_c = [
-      "-Wno-shadow",
-      "-Wno-enum-conversion",
-      "-Wno-format-security",
-      "-Wno-format-truncation"
-    ]
-
-    public_configs = [
-      ":${sdk_target_name}_config_lhal",
-      ":${sdk_target_name}_config_std_drv",
-      ":${sdk_target_name}_config_startup",
-      ":${sdk_target_name}_config_freertos",
-      ":${sdk_target_name}_config_mm",
-      ":${sdk_target_name}_config_rf",
-      ":${sdk_target_name}_config_board",
     ]
   }
 
@@ -714,19 +753,6 @@ template("bouffalo_sdk") {
 
     defines = [
       "CONFIG_LWIP",
-
-      "LWIP_IPV6=1",
-      "LWIP_IPV4=1",
-      "LWIP_IPV6_DHCP6=1",
-      "LWIP_IPV6_SCOPES=0",
-      "LWIP_AUTOIP=1",
-      "LWIP_IPV6_MLD=1",
-      "LWIP_ND6_RDNSS_MAX_DNS_SERVERS=1",
-      "MEMP_NUM_MLD6_GROUP=10",
-      "PBUF_POOL_SIZE=20",
-      "PBUF_POOL_BUFSIZE=1600",
-      "CONFIG_ENABLE_IPV6_ADDR_CALLBACK",
-      "LWIP_HOOK_FILENAME=\"bl_lwip_hooks.h\""
     ]
   }
 
@@ -785,7 +811,6 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/net/lwip/lwip_apps/dhcpd/dhcp_server_raw.c",
       #"${bouffalo_sdk_root}/components/net/lwip/lwip/system/os/sys_arch.c",
     ]
-
 
     cflags_c = [
       "-Wno-format",
@@ -936,8 +961,9 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_startup",
       ":${sdk_target_name}_std_drv",
       ":${sdk_target_name}_lhal",
-      ":${sdk_target_name}_rf",
       ":${sdk_target_name}_board",
+      ":${sdk_target_name}_shell",
+      ":${sdk_target_name}_rf",
       ":${sdk_target_name}_libc",
       ":${sdk_target_name}_mm",
       ":${sdk_target_name}_freertos",

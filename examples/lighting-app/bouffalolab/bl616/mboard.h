@@ -37,8 +37,8 @@
 #define CHIP_UART_PORT 0
 #define CHIP_UART_RX_BUFFSIZE 256
 
-#define LED_PIN_PORT 0
-#define LED_PIN 0
+#define LED_PIN_PWM_CH 2
+#define LED_PIN 14
 
 #define MAX_PWM_CHANNEL 1
 

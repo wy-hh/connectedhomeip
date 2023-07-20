@@ -5,122 +5,66 @@
  * web site:    https://www.bouffalolab.com/
  */
 #include <stdio.h>
-
-// #include <hosal_pwm.h>
+#include <bflb_clock.h>
+#include <bflb_gpio.h>
+#include <bflb_pwm_v2.h>
 
 #include "mboard.h"
 #include "demo_pwm.h"
 
-#define PWM_FREQ 1000
-#define PWM_DUTY_CYCLE 10000
-
-#if !defined BOUFFALO_SDK
-hosal_pwm_dev_t rgb_pwm[] = {
-
-#if MAX_PWM_CHANNEL == 3
+static const uint32_t rgb_pwm[][2] = {
     {
-        .port = LED_B_PIN_PORT,
-        /* pwm config */
-        .config.pin        = LED_B_PIN,
-        .config.duty_cycle = 0,        // duty_cycle range is 0~10000 correspond to 0~100%
-        .config.freq       = PWM_FREQ, // freq range is between 0~40MHZ
+        LED_PIN, LED_PIN_PWM_CH
     },
-    {
-        .port = LED_R_PIN_PORT,
-        /* pwm config */
-        .config.pin        = LED_R_PIN,
-        .config.duty_cycle = 0,        // duty_cycle range is 0~10000 correspond to 0~100%
-        .config.freq       = PWM_FREQ, // freq range is between 0~40MHZ
-    },
-    {
-        .port = LED_G_PIN_PORT,
-        /* pwm config */
-        .config.pin        = LED_G_PIN,
-        .config.duty_cycle = 0,        // duty_cycle range is 0~10000 correspond to 0~100%
-        .config.freq       = PWM_FREQ, // freq range is between 0~40MHZ
-    }
-#else
-    {
-        .port = LED_PIN_PORT,
-        /* pwm config */
-        .config.pin        = LED_PIN,
-        .config.duty_cycle = 0,        // duty_cycle range is 0~10000 correspond to 0~100%
-        .config.freq       = PWM_FREQ, // freq range is between 0~40MHZ
-    },
-#endif
 };
-#endif
+
+struct bflb_device_s *bflb_device_pwm = NULL;
 
 void demo_hosal_pwm_init(void)
 {
-    /* init pwm with given settings */
-    for (uint32_t i = 0; i < MAX_PWM_CHANNEL; i++)
-    {
-#if !defined BOUFFALO_SDK
-        hosal_pwm_init(rgb_pwm + i);
-#endif
+    struct bflb_pwm_v2_config_s cfg = {
+        .clk_source = BFLB_SYSTEM_PBCLK,
+        .clk_div = 80,
+        .period = 1000,
+    };
+    struct bflb_device_s * gpio = bflb_device_get_by_name("gpio");
+
+    bflb_device_pwm = bflb_device_get_by_name("pwm_v2_0");
+
+    for (int i = 0; i < sizeof(rgb_pwm)/sizeof(rgb_pwm[0]); i ++) {
+        bflb_gpio_init(gpio, rgb_pwm[i][0], GPIO_FUNC_PWM0 | GPIO_ALTERNATE | GPIO_PULLDOWN | GPIO_SMT_EN | GPIO_DRV_1);
     }
+
+    bflb_pwm_v2_init(bflb_device_pwm, &cfg);
 }
 
 void demo_hosal_pwm_start(void)
 {
-    /* start pwm */
-    for (uint32_t i = 0; i < MAX_PWM_CHANNEL; i++)
-    {
-#if !defined BOUFFALO_SDK
-        hosal_pwm_start(rgb_pwm + i);
-#endif
+    for (int i = 0; i < sizeof(rgb_pwm)/sizeof(rgb_pwm[0]); i ++) {
+        bflb_pwm_v2_channel_positive_start(bflb_device_pwm, rgb_pwm[i][1]);
     }
-}
 
-#if !defined BOUFFALO_SDK
-void demo_hosal_pwm_change_param(hosal_pwm_config_t * para)
-{
-    /* change pwm param */
-    for (uint32_t i = 0; i < MAX_PWM_CHANNEL; i++)
-    {
-        if (para[i].duty_cycle > PWM_DUTY_CYCLE)
-        {
-            para[i].duty_cycle = PWM_DUTY_CYCLE;
-        }
-        hosal_pwm_para_chg(rgb_pwm + i, para[i]);
-    }
+    bflb_pwm_v2_start(bflb_device_pwm);
 }
-#else
-void demo_hosal_pwm_change_param(void * para)
-{
-
-}
-#endif
 
 void demo_hosal_pwm_stop(void)
 {
-    for (uint32_t i = 0; i < MAX_PWM_CHANNEL; i++)
-    {
-#if !defined BOUFFALO_SDK
-        hosal_pwm_stop(rgb_pwm + i);
-        hosal_pwm_finalize(rgb_pwm + i);
-#endif
-    }
+    bflb_pwm_v2_stop(bflb_device_pwm);
 }
 
 void set_level(uint8_t currLevel)
 {
-#if !defined BOUFFALO_SDK
-    hosal_pwm_config_t para;
-#endif
+    int period;
 
     if (currLevel <= 5 && currLevel >= 1)
     {
         currLevel = 5; // avoid demo off
     }
+    period = (int)currLevel * 1000 / 254;
 
-#if !defined BOUFFALO_SDK
-    para.duty_cycle = currLevel * PWM_DUTY_CYCLE / 254;
-    para.freq       = PWM_FREQ;
-
-    demo_hosal_pwm_change_param(&para);
-#endif
+    for (int i = 0; i < sizeof(rgb_pwm)/sizeof(rgb_pwm[0]); i ++) {
+        bflb_pwm_v2_channel_set_threshold(bflb_device_pwm, rgb_pwm[i][1], 0, period);
+    }
 }
 
 void set_color_red(uint8_t currLevel)
@@ -195,19 +139,9 @@ void set_color(uint8_t currLevel, uint8_t currHue, uint8_t currSat)
         break;
     }
 
-    // change level to pwm duty_cycle
-    // 0-254 to 0-10000
-#if !defined BOUFFALO_SDK
-    hosal_pwm_config_t para[3];
-    para[0].duty_cycle = blue * PWM_DUTY_CYCLE / 254;
-    para[0].freq       = PWM_FREQ;
-    para[1].duty_cycle = red * PWM_DUTY_CYCLE / 254;
-    para[1].freq       = PWM_FREQ;
-    para[2].duty_cycle = green * PWM_DUTY_CYCLE / 254;
-    para[2].freq       = PWM_FREQ;
-
-    demo_hosal_pwm_change_param(para);
-#endif
+    bflb_pwm_v2_channel_set_threshold(bflb_device_pwm, rgb_pwm[0][1], 0, blue * PWM_DUTY_CYCLE / 254);
+    bflb_pwm_v2_channel_set_threshold(bflb_device_pwm, rgb_pwm[1][1], 0, red * PWM_DUTY_CYCLE / 254); 
+    bflb_pwm_v2_channel_set_threshold(bflb_device_pwm, rgb_pwm[2][1], 0, green * PWM_DUTY_CYCLE / 254);
 #else
     set_level(currLevel);
 #endif

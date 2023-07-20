@@ -120,6 +120,22 @@
 #define SO_REUSE                  1
 #define LWIP_TCP_KEEPALIVE        1
 
+#define LWIP_IPV6                           1
+#define LWIP_IPV4                           1
+#define LWIP_IPV6_DHCP6                     1
+#define LWIP_IPV6_SCOPES                    0
+#define LWIP_AUTOIP                         1
+#define LWIP_IPV6_MLD                       1
+#define LWIP_ND6_RDNSS_MAX_DNS_SERVERS      1
+#define MEMP_NUM_MLD6_GROUP                 10
+#define PBUF_POOL_BUFSIZE                   1600
+#define LWIP_HOOK_FILENAME                  "bl_lwip_hooks.h"
+
+
+#ifndef LWIP_DECLARE_MEMORY_ALIGNED
+#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) u8_t variable_name[LWIP_MEM_ALIGN_BUFFER(size)] 
+#endif
+
 #if defined(__cplusplus)
 extern "C" long random(void);
 extern "C" int * __errno(void);

@@ -29,9 +29,9 @@
 #include <wifi_mgmr_ext.h>
 
 extern "C" {
-#include <bl616.h>
+// #include <bl616.h>
 #include <bl_fw_api.h>
-#include <bl616_glb.h>
+// #include <bl616_glb.h>
 #include <rfparam_adapter.h>
 }
 
@@ -234,44 +234,40 @@ int wifi_start_firmware_task(void)
 
     /* enable wifi clock */
 
-    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
-    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
+    // GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
+    // GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
 
-    /* set ble controller EM Size */
+    // /* set ble controller EM Size */
 
-    GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
+    // GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
 
-    if (0 != rfparam_init(0, NULL, 0)) {
-        printf("PHY RF init failed!\r\n");
-        return 0;
-    }
 
     printf("PHY RF init success!\r\n");
 
     /* Enable wifi irq */
 
-    bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
-    bflb_irq_enable(WIFI_IRQn);
+    // bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
+    // bflb_irq_enable(WIFI_IRQn);
 
-    xTaskCreate(wifi_main, (char *)"fw", WIFI_STACK_SIZE, NULL, TASK_PRIORITY_FW, &wifi_fw_task);
+    // xTaskCreate(wifi_main, (char *)"fw", WIFI_STACK_SIZE, NULL, TASK_PRIORITY_FW, &wifi_fw_task);
 
     return 0;
 }
 
-void test_wifi(void *param)
-{
-    vTaskDelay(5 * 1000);
+// void test_wifi(void *param)
+// {
+//     vTaskDelay(5 * 1000);
 
-    char wifi_ssid[64] = { 0 };
-    char passwd[65]    = { 0 };
-    memcpy(wifi_ssid, "bl_test_089P", strlen("bl_test_089P"));
-    memcpy(passwd, "12345678", strlen("12345678"));
-    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
-    while(1){
-        vTaskDelay(10 * 1000);
-        printf("hello \r\n");
-    }
-}
+//     char wifi_ssid[64] = { 0 };
+//     char passwd[65]    = { 0 };
+//     memcpy(wifi_ssid, "bl_test_089P", strlen("bl_test_089P"));
+//     memcpy(passwd, "12345678", strlen("12345678"));
+//     wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
+//     while(1){
+//         vTaskDelay(10 * 1000);
+//         printf("hello \r\n");
+//     }
+// }
 
 CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 {
@@ -280,7 +276,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     TaskHandle_t backup_eventLoopTask;
     int iret_rfInit = -1;
 
-//    VerifyOrDieWithMsg(0 == (iret_rfInit = rfparam_init(0, NULL, 0)), DeviceLayer, "rfparam_init failed with %d", iret_rfInit);
+   VerifyOrDieWithMsg(0 == (iret_rfInit = rfparam_init(0, NULL, 0)), DeviceLayer, "rfparam_init failed with %d", iret_rfInit);
 
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
@@ -294,7 +290,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 
     //hal_wifi_start_firmware_task();
 
-    wifi_start_firmware_task();
+    // wifi_start_firmware_task();
     stack_wifi_init = 1;
     //aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 
@@ -308,7 +304,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     err                  = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_InitChipStack();
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
-    xTaskCreate(test_wifi, "connect wifi", 512, NULL, 15, NULL);
+    // xTaskCreate(test_wifi, "connect wifi", 512, NULL, 15, NULL);
 
 exit:
     return err;

@@ -7,11 +7,6 @@ extern "C" {
 
 void demo_hosal_pwm_init(void);
 void demo_hosal_pwm_start(void);
-// #if !defined BOUFFALO_SDK
-// void demo_hosal_pwm_change_param(hosal_pwm_config_t * para);
-// #else
-// void demo_hosal_pwm_change_param(void * para);
-// #endif
 void set_color_red(uint8_t currLevel);
 void set_color_green(uint8_t currLevel);
 void set_color_yellow(uint8_t currLevel);
