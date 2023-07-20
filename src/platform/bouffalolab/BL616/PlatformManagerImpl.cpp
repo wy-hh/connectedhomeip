@@ -238,8 +238,8 @@ int wifi_start_firmware_task(void)
     GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
 
     /* set ble controller EM Size */
-
-    GLB_Set_EM_Sel(GLB_WRAM160KB_EM0KB);
+    /*FIXME : no need config twice*/
+    GLB_Set_EM_Sel(GLB_WRAM128KB_EM32KB);
 
     if (0 != rfparam_init(0, NULL, 0)) {
         printf("PHY RF init failed!\r\n");
