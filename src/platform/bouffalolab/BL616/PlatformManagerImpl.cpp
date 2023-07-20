@@ -258,21 +258,6 @@ int wifi_start_firmware_task(void)
     return 0;
 }
 
-void test_wifi(void *param)
-{
-    vTaskDelay(5 * 1000);
-
-    char wifi_ssid[64] = { 0 };
-    char passwd[65]    = { 0 };
-    memcpy(wifi_ssid, "PDCN", 4);
-    memcpy(passwd, "12344321", 8);
-    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
-    while(1){
-        vTaskDelay(10 * 1000);
-        printf("hello \r\n");
-    }
-}
-
 CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 {
     CHIP_ERROR err                 = CHIP_NO_ERROR;
@@ -304,7 +289,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     err                  = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_InitChipStack();
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
-    xTaskCreate(test_wifi, "connect wifi", 512, NULL, 15, NULL);
 
 exit:
     return err;
