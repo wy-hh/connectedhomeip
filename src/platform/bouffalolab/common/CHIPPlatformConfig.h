@@ -37,6 +37,7 @@ extern void vAssertCalled(void);
 #if CHIP_DEVICE_LAYER_TARGET_BL616
 //#define CHIP_CONFIG_SHA256_CONTEXT_SIZE sizeof(mbedtls_sha256_context) in hw_acc/sha256_alt.h
 #define CHIP_CONFIG_SHA256_CONTEXT_SIZE (32 + 64 + 64 + 19 * 32)
+#define CHIP_SYSTEM_CONFIG_PACKETBUFFER_LWIP_PBUF_TYPE PBUF_RAM
 #else
 //#define CHIP_CONFIG_SHA256_CONTEXT_SIZE sizeof(bl_sha_ctx_t)
 #define CHIP_CONFIG_SHA256_CONTEXT_SIZE ((1 + 5 + 18 + 16 + 16) * sizeof(unsigned int))

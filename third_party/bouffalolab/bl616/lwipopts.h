@@ -73,7 +73,8 @@
 #define MEMP_NUM_NETCONN              16
 #define MEMP_NUM_UDP_PCB              16
 #define MEMP_NUM_REASSDATA            LWIP_MIN((IP_REASS_MAX_PBUFS), 5)
-
+#define CONFIG_MAC_TXQ_DEPTH          16
+#define CONFIG_MAC_RXQ_DEPTH          12
 #define MAC_TXQ_DEPTH                 CONFIG_MAC_TXQ_DEPTH
 #define MAC_RXQ_DEPTH                 CONFIG_MAC_RXQ_DEPTH
 
@@ -102,6 +103,7 @@
 #define MEM_SIZE 8192
 #endif
 #endif
+#define LWIP_HOOK_FILENAME        "lwiphooks.h"
 
 #define LWIP_RAW                  1
 #define LWIP_MULTICAST_TX_OPTIONS 1
@@ -120,21 +122,18 @@
 #define SO_REUSE                  1
 #define LWIP_TCP_KEEPALIVE        1
 
-#define LWIP_IPV6                           1
-#define LWIP_IPV4                           1
-#define LWIP_IPV6_DHCP6                     1
-#define LWIP_IPV6_SCOPES                    0
-#define LWIP_AUTOIP                         1
-#define LWIP_IPV6_MLD                       1
-#define LWIP_ND6_RDNSS_MAX_DNS_SERVERS      1
-#define MEMP_NUM_MLD6_GROUP                 10
-#define PBUF_POOL_BUFSIZE                   1600
-#define LWIP_HOOK_FILENAME                  "bl_lwip_hooks.h"
+#define LWIP_IPV6 1
+#define LWIP_IPV4 1
+#define LWIP_IPV6_DHCP6 1
+#define LWIP_IPV6_SCOPES 0
+#define LWIP_AUTOIP 1
+#define LWIP_IPV6_MLD 1
+#define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 1
+#define MEMP_NUM_MLD6_GROUP 10
+#define PBUF_POOL_BUFSIZE 1600
+#define CONFIG_ENABLE_IPV6_ADDR_CALLBACK
 
-
-#ifndef LWIP_DECLARE_MEMORY_ALIGNED
-#define LWIP_DECLARE_MEMORY_ALIGNED(variable_name, size) u8_t variable_name[LWIP_MEM_ALIGN_BUFFER(size)] 
-#endif
+#define LWIP_ERRNO_STDINCLUDE 1
 
 #if defined(__cplusplus)
 extern "C" long random(void);

@@ -29,16 +29,11 @@
 #include <wifi_mgmr_ext.h>
 
 extern "C" {
-#include <bl616.h>
-#include <bl_fw_api.h>
-#include <bl616_glb.h>
 #include <rfparam_adapter.h>
 }
+#include "wifi_mgmr_portable.h"
 
-#define WIFI_STACK_SIZE  (1536)
-#define TASK_PRIORITY_FW (16)
 
-static TaskHandle_t wifi_fw_task;
 namespace chip {
 namespace DeviceLayer {
 
@@ -221,63 +216,18 @@ void OnWiFiPlatformEvent(uint32_t code, void * private_data)
     }
 }
 
-extern "C" void wifi_event_handler(uint32_t code)
-{
-    OnWiFiPlatformEvent(code, NULL);
-}
-
-extern "C" void interrupt0_handler(void);
-int wifi_start_firmware_task(void)
-{
-    //LOG_I("Starting wifi ...\r\n");
-    printf("Starting wifi ...\r\n");
-
-    /* enable wifi clock */
-
-    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
-    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
-
-    /* set ble controller EM Size */
-    /*FIXME : no need config twice*/
-    GLB_Set_EM_Sel(GLB_WRAM128KB_EM32KB);
-
-    if (0 != rfparam_init(0, NULL, 0)) {
-        printf("PHY RF init failed!\r\n");
-        return 0;
-    }
-
-    printf("PHY RF init success!\r\n");
-
-    /* Enable wifi irq */
-
-    bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
-    bflb_irq_enable(WIFI_IRQn);
-
-    xTaskCreate(wifi_main, (char *)"fw", WIFI_STACK_SIZE, NULL, TASK_PRIORITY_FW, &wifi_fw_task);
-
-    return 0;
-}
-
 CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
 {
     CHIP_ERROR err                 = CHIP_NO_ERROR;
-    static uint8_t stack_wifi_init = 0;
     TaskHandle_t backup_eventLoopTask;
     int iret_rfInit = -1;
 
-   VerifyOrDieWithMsg(0 == (iret_rfInit = rfparam_init(0, NULL, 0)), DeviceLayer, "rfparam_init failed with %d", iret_rfInit);
+    VerifyOrDieWithMsg(0 == (iret_rfInit = rfparam_init(0, NULL, 0)), DeviceLayer, "rfparam_init failed with %d", iret_rfInit);
 
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
 
-    if (1 == stack_wifi_init)
-    {
-        ChipLogError(DeviceLayer, "Wi-Fi already initialized!");
-        return CHIP_NO_ERROR;
-    }
-
     wifi_start_firmware_task();
-    stack_wifi_init = 1;
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);

@@ -47,8 +47,7 @@ template("bouffalo_sdk") {
 
       "CONFIG_VIF_MAX=2",
       "CONFIG_STA_MAX=4",
-      "CONFIG_MAC_TXQ_DEPTH=32",
-      "CONFIG_MAC_RXQ_DEPTH=12",
+      "CONFIG_COMPONENT_BUGKILLER_ENABLE=1",
     ]
 
     defines += [
@@ -104,7 +103,7 @@ template("bouffalo_sdk") {
       "-O2",
     ]
     cflags_cc = ["-Wno-permissive", "-Wno-stringop-truncation"]
-    cflags += ["-Wno-unused-variable", "-Wno-conversion"]
+    cflags = ["-Wno-unused-variable", "-Wno-conversion"]
     cflags += [ "-Wno-maybe-uninitialized", "-Wno-unused-but-set-variable" ]
 
     if (defined(invoker.defines)) {

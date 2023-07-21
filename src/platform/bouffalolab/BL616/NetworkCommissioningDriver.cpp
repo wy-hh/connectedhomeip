@@ -35,18 +35,13 @@ extern "C" {
 #define WIFI_STA_DISCONNECT_DELAY (pdMS_TO_TICKS(200))
 
 using namespace ::chip;
+using namespace ::chip::DeviceLayer::Internal;
 
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
 
 namespace {
-constexpr char kWiFiSSIDKeyName[]        = "wifi-ssid";
-constexpr char kWiFiCredentialsKeyName[] = "wifi-pass";
-
-constexpr char blWiFiSSIDKeyName[]        = "bl-wifi-ssid";
-constexpr char blWiFiCredentialsKeyName[] = "bl-wifi-pass";
-
 static char WiFiSSIDStr[DeviceLayer::Internal::kMaxWiFiSSIDLength];
 static uint8_t scan_type = 0;
 } // namespace
@@ -57,10 +52,11 @@ CHIP_ERROR BLWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChangeC
     size_t ssidLen        = 0;
     size_t credentialsLen = 0;
 
-    err = PersistedStorage::KeyValueStoreMgr().Get(kWiFiCredentialsKeyName, mSavedNetwork.credentials,
+    err = PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiSSID, mSavedNetwork.credentials,
                                                    sizeof(mSavedNetwork.credentials), &credentialsLen);
     SuccessOrExit(err);
-    err = PersistedStorage::KeyValueStoreMgr().Get(kWiFiSSIDKeyName, mSavedNetwork.ssid, sizeof(mSavedNetwork.ssid), &ssidLen);
+    err = PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiPassword, mSavedNetwork.ssid,
+                                                   sizeof(mSavedNetwork.ssid), &ssidLen);
     SuccessOrExit(err);
 
     mSavedNetwork.credentialsLen = credentialsLen;
@@ -88,25 +84,12 @@ void BLWiFiDriver::Shutdown()
 
 CHIP_ERROR BLWiFiDriver::CommitConfiguration()
 {
-    ReturnErrorOnFailure(PersistedStorage::KeyValueStoreMgr().Put(kWiFiSSIDKeyName, mStagingNetwork.ssid, mStagingNetwork.ssidLen));
-    ReturnErrorOnFailure(PersistedStorage::KeyValueStoreMgr().Put(kWiFiCredentialsKeyName, mStagingNetwork.credentials,
+    ChipLogProgress(NetworkProvisioning, "BLWiFiDriver::CommitConfiguration");
+    ReturnErrorOnFailure(
+        PersistedStorage::KeyValueStoreMgr().Put(BLConfig::kConfigKey_WiFiSSID, mStagingNetwork.ssid, mStagingNetwork.ssidLen));
+    ReturnErrorOnFailure(PersistedStorage::KeyValueStoreMgr().Put(BLConfig::kConfigKey_WiFiPassword, mStagingNetwork.credentials,
                                                                   mStagingNetwork.credentialsLen));
     mSavedNetwork = mStagingNetwork;
-    return CHIP_NO_ERROR;
-}
-
-CHIP_ERROR BLWiFiDriver::SaveConfiguration()
-{
-    if (NULL == mStagingNetwork.ssid || 0 == mStagingNetwork.ssidLen || NULL == mStagingNetwork.credentials ||
-        0 == mStagingNetwork.credentialsLen)
-    {
-        return CHIP_ERROR_KEY_NOT_FOUND;
-    }
-
-    ReturnErrorOnFailure(
-        PersistedStorage::KeyValueStoreMgr().Put(blWiFiSSIDKeyName, mStagingNetwork.ssid, mStagingNetwork.ssidLen));
-    ReturnErrorOnFailure(PersistedStorage::KeyValueStoreMgr().Put(blWiFiCredentialsKeyName, mStagingNetwork.credentials,
-                                                                  mStagingNetwork.credentialsLen));
     return CHIP_NO_ERROR;
 }
 
@@ -164,57 +147,32 @@ Status BLWiFiDriver::ReorderNetwork(ByteSpan networkId, uint8_t index, MutableCh
 
 CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, const char * key, uint8_t keyLen)
 {
-    // ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
-
     char wifi_ssid[64] = { 0 };
     char passwd[64]    = { 0 };
     int state          = 0;
 
-    // wifi_sta_disconnect();
-    // vTaskDelay(WIFI_STA_DISCONNECT_DELAY);
-
-    //wifi_mgmr_sta_disable(NULL);
-    // state = wifi_mgmr_sta_state_get();
-    // while (state)
-    // {
-    //     state = wifi_mgmr_sta_state_get();
-    //     vTaskDelay(100);
-    // }
+    ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
 
     memcpy(wifi_ssid, ssid, ssidLen);
     memcpy(passwd, key, keyLen);
-   // wifi_interface_t wifi_interface;
-   // wifi_interface = wifi_mgmr_sta_enable();
-    //wifi_mgmr_sta_connect(&wifi_interface, wifi_ssid, passwd, NULL, NULL, 0, 0);
 
     wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
-    // ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
 
     return ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Enabled);
-}
-
-CHIP_ERROR BLWiFiDriver::ReConnectWiFiNetwork(void)
-{
-    char ssid[64]  = { 0 };
-    char psk[64]   = { 0 };
-    size_t ssidLen = 0;
-    size_t pskLen  = 0;
-
-    ReturnErrorOnFailure(
-        PersistedStorage::KeyValueStoreMgr().Get((const char *) blWiFiSSIDKeyName, (void *) ssid, 64, &ssidLen, 0));
-    ReturnErrorOnFailure(
-        PersistedStorage::KeyValueStoreMgr().Get((const char *) blWiFiCredentialsKeyName, (void *) psk, 64, &pskLen, 0));
-
-    ConnectWiFiNetwork(ssid, ssidLen, psk, pskLen);
-
-    return CHIP_NO_ERROR;
 }
 
 void BLWiFiDriver::OnConnectWiFiNetwork(bool isConnected)
 {
     if (mpConnectCallback)
     {
-        mpConnectCallback->OnResult(Status::kSuccess, CharSpan(), 0);
+        if (isConnected)
+        {
+            mpConnectCallback->OnResult(Status::kSuccess, CharSpan(), 0);
+        }
+        else
+        {
+            mpConnectCallback->OnResult(Status::kUnknownError, CharSpan(), 0);
+        }
         mpConnectCallback = nullptr;
     }
 }
@@ -249,75 +207,61 @@ exit:
 CHIP_ERROR BLWiFiDriver::StartScanWiFiNetworks(ByteSpan ssid)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    wifi_mgmr_scan_params_t config;
-    memset(&config, 0 , sizeof(wifi_mgmr_scan_params_t));
 
-    if (!ssid.empty())
+    if (0 == wifi_start_scan(ssid.data(), ssid.size()))
     {
-        memcpy(config.ssid_array, ssid.data(), ssid.size());
-        config.ssid_length = ssid.size();
-        scan_type = 1;
+        return CHIP_NO_ERROR;
     }
-    else
-    {
-        scan_type = 0;
-    }
-
-    // err = (CHIP_ERROR) wifi_mgmr_sta_scan(&config);
-    // if (err != CHIP_NO_ERROR)
-    // {
-    //     return CHIP_ERROR_INTERNAL;
-    // }
-    return CHIP_NO_ERROR;
+    return CHIP_ERROR_INTERNAL;
 }
 
 void BLWiFiDriver::OnScanWiFiNetworkDone()
 {
-    int ap_num = 0;
+    // int ap_num = 0;
 
-    ap_num = wifi_mgmr_get_scan_ap_num();
-    if (!ap_num)
-    {
-        ChipLogProgress(DeviceLayer, "No AP found");
-        if (mpScanCallback != nullptr)
-        {
-            mpScanCallback->OnFinished(Status::kSuccess, CharSpan(), nullptr);
-            mpScanCallback = nullptr;
-        }
-        return;
-    }
+    // ap_num = wifi_mgmr_get_scan_ap_num();
+    // if (!ap_num)
+    // {
+    //     ChipLogProgress(DeviceLayer, "No AP found");
+    //     if (mpScanCallback != nullptr)
+    //     {
+    //         mpScanCallback->OnFinished(Status::kSuccess, CharSpan(), nullptr);
+    //         mpScanCallback = nullptr;
+    //     }
+    //     return;
+    // }
 
-    wifi_mgmr_scan_item_t * ScanResult = (wifi_mgmr_scan_item_t *) pvPortMalloc(ap_num * sizeof(wifi_mgmr_scan_item_t));
-    wifi_mgmr_get_scan_result(ScanResult, &ap_num, scan_type, WiFiSSIDStr);
+    // wifi_mgmr_ap_item_t * ScanResult = (wifi_mgmr_ap_item_t *) pvPortMalloc(ap_num * sizeof(wifi_mgmr_ap_item_t));
+    // wifi_mgmr_get_scan_result(ScanResult, &ap_num, scan_type, WiFiSSIDStr);
 
-    if (ScanResult)
-    {
-        if (CHIP_NO_ERROR == DeviceLayer::SystemLayer().ScheduleLambda([ap_num, ScanResult]() {
-                BLScanResponseIterator iter(ap_num, ScanResult);
-                if (GetInstance().mpScanCallback)
-                {
-                    GetInstance().mpScanCallback->OnFinished(Status::kSuccess, CharSpan(), &iter);
-                    GetInstance().mpScanCallback = nullptr;
-                }
-                else
-                {
-                    ChipLogError(DeviceLayer, "can't find the ScanCallback function");
-                }
-            }))
-        {
-            vPortFree(ScanResult);
-            ChipLogProgress(DeviceLayer, "ScheduleLambda OK");
-        }
-    }
-    else
-    {
-        ChipLogError(DeviceLayer, "can't get ap_records ");
-        if (mpScanCallback)
-        {
-            mpScanCallback->OnFinished(Status::kUnknownError, CharSpan(), nullptr);
-            mpScanCallback = nullptr;
-        }
-    }
+    // if (ScanResult)
+    // {
+    //     if (CHIP_NO_ERROR == DeviceLayer::SystemLayer().ScheduleLambda([ap_num, ScanResult]() {
+    //             BLScanResponseIterator iter(ap_num, ScanResult);
+    //             if (GetInstance().mpScanCallback)
+    //             {
+    //                 GetInstance().mpScanCallback->OnFinished(Status::kSuccess, CharSpan(), &iter);
+    //                 GetInstance().mpScanCallback = nullptr;
+    //             }
+    //             else
+    //             {
+    //                 ChipLogError(DeviceLayer, "can't find the ScanCallback function");
+    //             }
+    //         }))
+    //     {
+    //         vPortFree(ScanResult);
+    //         ChipLogProgress(DeviceLayer, "ScheduleLambda OK");
+    //     }
+    // }
+    // else
+    // {
+    //     ChipLogError(DeviceLayer, "can't get ap_records ");
+    //     if (mpScanCallback)
+    //     {
+    //         mpScanCallback->OnFinished(Status::kUnknownError, CharSpan(), nullptr);
+    //         mpScanCallback = nullptr;
+    //     }
+    // }
 }
 
 void BLWiFiDriver::ScanNetworks(ByteSpan ssid, WiFiDriver::ScanCallback * callback)
@@ -335,18 +279,17 @@ void BLWiFiDriver::ScanNetworks(ByteSpan ssid, WiFiDriver::ScanCallback * callba
 
 CHIP_ERROR GetConfiguredNetwork(Network & network)
 {
-    uint8_t ssid[64];
-    uint16_t ssid_len;
-    //FIXME:NO wifi mgmr profile
-    //ssid_len = wifi_mgmr_profile_ssid_get(ssid);
-    ssid_len = 0;
-    if (!ssid_len || ssid_len > DeviceLayer::Internal::kMaxWiFiSSIDLength)
-    {
-        return CHIP_ERROR_INTERNAL;
-    }
+    // uint8_t ssid[64];
+    // uint16_t ssid_len;
 
-    memcpy(network.networkID, ssid, ssid_len);
-    network.networkIDLen = ssid_len;
+    // ssid_len = wifi_mgmr_profile_ssid_get(ssid);
+    // if (!ssid_len || ssid_len > DeviceLayer::Internal::kMaxWiFiSSIDLength)
+    // {
+    //     return CHIP_ERROR_INTERNAL;
+    // }
+
+    // memcpy(network.networkID, ssid, ssid_len);
+    // network.networkIDLen = ssid_len;
 
     return CHIP_NO_ERROR;
 }
@@ -355,7 +298,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
 {
     Network configuredNetwork;
     bool staConnected = false;
-    // VerifyOrReturn(ESP32Utils::IsStationEnabled(staEnabled) == CHIP_NO_ERROR);
+
     VerifyOrReturn(mpStatusChangeCallback != nullptr);
     CHIP_ERROR err = GetConfiguredNetwork(configuredNetwork);
     if (err != CHIP_NO_ERROR)
@@ -382,8 +325,6 @@ void BLWiFiDriver::OnNetworkStatusChange()
 
 CHIP_ERROR BLWiFiDriver::SetLastDisconnectReason(const ChipDeviceEvent * event)
 {
-    // VerifyOrReturnError(event->Type == DeviceEventType::kRtkWiFiStationDisconnectedEvent, CHIP_ERROR_INVALID_ARGUMENT);
-
     uint16_t reason_code;
 
     reason_code = wifiMgmr.wifi_mgmr_stat_info.reason_code;

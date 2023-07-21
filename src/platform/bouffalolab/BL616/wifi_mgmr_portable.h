@@ -17,6 +17,8 @@ bool wifi_mgmr_security_type_is_wpa(void);
 bool wifi_mgmr_security_type_is_wpa2(void);
 bool wifi_mgmr_security_type_is_wpa3(void);
 
+int wifi_start_scan(const uint8_t * ssid, uint32_t length);
+void wifi_start_firmware_task(void);
 #ifdef __cplusplus
 }
 #endif

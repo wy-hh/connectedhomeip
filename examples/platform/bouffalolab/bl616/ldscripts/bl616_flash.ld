@@ -29,10 +29,10 @@ MEMORY
 {
     xip_memory  (rx)  : ORIGIN = 0xA0000000, LENGTH = 4M
     ram_psram  (wxa)   : ORIGIN = 0xA8000000, LENGTH = 4M
-    itcm_memory (rx)  : ORIGIN = 0x62FC0000, LENGTH = 12K
-    dtcm_memory (rx)  : ORIGIN = 0x62FC3000, LENGTH = 4K
-    nocache_ram_memory (!rx) : ORIGIN = 0x22FC4000, LENGTH = nocache_min_size
-    ram_memory  (!rx) : ORIGIN = 0x62FC4000 + nocache_min_size, LENGTH = 320K-12K-4K-nocache_min_size
+    itcm_memory (rx)  : ORIGIN = 0x62FC0000, LENGTH = 20K
+    dtcm_memory (rx)  : ORIGIN = 0x62FC5000, LENGTH = 4K
+    nocache_ram_memory (!rx) : ORIGIN = 0x22FC6000, LENGTH = 44K+60K
+    ram_memory  (!rx) : ORIGIN = 0x62FE0000, LENGTH = 320K-20K-4K-44K-60K
     ram_wifi  (wxa)   : ORIGIN = 0x23010000, LENGTH = 160K - __EM_SIZE
 }
 

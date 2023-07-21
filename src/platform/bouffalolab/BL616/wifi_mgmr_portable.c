@@ -1,8 +1,13 @@
 #include <stdint.h>
 #include <string.h>
+
+#include <bl616.h>
 #include <bl616_glb.h>
 
+#include <FreeRTOS.h>
+#include <bl_fw_api.h>
 #include <wifi_mgmr.h>
+#include <log.h>
 //#include <wifi_mgmr_profile.h>
 //FIXME:no wpa_supplicant
 #if 0
@@ -14,6 +19,11 @@
 #include <wpa_supplicant/src/common/wpa_common.h>
 #include <wpa_supplicant/src/rsn_supp/wpa_i.h>
 #endif
+
+#define WIFI_STACK_SIZE  (1536)
+#define TASK_PRIORITY_FW (16)
+
+static TaskHandle_t wifi_fw_task;
 
 extern struct wpa_sm gWpaSm;
 
@@ -172,4 +182,93 @@ void hal_reboot (void)
 {
     taskDISABLE_INTERRUPTS();
     GLB_SW_POR_Reset();
+}
+
+static wifi_conf_t conf = {
+    .country_code = "CN",
+};
+
+void wifi_event_handler(uint32_t code)
+{
+    switch (code) {
+        case CODE_WIFI_ON_INIT_DONE: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_INIT_DONE\r\n", __func__);
+            wifi_mgmr_init(&conf);
+        } break;
+        case CODE_WIFI_ON_MGMR_DONE: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_MGMR_DONE\r\n", __func__);
+        } break;
+        case CODE_WIFI_ON_SCAN_DONE: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_SCAN_DONE\r\n", __func__);
+            wifi_mgmr_sta_scanlist();
+        } break;
+        case CODE_WIFI_ON_CONNECTED: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_CONNECTED\r\n", __func__);
+            void mm_sec_keydump();
+            mm_sec_keydump();
+        } break;
+        case CODE_WIFI_ON_GOT_IP: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_GOT_IP\r\n", __func__);
+            LOG_I("[SYS] Memory left is %d Bytes\r\n", kfree_size());
+        } break;
+        case CODE_WIFI_ON_DISCONNECT: {
+            // wifi_state = 0;
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_DISCONNECT\r\n", __func__);
+        } break;
+        case CODE_WIFI_ON_AP_STARTED: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_AP_STARTED\r\n", __func__);
+        } break;
+        case CODE_WIFI_ON_AP_STOPPED: {
+            LOG_I("[APP] [EVT] %s, CODE_WIFI_ON_AP_STOPPED\r\n", __func__);
+        } break;
+        case CODE_WIFI_ON_AP_STA_ADD: {
+            LOG_I("[APP] [EVT] [AP] [ADD] %lld\r\n", xTaskGetTickCount());
+        } break;
+        case CODE_WIFI_ON_AP_STA_DEL: {
+            LOG_I("[APP] [EVT] [AP] [DEL] %lld\r\n", xTaskGetTickCount());
+        } break;
+        default: {
+            LOG_I("[APP] [EVT] Unknown code %u \r\n", code);
+        }
+    }
+}
+
+int wifi_start_scan(const uint8_t * ssid, uint32_t length) 
+{
+    wifi_mgmr_scan_params_t config;
+
+    memset(&config, 0, sizeof(wifi_mgmr_scan_params_t));
+    if (length && length <= MGMR_SSID_LEN) {
+        memcpy(config.ssid_array, ssid, length);
+    }
+
+    return wifi_mgmr_sta_scan(&config);
+}
+
+// void test_wifi(void *param)
+// {
+//     vTaskDelay(5 * 1000);
+
+//     char wifi_ssid[64] = { 0 };
+//     char passwd[65]    = { 0 };
+//     memcpy(wifi_ssid, "H3C_TEST", strlen("H3C_TEST"));
+//     memcpy(passwd, "12345678", strlen("12345678"));
+//     wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
+//     while(1){
+//         vTaskDelay(10 * 1000);
+//         printf("hello \r\n");
+//     }
+// }
+
+void wifi_start_firmware_task(void)
+{
+    GLB_PER_Clock_UnGate(GLB_AHB_CLOCK_IP_WIFI_PHY | GLB_AHB_CLOCK_IP_WIFI_MAC_PHY | GLB_AHB_CLOCK_IP_WIFI_PLATFORM);
+    GLB_AHB_MCU_Software_Reset(GLB_AHB_MCU_SW_WIFI);
+
+    extern void interrupt0_handler(void);
+    bflb_irq_attach(WIFI_IRQn, (irq_callback)interrupt0_handler, NULL);
+    bflb_irq_enable(WIFI_IRQn);
+
+    xTaskCreate(wifi_main, (char *)"fw", WIFI_STACK_SIZE, NULL, TASK_PRIORITY_FW, &wifi_fw_task);
+    // xTaskCreate(test_wifi, "connect wifi", 512, NULL, 15, NULL);
 }
