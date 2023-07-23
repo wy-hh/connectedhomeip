@@ -60,6 +60,9 @@ private:
     friend PlatformManager & PlatformMgr(void);
     friend PlatformManagerImpl & PlatformMgrImpl(void);
     friend class Internal::BLEManagerImpl;
+
+    CHIP_ERROR _PostEvent(const ChipDeviceEvent * event);
+
 #if CHIP_DEVICE_LAYER_TARGET_BL616 && CHIP_DEVICE_CONFIG_ENABLE_WIFI
     friend void OnWiFiPlatformEvent(uint32_t code, void * private_data);
 #elif CHIP_DEVICE_LAYER_TARGET_BL602

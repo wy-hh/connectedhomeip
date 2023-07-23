@@ -51,10 +51,6 @@ template("bouffalo_sdk") {
     ]
 
     defines += [
-
-      #dump backtrace
-      "CHIP_SYSTEM_CRYPTO_HEADER_RESERVE_SIZE=128",
-
       "BOUFFALO_SDK",
     ]
 
@@ -912,7 +908,7 @@ template("bouffalo_sdk") {
 
   source_set("${sdk_target_name}_wifi") {
     libs = [
-      "${bouffalo_sdk_root}/components/wireless/wifi6/lib/libwifi6_matter.a",
+      "${bouffalo_sdk_root}/components/wireless/wifi6/lib/libwifi6.a",
     ]
 
     sources = [

@@ -74,6 +74,8 @@ CHIP_ERROR ConnectivityManagerImpl::_Init()
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     mWiFiStationState = ConnectivityManager::kWiFiStationState_NotConnected;
     ReturnErrorOnFailure(SetWiFiStationMode(kWiFiStationMode_Enabled));
+
+    PlatformMgr().AddEventHandler(NetworkCommissioning::NetworkEventHandler, 0);
 #endif
 
     return CHIP_NO_ERROR;

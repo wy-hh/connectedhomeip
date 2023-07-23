@@ -314,7 +314,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
 {
     Network configuredNetwork;
     bool staConnected = false;
-    // VerifyOrReturn(ESP32Utils::IsStationEnabled(staEnabled) == CHIP_NO_ERROR);
+
     VerifyOrReturn(mpStatusChangeCallback != nullptr);
     CHIP_ERROR err = GetConfiguredNetwork(configuredNetwork);
     if (err != CHIP_NO_ERROR)

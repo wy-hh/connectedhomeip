@@ -33,6 +33,7 @@
 #define LWIP_HDR_LWIPOPTS_H__
 
 #include <stdbool.h>
+
 #define LWIP_NETIF_API     1
 #define LWIP_DEBUG         1
 #define LWIP_STATS_DISPLAY 1
@@ -114,24 +115,25 @@
 #define LWIP_ERRNO_STDINCLUDE     1
 #define LWIP_SOCKET_SET_ERRNO     1
 
+#define LWIP_IPV4                 1
+#define LWIP_IGMP                 1
 #define LWIP_DHCP                 1
 #define LWIP_DNS                  1
-#define LWIP_IGMP                 0
 #define LWIP_SO_RCVTIMEO          1
 #define LWIP_SO_SNDTIMEO          1
 #define SO_REUSE                  1
 #define LWIP_TCP_KEEPALIVE        1
 
+#define LWIP_IGMP                 1
 #define LWIP_IPV6 1
-#define LWIP_IPV4 1
 #define LWIP_IPV6_DHCP6 1
-#define LWIP_IPV6_SCOPES 0
+#define LWIP_IPV6_SCOPES 1
 #define LWIP_AUTOIP 1
 #define LWIP_IPV6_MLD 1
 #define LWIP_ND6_RDNSS_MAX_DNS_SERVERS 1
 #define MEMP_NUM_MLD6_GROUP 10
-#define PBUF_POOL_BUFSIZE 1600
-#define CONFIG_ENABLE_IPV6_ADDR_CALLBACK
+
+#define LWIP_NETIF_EXT_STATUS_CALLBACK 1
 
 #define LWIP_ERRNO_STDINCLUDE 1
 

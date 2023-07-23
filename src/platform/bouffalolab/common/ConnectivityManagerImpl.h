@@ -42,6 +42,16 @@
 namespace chip {
 namespace DeviceLayer {
 
+enum
+{
+    kWiFiOnInitDone = DeviceEventType::kRange_PublicPlatformSpecific,
+    kWiFiOnScanDone,
+    kWiFiOnConnected,
+    kWiFiOnGotIpAddress,
+    kWiFiOnGotIpv6Address,
+    kWiFiOnDisconnected,
+};
+
 class ConnectivityManagerImpl final : public ConnectivityManager,
                                       public Internal::GenericConnectivityManagerImpl<ConnectivityManagerImpl>,
                                       public Internal::GenericConnectivityManagerImpl_UDP<ConnectivityManagerImpl>,

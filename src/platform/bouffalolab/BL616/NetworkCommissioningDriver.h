@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
 #pragma once
 extern "C" {
 #include <wifi_mgmr.h>
@@ -24,7 +26,9 @@ extern "C" {
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
-// #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
+void NetworkEventHandler(const ChipDeviceEvent * event, intptr_t arg);
+
 namespace {
 constexpr uint8_t kMaxWiFiNetworks                  = 1;
 constexpr uint8_t kWiFiScanNetworksTimeOutSeconds   = 10;
@@ -34,7 +38,7 @@ constexpr uint8_t kWiFiConnectNetworkTimeoutSeconds = 20;
 class BLScanResponseIterator : public Iterator<WiFiScanResponse>
 {
 public:
-    BLScanResponseIterator(const size_t size, const wifi_mgmr_scan_item * scanResults) : mSize(size), mpScanResults(scanResults) {}
+    BLScanResponseIterator(const size_t size, const wifi_mgmr_scan_item_t * scanResults) : mSize(size), mpScanResults(scanResults) {}
     size_t Count() override { return mSize; }
     bool Next(WiFiScanResponse & item) override
     {
@@ -60,7 +64,7 @@ public:
 
 private:
     const size_t mSize;
-    const wifi_mgmr_scan_item * mpScanResults;
+    const wifi_mgmr_scan_item_t * mpScanResults;
     size_t mIternum = 0;
 };
 
@@ -129,7 +133,6 @@ public:
 
 private:
     bool NetworkMatch(const WiFiNetwork & network, ByteSpan networkId);
-    CHIP_ERROR StartScanWiFiNetworks(ByteSpan ssid);
 
     WiFiNetwork mSavedNetwork;
     WiFiNetwork mStagingNetwork;
@@ -138,8 +141,10 @@ private:
     NetworkStatusChangeCallback * mpStatusChangeCallback = nullptr;
     int32_t mLastDisconnectedReason;
 };
-// #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
 
 } // namespace NetworkCommissioning
 } // namespace DeviceLayer
 } // namespace chip
+
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
