@@ -72,7 +72,6 @@ template("bouffalo_sdk") {
       "-Wno-unused-function",
       "-Wno-type-limits",
       "-Waggressive-loop-optimizations",
-      "-fshort-enums",
       "-fno-jump-tables",
       "-fno-common",
       "-fms-extensions",
@@ -97,8 +96,10 @@ template("bouffalo_sdk") {
       "-fdata-sections",
       "--specs=nano.specs",
       "-O2",
+
+      "-fshort-enums", 
     ]
-    cflags_cc = ["-Wno-permissive", "-Wno-stringop-truncation"]
+    cflags_cc = ["-Wno-stringop-truncation"]
     cflags = ["-Wno-unused-variable", "-Wno-conversion"]
     cflags += [ "-Wno-maybe-uninitialized", "-Wno-unused-but-set-variable" ]
 

@@ -30,8 +30,6 @@ extern "C" {
 }
 #include <wifi_mgmr_portable.h>
 
-#define WIFI_STA_DISCONNECT_DELAY (pdMS_TO_TICKS(200))
-
 using namespace ::chip;
 using namespace ::chip::DeviceLayer::Internal;
 using namespace ::chip::Platform;
@@ -39,12 +37,6 @@ using namespace ::chip::Platform;
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
-
-namespace {
-static char WiFiSSIDStr[DeviceLayer::Internal::kMaxWiFiSSIDLength];
-static uint8_t scan_type = 0;
-} // namespace
-
 
 CHIP_ERROR BLWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChangeCallback)
 {
@@ -66,7 +58,6 @@ CHIP_ERROR BLWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChangeC
     mpScanCallback         = nullptr;
     mpConnectCallback      = nullptr;
     mpStatusChangeCallback = networkStatusChangeCallback;
-
 
 exit:
     if (err == CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND)
@@ -152,14 +143,14 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
     char passwd[64]    = { 0 };
     int state          = 0;
 
-    ReturnErrorOnFailure(ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Disabled));
+    ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
 
     memcpy(wifi_ssid, ssid, ssidLen);
     memcpy(passwd, key, keyLen);
 
     wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
 
-    return ConnectivityMgr().SetWiFiStationMode(ConnectivityManager::kWiFiStationMode_Enabled);
+    return CHIP_NO_ERROR;
 }
 
 void BLWiFiDriver::OnConnectWiFiNetwork(bool isConnected)
@@ -406,9 +397,6 @@ extern "C" void wifi_event_handler(uint32_t code)
         case CODE_WIFI_ON_GOT_IP: 
             event.Type                                 = kWiFiOnGotIpAddress;
             PlatformMgr().PostEventOrDie(&event);
-            break;
-        case CODE_WIFI_ON_GOT_IP6: 
-
             break;
         case CODE_WIFI_ON_DISCONNECT: 
             event.Type                                 = kWiFiOnDisconnected;
