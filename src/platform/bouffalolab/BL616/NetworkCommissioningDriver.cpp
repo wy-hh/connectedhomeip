@@ -14,18 +14,14 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#include <limits>
 #include <stdint.h>
 #include <string>
 
-#include <lib/support/CodeUtils.h>
-#include <lib/support/SafeInt.h>
 #include <lwip/tcpip.h>
 #include <lwip/netif.h>
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
 extern "C" {
-#include <wifi_mgmr.h>
 #include <wifi_mgmr_ext.h>
 }
 #include <wifi_mgmr_portable.h>
@@ -141,7 +137,6 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
 {
     char wifi_ssid[64] = { 0 };
     char passwd[64]    = { 0 };
-    int state          = 0;
 
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
 
@@ -295,10 +290,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
 
 CHIP_ERROR BLWiFiDriver::SetLastDisconnectReason(const ChipDeviceEvent * event)
 {
-    uint16_t reason_code;
-
-    reason_code = wifiMgmr.wifi_mgmr_stat_info.reason_code;
-    mLastDisconnectedReason = reason_code;
+    mLastDisconnectedReason = wifi_mgmr_sta_info_status_code_get();
 
     return CHIP_NO_ERROR;
 }

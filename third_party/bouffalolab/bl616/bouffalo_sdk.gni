@@ -45,13 +45,7 @@ template("bouffalo_sdk") {
       "ARCH_RISCV",
       "__STARTUP_CLEAR_BSS",
 
-      "CONFIG_VIF_MAX=2",
-      "CONFIG_STA_MAX=4",
       "CONFIG_COMPONENT_BUGKILLER_ENABLE=1",
-    ]
-
-    defines += [
-      "BOUFFALO_SDK",
     ]
 
     include_dirs = []
@@ -64,44 +58,19 @@ template("bouffalo_sdk") {
     }
 
     cflags_c = [
-      "-Wno-old-style-declaration",
-      "-Wno-implicit-function-declaration",
-      "-Wno-incompatible-pointer-types",
-      "-Wno-int-conversion",
-      "-Wno-sign-compare",
-      "-Wno-unused-function",
-      "-Wno-type-limits",
-      "-Waggressive-loop-optimizations",
       "-fno-jump-tables",
-      "-fno-common",
-      "-fms-extensions",
+      "-fstrict-volatile-bitfields",
+
       "-ffunction-sections",
       "-fdata-sections",
-      "-fmessage-length=0",
-      "-Wchar-subscripts",
-      "-Wuninitialized",
-      "-Winit-self",
-      "-Wignored-qualifiers",
-      "-fstrict-volatile-bitfields",
-      "-MMD",
-      "-Wno-error=unused-variable",
-      "-fstack-usage",
-      "-save-temps=obj",
-
       "-Wl,--cref",
       "-Wl,--gc-sections",
       "-nostartfiles",
-      "-fms-extensions",
-      "-ffunction-sections",
-      "-fdata-sections",
-      "--specs=nano.specs",
-      "-O2",
 
+      "--specs=nano.specs",
       "-fshort-enums", 
     ]
-    cflags_cc = ["-Wno-stringop-truncation"]
-    cflags = ["-Wno-unused-variable", "-Wno-conversion"]
-    cflags += [ "-Wno-maybe-uninitialized", "-Wno-unused-but-set-variable" ]
+    cflags = [ "-Wno-unused-but-set-variable", "-Wno-conversion", "-fstack-usage" ]
 
     if (defined(invoker.defines)) {
       defines += invoker.defines
@@ -135,11 +104,14 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
     ]
 
-    public_configs = [
-      ":${sdk_target_name}_config_startup",
+    configs += [
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config_lhal",
+    ]
+    
+    public_configs = [
+      ":${sdk_target_name}_config_startup",
       ":${sdk_target_name}_config",
     ]
   }
@@ -190,14 +162,17 @@ template("bouffalo_sdk") {
     ]
 
     cflags_c = [
+      "-Wno-sign-compare",
       "-Wno-enum-conversion"
     ]
 
-    public_configs = [
+    configs += [
       ":${sdk_target_name}_config_startup",
-      ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_freertos",
+    ]
+    public_configs = [
+      ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config",
     ]
   }
@@ -265,16 +240,19 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/drivers/lhal/config/bl616/device_table.c",
     ]
 
-    cflags = [
+    cflags_c = [
       "-Wno-sign-compare",
       "-Wno-implicit-fallthrough",
+    ]
+
+    configs += [
+      ":${sdk_target_name}_config_startup",
+      ":${sdk_target_name}_config_freertos",
     ]
 
     public_configs = [
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_std_drv",
-      ":${sdk_target_name}_config_startup",
-      ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config",
     ]
   }
@@ -307,13 +285,16 @@ template("bouffalo_sdk") {
       "-Wno-format-truncation"
     ]
 
-    public_configs = [
+    configs += [
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config_startup",
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_mm",
       ":${sdk_target_name}_config_rf",
+    ]
+
+    public_configs = [
       ":${sdk_target_name}_config_board",
     ]
   }
@@ -390,17 +371,18 @@ template("bouffalo_sdk") {
     ]
 
     cflags_c = [
-      "-Wno-shadow"
+      "-Wno-shadow",
+      "-Wno-sign-compare"
     ]
 
     configs += [
-      ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_utils",
     ]
     public_configs = [
       ":${sdk_target_name}_config_rf",
+      ":${sdk_target_name}_config",
     ]
   }
 
@@ -468,10 +450,11 @@ template("bouffalo_sdk") {
       "-Wno-sign-compare",
       "-Wno-implicit-fallthrough",
     ]
-
-    public_configs = [
+    configs += [
       ":${sdk_target_name}_config_mm",
-      ":${sdk_target_name}_config_lhal",
+      ":${sdk_target_name}_config_lhal"
+    ]
+    public_configs = [
       ":${sdk_target_name}_config",
     ]
   }
@@ -563,10 +546,13 @@ template("bouffalo_sdk") {
       "-Wno-format-security"
     ]
 
-    public_configs = [
-      ":${sdk_target_name}_config_mm",
+    configs += [
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_lhal",
+    ]
+
+    public_configs = [
+      ":${sdk_target_name}_config_mm",
       ":${sdk_target_name}_config",
     ]
   }
@@ -602,10 +588,13 @@ template("bouffalo_sdk") {
       "-Wno-sign-compare",
     ]
 
-    public_configs = [
+    configs += [
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config_lhal",
+    ]
+
+    public_configs = [
       ":${sdk_target_name}_config_easyflash4",
     ]
   }
@@ -655,18 +644,23 @@ template("bouffalo_sdk") {
     ]
 
     cflags_c = [
+      "-Wno-sign-compare",
+      "-Wno-type-limits",
       "-Wno-stringop-truncation",
       "-Wno-format",
       "-Wno-format-nonliteral",
       "-Wno-format-security"
     ]
 
-    public_configs = [
+    configs += [
       ":${sdk_target_name}_config_lhal",
-      ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config_startup",
       ":${sdk_target_name}_config_freertos",
+    ]
+
+    public_configs = [
+      ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config",
     ]
   }
@@ -800,6 +794,7 @@ template("bouffalo_sdk") {
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_mm",
+      ":${sdk_target_name}_config_lwip"
     ]
 
     cflags_c = [
@@ -808,7 +803,6 @@ template("bouffalo_sdk") {
 
     public_configs = [
       ":${sdk_target_name}_config_mbedtls",
-      ":${sdk_target_name}_config_lwip"
     ]
   }
 
@@ -884,23 +878,33 @@ template("bouffalo_sdk") {
     ]
 
     cflags_c = [
+      "-Wno-sign-compare",
       "-Wno-format",
       "-Wno-format-nonliteral",
       "-Wno-format-security"
     ]
 
-    public_configs = [
+    configs += [
       ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config_std_drv",
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_mm",
+    ]
+
+    public_configs = [
       ":${sdk_target_name}_config_lwip",
       ":${sdk_target_name}_config",
     ]
   }
 
   config("${sdk_target_name}_config_wifi") {
+
+    defines = [
+      "CONFIG_VIF_MAX=2",
+      "CONFIG_STA_MAX=4",
+    ]
+
     include_dirs = [
       "${bouffalo_sdk_root}/components/wireless/wifi6/inc",
       "${bouffalo_sdk_root}/components/wireless/wifi6/bl6_os_adapter/include",
@@ -918,12 +922,12 @@ template("bouffalo_sdk") {
     ]
 
     configs += [
-      ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_freertos",
     ]
     public_configs = [
       ":${sdk_target_name}_config_wifi",
+      ":${sdk_target_name}_config",
     ]
   }
 
@@ -1010,6 +1014,14 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/wireless/bluetooth/blestack/src/port/bl_port.c",
     ]
 
+    cflags_c = [
+      "-Wno-sign-compare",
+      "-Wno-implicit-function-declaration",
+      "-Wno-format",
+      "-Wno-format-nonliteral",
+      "-Wno-format-security",
+    ]
+
     configs += [
       ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_utils",
@@ -1018,12 +1030,6 @@ template("bouffalo_sdk") {
     public_configs = [
       ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_ble",
-    ]
-    
-    cflags_c = [
-      "-Wno-format",
-      "-Wno-format-nonliteral",
-      "-Wno-format-security",
     ]
   }
 

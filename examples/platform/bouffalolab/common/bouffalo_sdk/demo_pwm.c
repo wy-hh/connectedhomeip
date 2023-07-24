@@ -20,7 +20,7 @@ static const uint32_t rgb_pwm[][2] = {
 
 struct bflb_device_s *bflb_device_pwm = NULL;
 
-void demo_hosal_pwm_init(void)
+void demo_pwm_init(void)
 {
     struct bflb_pwm_v2_config_s cfg = {
         .clk_source = BFLB_SYSTEM_PBCLK,
@@ -38,7 +38,7 @@ void demo_hosal_pwm_init(void)
     bflb_pwm_v2_init(bflb_device_pwm, &cfg);
 }
 
-void demo_hosal_pwm_start(void)
+void demo_pwm_start(void)
 {
     for (int i = 0; i < sizeof(rgb_pwm)/sizeof(rgb_pwm[0]); i ++) {
         bflb_pwm_v2_channel_positive_start(bflb_device_pwm, rgb_pwm[i][1]);
@@ -47,7 +47,7 @@ void demo_hosal_pwm_start(void)
     bflb_pwm_v2_start(bflb_device_pwm);
 }
 
-void demo_hosal_pwm_stop(void)
+void demo_pwm_stop(void)
 {
     bflb_pwm_v2_stop(bflb_device_pwm);
 }

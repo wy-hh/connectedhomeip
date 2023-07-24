@@ -64,7 +64,11 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetBootReason(BootReasonType & bootReason
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetWiFiBssId(MutableByteSpan & BssId)
 {
-    return CopySpanToMutableSpan(ByteSpan(wifiMgmr.wifi_mgmr_stat_info.bssid), BssId);
+    if (ConnectivityMgrImpl()._IsWiFiStationConnected()) {
+        return CopySpanToMutableSpan(ByteSpan(wifiMgmr.wifi_mgmr_stat_info.bssid), BssId);
+    }
+
+    return CHIP_ERROR_READ_FAILED;
 }
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetWiFiSecurityType(app::Clusters::WiFiNetworkDiagnostics::SecurityTypeEnum & securityType)

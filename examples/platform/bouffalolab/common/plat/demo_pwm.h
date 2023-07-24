@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-void demo_hosal_pwm_init(void);
-void demo_hosal_pwm_start(void);
+void demo_pwm_init(void);
+void demo_pwm_start(void);
 void set_color_red(uint8_t currLevel);
 void set_color_green(uint8_t currLevel);
 void set_color_yellow(uint8_t currLevel);
