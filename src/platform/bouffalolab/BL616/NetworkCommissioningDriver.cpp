@@ -262,30 +262,23 @@ CHIP_ERROR GetConfiguredNetwork(Network & network)
 void BLWiFiDriver::OnNetworkStatusChange()
 {
     Network configuredNetwork;
-    bool staConnected = false;
 
     VerifyOrReturn(mpStatusChangeCallback != nullptr);
-    CHIP_ERROR err = GetConfiguredNetwork(configuredNetwork);
-    if (err != CHIP_NO_ERROR)
+    if (GetConfiguredNetwork(configuredNetwork) != CHIP_NO_ERROR)
     {
-        ChipLogError(DeviceLayer, "Failed to get configured network when updating network status: %s", err.AsString());
         return;
     }
 
     if (ConnectivityManagerImpl().GetWiFiStationState() == ConnectivityManager::kWiFiStationState_Connected)
     {
-        staConnected = true;
-    }
-
-    if (staConnected)
-    {
         mpStatusChangeCallback->OnNetworkingStatusChange(
             Status::kSuccess, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)), NullOptional);
-        return;
     }
-    mpStatusChangeCallback->OnNetworkingStatusChange(
-        Status::kUnknownError, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)),
-        MakeOptional(GetLastDisconnectReason()));
+    else {
+        mpStatusChangeCallback->OnNetworkingStatusChange(
+            Status::kUnknownError, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)),
+            MakeOptional(GetLastDisconnectReason()));
+    }
 }
 
 CHIP_ERROR BLWiFiDriver::SetLastDisconnectReason(const ChipDeviceEvent * event)

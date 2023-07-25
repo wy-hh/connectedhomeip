@@ -608,6 +608,7 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/utils/log",
       "${bouffalo_sdk_root}/components/utils/log/bflog",
       "${bouffalo_sdk_root}/components/utils/bflb_mtd/include",
+      "${bouffalo_sdk_root}/components/utils/bflb_ota",
       "${bouffalo_sdk_root}/components/utils/partition",
       "${bouffalo_sdk_root}/components/utils/getopt",
       "${bouffalo_sdk_root}/components/utils/ring_buffer",
@@ -642,6 +643,8 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/utils/log/log_freertos.c",
       "${bouffalo_sdk_root}/components/utils/bflb_mtd/bflb_mtd.c",
       "${bouffalo_sdk_root}/components/utils/bflb_mtd/bflb_boot2.c",
+      "${bouffalo_sdk_root}/components/utils/bflb_ota/bflb_ota.c",
+      "${bouffalo_sdk_root}/components/utils/bflb_ota/utils_sha256.c",
       "${bouffalo_sdk_root}/components/utils/getopt/utils_getopt.c",
       "${bouffalo_sdk_root}/components/utils/partition/partition.c",
       "${bouffalo_sdk_root}/components/utils/ring_buffer/ring_buffer.c",
@@ -653,7 +656,8 @@ template("bouffalo_sdk") {
       "-Wno-stringop-truncation",
       "-Wno-format",
       "-Wno-format-nonliteral",
-      "-Wno-format-security"
+      "-Wno-format-security",
+      "-Wno-implicit-function-declaration"
     ]
 
     configs += [
