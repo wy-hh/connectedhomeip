@@ -240,6 +240,10 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/drivers/lhal/config/bl616/device_table.c",
     ]
 
+    libs = [
+      "${bouffalo_sdk_root}/drivers/lhal/src/pka/libpka.a",
+    ]
+
     cflags_c = [
       "-Wno-sign-compare",
       "-Wno-implicit-fallthrough",
@@ -265,7 +269,7 @@ template("bouffalo_sdk") {
 
   source_set("${sdk_target_name}_board") {
     defines = [
-      #"CONFIG_PSRAM",
+      "CONFIG_MBEDTLS",
       "BL616"
     ]
 
@@ -668,37 +672,34 @@ template("bouffalo_sdk") {
   config("${sdk_target_name}_config_mbedtls") {
     include_dirs = [
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/include",
-      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/include/mbedtls",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc",
     ]
 
     defines = [ "MBEDTLS_CONFIG_FILE=\"bl616-chip-mbedtls-config.h\"" ]
   }
 
   source_set("${sdk_target_name}_mbedtls") {
-    defines = [
-      "CONFIG_FREERTOS",
-      "MBEDTLS_NET_C",
-    ]
 
-    include_dirs = [ 
+    defines = ["CONFIG_FREERTOS"]
+
+    include_dirs = [
       "${bouffalo_sdk_root}/components/crypto/mbedtls/port",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library",
     ]
 
-#    sources = [
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/aes_alt.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/bignum_alt.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/bignum_ext.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/ecp_alt.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/ecp_curves_alt.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha1_alt.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha256_alt.c",
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha512_alt.c",
-#    ]
-
     sources = [
-#      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/bignum.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/aes_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/bignum_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/bignum_ext.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/ecp_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/ecp_curves_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha1_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha256_alt.c",
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/hw_acc/sha512_alt.c",
+    ]
+
+    sources += [
+      "${bouffalo_sdk_root}/components/crypto/mbedtls/port/bignum.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/port/entropy_poll_alt.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/port/net_sockets.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/port/sec_mutex.c",
@@ -712,7 +713,7 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/asn1parse.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/asn1write.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/base64.c",
-      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/bignum.c",
+#      "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/bignum.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/blowfish.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/camellia.c",
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/ccm.c",
@@ -789,16 +790,17 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/crypto/mbedtls/mbedtls/library/xtea.c",
     ]
 
+    cflags_c = [
+      "-Wno-sign-compare",
+      "-Wno-implicit-function-declaration"
+    ]
+
     configs += [
       ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config_mm",
       ":${sdk_target_name}_config_lwip"
-    ]
-
-    cflags_c = [
-      "-Wno-sign-compare",
     ]
 
     public_configs = [

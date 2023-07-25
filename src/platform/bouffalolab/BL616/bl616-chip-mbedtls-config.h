@@ -158,6 +158,12 @@ typedef void mbedtls_ecp_restart_ctx;
 
 #define MBEDTLS_PLATFORM_STD_MEM_HDR "mbedtls_port_bouffalo_sdk.h"
 
+#define MBEDTLS_SHA1_ALT
+#define MBEDTLS_SHA256_ALT
+#define MBEDTLS_SHA512_ALT
+#define MBEDTLS_AES_ALT
+#define MBEDTLS_ECP_ALT
+
 #if defined(CONFIG_MBEDTLS_ECC_USE_HW) && defined(MBEDTLS_ECP_RESTARTABLE)
 #error "ECP Restartable is not implemented with ECP HW acceleration!"
 #endif
