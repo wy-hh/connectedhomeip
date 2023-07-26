@@ -1,9 +1,12 @@
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
+#include <aos/yloop.h>
 #include <bl60x_wifi_driver/wifi_mgmr.h>
 #include <bl60x_wifi_driver/wifi_mgmr_api.h>
 #include <bl60x_wifi_driver/wifi_mgmr_profile.h>
+#include <hal_wifi.h>
 #include <supplicant_api.h>
 
 #include <wpa_supplicant/src/utils/common.h>
@@ -11,6 +14,8 @@
 #include <wpa_supplicant/src/common/defs.h>
 #include <wpa_supplicant/src/common/wpa_common.h>
 #include <wpa_supplicant/src/rsn_supp/wpa_i.h>
+
+#include <wifi_mgmr_portable.h>
 
 extern struct wpa_sm gWpaSm;
 
@@ -148,4 +153,17 @@ bool wifi_mgmr_security_type_is_wpa3(void)
 struct netif * deviceInterface_getNetif(void)
 {
     return wifi_mgmr_sta_netif_get();
+}
+
+static void wifi_event_handler_raw(input_event_t * event, void * private_data) 
+{
+    wifi_event_handler(event->code);
+}
+
+void wifi_start_firmware_task(void)
+{
+    aos_register_event_filter(EV_WIFI, wifi_event_handler_raw, NULL);
+
+    hal_wifi_start_firmware_task();
+    aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 }

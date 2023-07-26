@@ -166,7 +166,7 @@ void OTAImageProcessorImpl::HandleApply(intptr_t context)
 #if CHIP_DEVICE_LAYER_TARGET_BL616
     bflb_ota_apply();
 #else
-    hosal_ota_apply();
+    hosal_ota_apply(0);
 #endif
 
     DeviceLayer::SystemLayer().StartTimer(

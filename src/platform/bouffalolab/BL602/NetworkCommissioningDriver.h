@@ -23,6 +23,8 @@ namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
 
+void NetworkEventHandler(const ChipDeviceEvent * event, intptr_t arg);
+
 namespace {
 constexpr uint8_t kMaxWiFiNetworks                  = 1;
 constexpr uint8_t kWiFiScanNetworksTimeOutSeconds   = 10;
@@ -134,6 +136,7 @@ private:
     NetworkStatusChangeCallback * mpStatusChangeCallback = nullptr;
     int32_t mLastDisconnectedReason;
 };
+
 
 } // namespace NetworkCommissioning
 } // namespace DeviceLayer

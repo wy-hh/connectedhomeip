@@ -191,7 +191,7 @@
  * @brief The alignment of SHA256 context buffer.
  */
 #ifndef CHIP_CONFIG_SHA256_CONTEXT_ALIGN
-#define CHIP_CONFIG_SHA256_CONTEXT_ALIGN (size_t)
+#define CHIP_CONFIG_SHA256_CONTEXT_ALIGN size_t
 #endif // CHIP_CONFIG_SHA256_CONTEXT_ALIGN
 
 /**
