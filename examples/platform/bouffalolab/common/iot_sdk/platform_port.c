@@ -81,7 +81,7 @@ unsigned int sleep(unsigned int seconds)
 #ifndef BL702L_ENABLE
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
-    // ChipLogProgress(NotSpecified, "Stack Overflow checked. Stack name %s", pcTaskName);
+    printf("Stack Overflow checked. Stack name %s", pcTaskName);
     while (true)
     {
         /*empty here*/
@@ -90,7 +90,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 
 void vApplicationMallocFailedHook(void)
 {
-    // ChipLogProgress(NotSpecified, "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
+    printf( "Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
     while (true)
     {
         /*empty here*/
@@ -234,18 +234,18 @@ extern size_t _heap_size; // @suppress("Type cannot be resolved")
 #ifdef BL602_ENABLE
 extern uint8_t _heap_wifi_start;
 extern uint8_t _heap_wifi_size; // @suppress("Type cannot be resolved")
-static HeapRegion_t xHeapRegions[] = {
+static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (unsigned int) &_heap_size }, // set on runtime
     { &_heap_wifi_start, (unsigned int) &_heap_wifi_size },
     { NULL, 0 } /* Terminates the array. */
 };
 #elif defined(BL702_ENABLE)
-static constexpr HeapRegion_t xHeapRegions[] = {
+static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
 };
 #elif defined(BL702L_ENABLE)
-static constexpr HeapRegion_t xHeapRegions[] = {
+static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
 };
@@ -259,7 +259,7 @@ static uint32_t __attribute__((section(".rsvd_data"))) psram_reset_count;
 
 extern uint8_t _heap3_start;
 extern size_t _heap3_size; // @suppress("Type cannot be resolved")
-static constexpr HeapRegion_t xPsramHeapRegions[] = {
+static const HeapRegion_t xPsramHeapRegions[] = {
     { &_heap3_start, (size_t) &_heap3_size }, { NULL, 0 } /* Terminates the array. */
 };
 
@@ -270,7 +270,7 @@ size_t get_heap3_size(void)
 
 void do_psram_test()
 {
-    static constexpr char teststr[] = "bouffalolab psram test string";
+    static const char teststr[] = "bouffalolab psram test string";
 
     do
     {
@@ -303,7 +303,7 @@ void do_psram_test()
 
     if ((psram_reset_count & 0x000000ff) > 3)
     {
-        ChipLogError(NotSpecified, "PSRAM is still failed to initialize after %ld system reset", psram_reset_count & 0x000000ff);
+        printf("PSRAM is still failed to initialize after %ld system reset", psram_reset_count & 0x000000ff);
         vAssertCalled();
     }
 

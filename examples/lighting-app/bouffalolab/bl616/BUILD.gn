@@ -93,7 +93,7 @@ bouffalolab_executable("lighting_app") {
   output_name = "chip-bl616-lighting-example.out"
 
   defines = [
-    "APP_TASK_STACK_SIZE=2044",
+    "APP_TASK_STACK_SIZE=2048",
     "CHIP_UART_BAUDRATE=${baudrate}",
     "BL616_ENABLE",
     "START_ENTRY=main",
@@ -118,7 +118,6 @@ bouffalolab_executable("lighting_app") {
   defines += [ "BL616DK" ]
 
   sources += [
-    "${chip_root}/examples/providers/DeviceInfoProviderImpl.cpp",
     "${example_dir}/common/AppTask.cpp",
     "${example_dir}/common/ZclCallbacks.cpp",
     "${examples_plat_dir}/common/bouffalo_sdk/demo_pwm.c",

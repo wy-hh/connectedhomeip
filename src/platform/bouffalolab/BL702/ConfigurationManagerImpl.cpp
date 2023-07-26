@@ -19,13 +19,13 @@
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 extern "C" {
 #include <eth_bd.h>
 }
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
 namespace chip {
 namespace DeviceLayer {
@@ -37,7 +37,7 @@ CHIP_ERROR ConfigurationManagerImpl::GetPrimaryWiFiMACAddress(uint8_t * buf)
 
     return CHIP_NO_ERROR;
 }
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 CHIP_ERROR ConfigurationManagerImpl::GetPrimaryMACAddress(MutableByteSpan buf)
@@ -49,7 +49,7 @@ CHIP_ERROR ConfigurationManagerImpl::GetPrimaryMACAddress(MutableByteSpan buf)
 
     return CHIP_NO_ERROR;
 }
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
 } // namespace DeviceLayer
 } // namespace chip

@@ -24,12 +24,12 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #include <eth_bd.h>
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
 using namespace ::chip;
 
@@ -103,7 +103,7 @@ extern "C" void wifiInterface_eventScanDone(struct netif * interface, netbus_fs_
     ChipLogProgress(DeviceLayer, "wifiInterface_eventScanDone");
     NetworkCommissioning::BLWiFiDriver::GetInstance().OnScanWiFiNetworkDone(pmsg);
 }
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 extern "C" void ethernetInterface_eventGotIP(struct netif * interface) 
@@ -111,7 +111,7 @@ extern "C" void ethernetInterface_eventGotIP(struct netif * interface)
     ChipLogProgress(DeviceLayer, "ethernetInterface_eventGotIP");
     ConnectivityMgrImpl().OnConnectivityChanged(interface);
 }
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
 } // namespace DeviceLayer
 } // namespace chip

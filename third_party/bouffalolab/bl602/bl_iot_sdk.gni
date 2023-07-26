@@ -847,7 +847,6 @@ template("bl_iot_sdk") {
       "MEMP_NUM_MLD6_GROUP=10",
       "PBUF_POOL_SIZE=20",
       "PBUF_POOL_BUFSIZE=1600",
-      "CONFIG_ENABLE_IPV6_ADDR_CALLBACK",
       "LWIP_HOOK_FILENAME=\"bl_lwip_hooks.h\""
     ]
   }

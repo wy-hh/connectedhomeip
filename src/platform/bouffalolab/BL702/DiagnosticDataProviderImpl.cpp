@@ -19,7 +19,7 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 extern "C" {
 #include <bl_sys.h>
@@ -171,6 +171,6 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetWiFiBeaconRxCount(uint32_t & beaconRxC
 {
     return CHIP_ERROR_UNSUPPORTED_CHIP_FEATURE;
 }
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 } // namespace DeviceLayer
 } // namespace chip

@@ -22,7 +22,6 @@
 using namespace ::chip;
 using namespace ::chip::DeviceLayer::Internal;
 
-//#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
@@ -362,4 +361,3 @@ bool BLWiFiDriver::WiFiNetworkIterator::Next(Network & item)
 } // namespace NetworkCommissioning
 } // namespace DeviceLayer
 } // namespace chip
-//#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI

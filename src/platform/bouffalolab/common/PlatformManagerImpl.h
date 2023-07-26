@@ -65,7 +65,7 @@ private:
 
 #if CHIP_DEVICE_LAYER_TARGET_BL616 && CHIP_DEVICE_CONFIG_ENABLE_WIFI
     friend void OnWiFiPlatformEvent(uint32_t code, void * private_data);
-#elif CHIP_DEVICE_LAYER_TARGET_BL602
+#elif CHIP_DEVICE_LAYER_TARGET_BL602 && CHIP_DEVICE_CONFIG_ENABLE_WIFI
     friend void OnWiFiPlatformEvent(input_event_t * event, void * private_data);
 #endif
 

@@ -111,7 +111,9 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
         }
         break;
-#else
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
     case DeviceEventType::kInterfaceIpAddressChanged:
         if ((event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV4_Assigned) ||
             (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned))
@@ -196,7 +198,9 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
     ReturnLogErrorOnFailure(ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_MinimalEndDevice));
 #endif
 
-#elif CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     ReturnLogErrorOnFailure(sWiFiNetworkCommissioningInstance.Init());
 #endif
 
