@@ -21,7 +21,7 @@
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 extern "C" {
 #include <eth_bd.h>
 }
@@ -37,7 +37,9 @@ CHIP_ERROR ConfigurationManagerImpl::GetPrimaryWiFiMACAddress(uint8_t * buf)
 
     return CHIP_NO_ERROR;
 }
-#elif !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 CHIP_ERROR ConfigurationManagerImpl::GetPrimaryMACAddress(MutableByteSpan buf)
 {
     if (buf.size() != ConfigurationManager::kPrimaryMACAddressLength)

@@ -252,7 +252,7 @@ void ConnectivityManagerImpl::DriveStationState(::chip::System::Layer * aLayer, 
 }
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET || CHIP_DEVICE_CONFIG_ENABLE_WIFI
 void ConnectivityManagerImpl::OnConnectivityChanged(struct netif * interface)
 {
     bool haveIPv4Conn      = false;

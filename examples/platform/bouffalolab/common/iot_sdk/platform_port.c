@@ -228,8 +228,8 @@ void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
 // ================================================================================
 // Main Code
 // ================================================================================
-uint8_t _heap_start;
-size_t _heap_size; // @suppress("Type cannot be resolved")
+extern uint8_t _heap_start;
+extern size_t _heap_size; // @suppress("Type cannot be resolved")
 
 #ifdef BL602_ENABLE
 extern uint8_t _heap_wifi_start;
@@ -252,13 +252,13 @@ static constexpr HeapRegion_t xHeapRegions[] = {
 #endif
 
 #ifdef CFG_USE_PSRAM
-uint32_t __psram_bss_init_start;
-uint32_t __psram_bss_init_end;
+extern uint32_t __psram_bss_init_start;
+extern uint32_t __psram_bss_init_end;
 
 static uint32_t __attribute__((section(".rsvd_data"))) psram_reset_count;
 
-uint8_t _heap3_start;
-size_t _heap3_size; // @suppress("Type cannot be resolved")
+extern uint8_t _heap3_start;
+extern size_t _heap3_size; // @suppress("Type cannot be resolved")
 static constexpr HeapRegion_t xPsramHeapRegions[] = {
     { &_heap3_start, (size_t) &_heap3_size }, { NULL, 0 } /* Terminates the array. */
 };

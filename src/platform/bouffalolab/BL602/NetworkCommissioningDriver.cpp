@@ -141,25 +141,15 @@ CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, 
 {
     char wifi_ssid[64] = { 0 };
     char passwd[64]    = { 0 };
-    int state          = 0;
+    wifi_interface_t wifi_interface;
 
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
 
-    wifi_mgmr_sta_disconnect();
-    vTaskDelay(WIFI_STA_DISCONNECT_DELAY);
-
-    wifi_mgmr_sta_disable(NULL);
-    wifi_mgmr_state_get(&state);
-    while (state != WIFI_STATE_IDLE)
-    {
-        wifi_mgmr_state_get(&state);
-        vTaskDelay(100);
-    }
-
     memcpy(wifi_ssid, ssid, ssidLen);
     memcpy(passwd, key, keyLen);
-    wifi_interface_t wifi_interface;
+    
     wifi_interface = wifi_mgmr_sta_enable();
+
     wifi_mgmr_sta_connect(&wifi_interface, wifi_ssid, passwd, NULL, NULL, 0, 0);
 
     return CHIP_NO_ERROR;

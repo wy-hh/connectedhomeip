@@ -89,7 +89,7 @@ public:
     void OnWiFiStationDisconnected(void);
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
     void OnConnectivityChanged(struct netif * interface);
     void OnIPv4AddressAvailable();
     void OnIPv6AddressAvailable();
@@ -110,7 +110,9 @@ private:
     void _ClearWiFiStationProvision();
     void _OnWiFiStationProvisionChange();
     CHIP_ERROR ConnectProvisionedWiFiNetwork();
-#elif !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
     enum class ConnectivityFlags : uint16_t
     {
         kHaveIPv4InternetConnectivity = 0x0001,
@@ -120,7 +122,7 @@ private:
     BitFlags<ConnectivityFlags> mConnectivityFlag;
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
     ip4_addr_t m_ip4addr;
     ip6_addr_t m_ip6addr[LWIP_IPV6_NUM_ADDRESSES];
 #endif

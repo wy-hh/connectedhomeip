@@ -65,15 +65,19 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     wifiInterface_init();
-#elif CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+    ethernetInterface_init();
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     otRadio_opt_t opt;
     opt.byte            = 0;
     opt.bf.isCoexEnable = true;
 
     ot_alarmInit();
     ot_radioInit(opt);
-#else
-    ethernetInterface_init();
 #endif
 
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());

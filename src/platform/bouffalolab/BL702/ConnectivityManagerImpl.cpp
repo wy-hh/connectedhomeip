@@ -26,7 +26,7 @@
 #include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #include <eth_bd.h>
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif
@@ -105,7 +105,7 @@ extern "C" void wifiInterface_eventScanDone(struct netif * interface, netbus_fs_
 }
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 extern "C" void ethernetInterface_eventGotIP(struct netif * interface) 
 {
     ChipLogProgress(DeviceLayer, "ethernetInterface_eventGotIP");
