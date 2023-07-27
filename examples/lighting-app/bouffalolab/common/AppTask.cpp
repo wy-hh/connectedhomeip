@@ -158,7 +158,7 @@ void AppTask::AppTaskMain(void * pvParameter)
     app_event_t appEvent;
     bool onoff = false;
 
-#ifndef BL706_ETHERNET
+#if !(defined(BL702_ENABLE) && CHIP_DEVICE_CONFIG_ENABLE_ETHERNET)
     sLightLED.Init();
 #endif
 

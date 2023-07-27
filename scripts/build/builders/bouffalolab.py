@@ -55,6 +55,7 @@ class BouffalolabBoard(Enum):
     XT_ZB6_DevKit = auto()
     BL706_NIGHT_LIGHT = auto()
     BL706DK = auto()
+    BL704LDK = auto()
     BL704L_DVK = auto()
     BL616DK = auto()
 
@@ -69,6 +70,8 @@ class BouffalolabBoard(Enum):
             return 'BL706-NIGHT-LIGHT'
         elif self == BouffalolabBoard.BL706DK:
             return 'BL706DK'
+        elif self == BouffalolabBoard.BL704LDK:
+            return 'BL704LDK'
         elif self == BouffalolabBoard.BL704L_DVK:
             return 'BL704L-DVK'
         elif self == BouffalolabBoard.BL616DK:
@@ -134,35 +137,48 @@ class BouffalolabBuilder(GnBuilder):
                 raise_exception('SoC %s doesn\'t connectivity Ethernet/Thread.' % bouffalo_chip)
 
         elif bouffalo_chip == "bl702":
+
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
             if board != BouffalolabBoard.BL706DK:
                 if enable_ethernet:
-                    raise_exception('Board %s doesn\'t connectivity Wi-Fi.' % board)
+                    raise_exception('Board %s doesn\'t connectivity Ethernet.' % board)
                 if enable_wifi:
                     raise_exception('Board %s doesn\'t connectivity Wi-Fi.' % board)
+            
+            if not enable_wifi and not enable_ethernet:
+                enable_thread = True
+
         elif bouffalo_chip == "bl702l":
+
+            if board == BouffalolabBoard.BL704L_DVK:
+                raise_exception('Board bl704l-dvk renames to bl704ldk.')
             if enable_ethernet or enable_wifi:
                 raise_exception('Board %s doesn\'t connectivity Ethernet/Wi-Fi.' % bouffalo_chip)
-            if bouffalo_chip != "bl702":
-                raise_exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
+
+            if not enable_wifi and not enable_ethernet:
+                enable_thread = True
+
         elif bouffalo_chip == "bl616":
             if not enable_ethernet and not enable_wifi and not enable_thread:
                 raise_exception('No connectivity specified. Connectivity option -wifi supports for %s.' % bouffalo_chip)
 
-        if enable_wifi or enable_thread:
-            # Currently, doesn't multi-connectivities together
-            if enable_wifi:
-                self.argsOpt.append('chip_enable_wifi=true')
-                self.argsOpt.append('chip_enable_openthread=false')
-            elif enable_thread:
-                self.argsOpt.append('chip_enable_wifi=false')
-                self.argsOpt.append('chip_enable_openthread=true')
-
-            self.argsOpt.append('chip_config_network_layer_ble=true')
-        else:
+        if enable_ethernet:
             self.argsOpt.append('chip_config_network_layer_ble=false')
             self.argsOpt.append('chip_enable_openthread=false')
             self.argsOpt.append('chip_enable_wifi=false')
+            self.argsOpt.append('chip_enable_ethernet=true')
+        elif enable_wifi:
+            self.argsOpt.append('chip_config_network_layer_ble=true')
+            self.argsOpt.append('chip_enable_openthread=false')
+            self.argsOpt.append('chip_enable_wifi=true')
+            self.argsOpt.append('chip_enable_ethernet=false')
+        elif enable_thread:
+            self.argsOpt.append('chip_config_network_layer_ble=true')
+            self.argsOpt.append('chip_enable_openthread=true')
+            self.argsOpt.append('chip_enable_wifi=false')
+            self.argsOpt.append('chip_enable_ethernet=false')
+        else:
+            raise_exception('None of connectivity specified')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":

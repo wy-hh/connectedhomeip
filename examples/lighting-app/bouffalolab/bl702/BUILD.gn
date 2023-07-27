@@ -24,6 +24,8 @@ import("${chip_root}/src/platform/device.gni")
 
 import("${chip_root}/src/app/chip_data_model.gni")
 
+import("${chip_root}/src/platform/bouffalolab/common/args.gni")
+
 if (chip_enable_pw_rpc) {
   import("//build_overrides/pigweed.gni")
   import("$dir_pw_build/target_types.gni")
@@ -91,12 +93,12 @@ bl_iot_sdk("sdk") {
     defines += [ "OPENTHREAD_CONFIG_PLATFORM_XTAL_ACCURACY=40" ]
   }
 
-  if ("BL706C-22" == module_type) {
-    defines += [ "CFG_PSRAM_DUAL_BANK=1" ]
-  }
-
   if (enable_psram) {
     defines += [ "CFG_USE_PSRAM=1" ]
+  }
+
+  if ("BL706C-22" == module_type) {
+    defines += [ "CFG_PSRAM_DUAL_BANK=1" ]
   }
 
   if (defined(enable_cdc_module) && enable_cdc_module) {
@@ -136,10 +138,6 @@ bouffalolab_executable("lighting_app") {
     defines += [ "XT_ZB6_DevKit" ]
   } else if ("BL706-NIGHT-LIGHT" == board) {
     defines += [ "BL706_NIGHT_LIGHT" ]
-  } else if ("BL706-ETH" == board) {
-    defines += [ "BL706_ETHERNET" ]
-  } else if ("BL706-WIFI" == board) {
-    defines += [ "BL706_WIFI" ]
   }
 
   sources = [
@@ -171,11 +169,12 @@ bouffalolab_executable("lighting_app") {
     "${examples_plat_dir}/common/iot_sdk",
   ]
 
-  if (defined(enable_cdc_module) && enable_cdc_module) {
-    defines += [ "CFG_USB_CDC_ENABLE" ]
-  }
   if (enable_psram) {
     defines += [ "CFG_USE_PSRAM=1" ]
+  }
+
+  if (defined(enable_cdc_module) && enable_cdc_module) {
+    defines += [ "CFG_USB_CDC_ENABLE" ]
   }
 
   if (chip_enable_openthread) {
@@ -197,10 +196,21 @@ bouffalolab_executable("lighting_app") {
         "${chip_root}/third_party/openthread/repo:libopenthread-mtd",
       ]
     }
-  } else {
+  }
+ 
+  if (chip_enable_wifi || chip_enable_ethernet) {
     include_dirs += [
       "${examples_plat_dir}/common/route_hook",
     ]
+
+    if (chip_enable_wifi) {
+      defines += ["CHIP_DEVICE_CONFIG_ENABLE_WIFI"]
+    }
+    
+    if (chip_enable_ethernet) {
+      defines += ["CHIP_DEVICE_CONFIG_ENABLE_ETHERNET"]
+    }
+
     sources += [
       "${examples_plat_dir}/common/route_hook/bl_route_hook.c",
       "${examples_plat_dir}/common/route_hook/bl_route_table.c",

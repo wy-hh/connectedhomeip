@@ -18,7 +18,7 @@
 #include <platform/ConfigurationManager.h>
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET

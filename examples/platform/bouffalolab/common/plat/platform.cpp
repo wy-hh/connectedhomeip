@@ -65,7 +65,7 @@
 #include <wifi_mgmr_ext.h>
 #endif
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI && defined (BL702_ENABLE)
-#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
 #endif
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #include <platform/bouffalolab/BL702/EthernetInterface.h>

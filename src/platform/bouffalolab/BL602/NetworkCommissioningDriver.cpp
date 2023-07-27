@@ -1,6 +1,6 @@
 /*
- *
- *    Copyright (c) 2021 Project CHIP Authors
+ *    Copyright (c) 2022 Project CHIP Authors
+ *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
-#include <limits>
 #include <stdint.h>
 #include <string>
 
@@ -24,19 +22,12 @@
 #include <wifi_mgmr_ext.h>
 #include <wifi_mgmr_portable.h>
 
-#define WIFI_STA_DISCONNECT_DELAY (pdMS_TO_TICKS(200))
-
 using namespace ::chip;
 using namespace ::chip::DeviceLayer::Internal;
 
 namespace chip {
 namespace DeviceLayer {
 namespace NetworkCommissioning {
-
-namespace {
-static char WiFiSSIDStr[DeviceLayer::Internal::kMaxWiFiSSIDLength];
-static uint8_t scan_type = 0;
-} // namespace
 
 CHIP_ERROR BLWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChangeCallback)
 {
@@ -198,27 +189,32 @@ exit:
     }
 }
 
-CHIP_ERROR BLWiFiDriver::StartScanWiFiNetworks(ByteSpan ssid)
+void BLWiFiDriver::ScanNetworks(ByteSpan ssid, WiFiDriver::ScanCallback * callback)
 {
-    CHIP_ERROR err = CHIP_NO_ERROR;
+    int iret = 0;
 
-    if (!ssid.empty())
+    if (callback != nullptr)
     {
-        memset(WiFiSSIDStr, 0, sizeof(WiFiSSIDStr));
-        memcpy(WiFiSSIDStr, ssid.data(), ssid.size());
-        err       = (CHIP_ERROR) wifi_mgmr_scan_adv(NULL, NULL, NULL, 0, NULL, WiFiSSIDStr, 1, 0);
-        scan_type = 1;
+        if (!ssid.empty())
+        {
+            memset(mScanSSID, 0, sizeof(mScanSSID));
+            memcpy(mScanSSID, ssid.data(), ssid.size());
+            iret = wifi_mgmr_scan_adv(NULL, NULL, NULL, 0, NULL, mScanSSID, 1, 0);
+            mScanType = 1;
+        }
+        else
+        {
+            iret = wifi_mgmr_scan(NULL, NULL);
+            mScanType = 0;
+        }
+
+        if (0 == iret) {
+            mpScanCallback = callback;
+        }
+        else {
+            callback->OnFinished(Status::kUnknownError, CharSpan(), nullptr);
+        }
     }
-    else
-    {
-        err       = (CHIP_ERROR) wifi_mgmr_scan(NULL, NULL);
-        scan_type = 0;
-    }
-    if (err != CHIP_NO_ERROR)
-    {
-        return CHIP_ERROR_INTERNAL;
-    }
-    return CHIP_NO_ERROR;
 }
 
 void BLWiFiDriver::OnScanWiFiNetworkDone()
@@ -238,7 +234,7 @@ void BLWiFiDriver::OnScanWiFiNetworkDone()
     }
 
     wifi_mgmr_ap_item_t * ScanResult = (wifi_mgmr_ap_item_t *) pvPortMalloc(ap_num * sizeof(wifi_mgmr_ap_item_t));
-    wifi_mgmr_get_scan_result(ScanResult, &ap_num, scan_type, WiFiSSIDStr);
+    wifi_mgmr_get_scan_result(ScanResult, &ap_num, 0, mScanSSID);
 
     if (ScanResult)
     {
@@ -266,19 +262,6 @@ void BLWiFiDriver::OnScanWiFiNetworkDone()
         {
             mpScanCallback->OnFinished(Status::kUnknownError, CharSpan(), nullptr);
             mpScanCallback = nullptr;
-        }
-    }
-}
-
-void BLWiFiDriver::ScanNetworks(ByteSpan ssid, WiFiDriver::ScanCallback * callback)
-{
-    if (callback != nullptr)
-    {
-        mpScanCallback = callback;
-        if (StartScanWiFiNetworks(ssid) != CHIP_NO_ERROR)
-        {
-            mpScanCallback = nullptr;
-            callback->OnFinished(Status::kUnknownError, CharSpan(), nullptr);
         }
     }
 }
@@ -370,6 +353,7 @@ bool BLWiFiDriver::WiFiNetworkIterator::Next(Network & item)
             item.connected = true;
         }
     }
+    
     return true;
 }
 
@@ -417,6 +401,7 @@ extern "C" void wifi_event_handler(uint32_t code)
     ChipDeviceEvent event;
 
     memset(&event, 0, sizeof(ChipDeviceEvent));
+
     switch (code) {
         case CODE_WIFI_ON_INIT_DONE: 
             wifi_mgmr_start_background(&conf);
@@ -439,6 +424,27 @@ extern "C" void wifi_event_handler(uint32_t code)
             break;
         default: 
             ChipLogProgress(DeviceLayer, "[APP] [EVT] Unknown code %lu \r\n", code);
+    }
+}
+
+extern "C" void network_netif_ext_callback(struct netif* nif, netif_nsc_reason_t reason, const netif_ext_callback_args_t* args) 
+{
+    ChipDeviceEvent event;
+
+    memset(&event, 0, sizeof(ChipDeviceEvent));
+
+    if ((LWIP_NSC_IPV6_ADDR_STATE_CHANGED & reason) && args) {
+
+        if (args->ipv6_addr_state_changed.addr_index >= LWIP_IPV6_NUM_ADDRESSES || 
+            ip6_addr_islinklocal(netif_ip6_addr(nif, args->ipv6_addr_state_changed.addr_index))) {
+            return;
+        }
+
+        if (netif_ip6_addr_state(nif, args->ipv6_addr_state_changed.addr_index) != args->ipv6_addr_state_changed.old_state &&
+            ip6_addr_ispreferred(netif_ip6_addr_state(nif, args->ipv6_addr_state_changed.addr_index))) {
+            event.Type                                 = kWiFiOnGotIpv6Address;
+            PlatformMgr().PostEventOrDie(&event);
+        }
     }
 }
 

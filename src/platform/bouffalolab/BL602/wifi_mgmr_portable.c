@@ -164,6 +164,8 @@ void wifi_start_firmware_task(void)
 {
     aos_register_event_filter(EV_WIFI, wifi_event_handler_raw, NULL);
 
+    netif_add_ext_callback(&netifExtCallback, network_netif_ext_callback);
+
     hal_wifi_start_firmware_task();
     aos_post_event(EV_WIFI, CODE_WIFI_ON_INIT_DONE, 0);
 }

@@ -17,8 +17,6 @@
 #include <stdint.h>
 #include <string>
 
-#include <lwip/tcpip.h>
-#include <lwip/netif.h>
 #include <platform/CHIPDeviceLayer.h>
 #include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
 extern "C" {
@@ -387,9 +385,8 @@ extern "C" void wifi_event_handler(uint32_t code)
             event.Type                                 = kWiFiOnDisconnected;
             PlatformMgr().PostEventOrDie(&event);
             break;
-        default: {
+        default: 
             ChipLogProgress(DeviceLayer, "[APP] [EVT] Unknown code %lu \r\n", code);
-        }
     }
 }
 
@@ -417,4 +414,3 @@ extern "C" void network_netif_ext_callback(struct netif* nif, netif_nsc_reason_t
 } // namespace NetworkCommissioning
 } // namespace DeviceLayer
 } // namespace chip
-//#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI

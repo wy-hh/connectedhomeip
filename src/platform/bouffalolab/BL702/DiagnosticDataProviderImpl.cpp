@@ -18,7 +18,7 @@
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <platform/bouffalolab/BL702/WiFiInterface.h>
+#include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 extern "C" {

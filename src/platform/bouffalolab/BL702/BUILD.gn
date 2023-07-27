@@ -77,13 +77,15 @@ static_library("BL702") {
   if (chip_enable_wifi) {
     sources += [
       "ConfigurationManagerImpl.cpp",
-      "WiFiInterface.c",
       "ConnectivityManagerImpl.cpp",
-      "NetworkCommissioningDriver.cpp"
+      "NetworkCommissioningDriver.cpp",
+      "wifi_mgmr_portable.c"
     ]
 
     deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
-  } else if (chip_enable_openthread) {
+  } 
+
+  if (chip_enable_openthread) {
     # needed for MTD/FTD
 
     import("//build_overrides/bouffalolab_iot_sdk.gni")
@@ -103,13 +105,16 @@ static_library("BL702") {
       ]
       deps += [ "${chip_root}/src/lib/dnssd:platform_header" ]
     }
-  } else {
+  } 
+
+  if (chip_enable_ethernet) {
     sources += [
       "ConfigurationManagerImpl.cpp",
       "ConnectivityManagerImpl.cpp",
       "EthernetInterface.c",
     ]
-
+    
+    defines = [ "CHIP_DEVICE_CONFIG_ENABLE_ETHERNET" ]
     deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
   }
 
