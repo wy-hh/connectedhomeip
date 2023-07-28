@@ -20,6 +20,8 @@ import("${chip_root}/src/lib/lib.gni")
 declare_args() {
   # Location of the bl616 SDK.
   bouffalo_sdk_root = "${chip_root}/third_party/bouffalolab/bouffalo_sdk"
+
+  enable_debug_frame_ptr = true
 }
 
 assert(bouffalo_sdk_root != "", "bouffalo_sdk_root must be specified")
@@ -72,6 +74,10 @@ template("bouffalo_sdk") {
     ]
     cflags = [ "-Wno-unused-but-set-variable", "-Wno-conversion", "-fstack-usage" ]
 
+    if (defined(invoker.enable_frame_ptr) && invoker.enable_frame_ptr) {
+      cflags += [ "-fno-omit-frame-pointer" ]
+    }
+
     if (defined(invoker.defines)) {
       defines += invoker.defines
     }
@@ -103,6 +109,10 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/start_load.c",
       "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup/system_bl616.c",
     ]
+
+    if (defined(invoker.enable_frame_ptr) && invoker.enable_frame_ptr) {
+      defines += [ "CONF_ENABLE_FRAME_PTR" ]
+    }
 
     configs += [
       ":${sdk_target_name}_config_freertos",
@@ -491,7 +501,6 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/os/freertos/include",
       "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common",
       "${bouffalo_sdk_root}/components/os/freertos/portable/GCC/RISC-V/common/chip_specific_extensions/RV32I_CLINT_no_extensions",
-      #"${bouffalo_sdk_root}/components/os/freertos/posix/include",
     ]
 
     sources = [
@@ -512,6 +521,20 @@ template("bouffalo_sdk") {
       "-Wno-builtin-declaration-mismatch",
     ]
 
+    if (defined(invoker.enable_frame_ptr) && invoker.enable_frame_ptr) {
+      defines += [ "CONF_ENABLE_FRAME_PTR" ]
+      include_dirs += [
+        "${bouffalo_sdk_root}/components/os/freertos/panic",
+      ]
+      sources += [
+        "${bouffalo_sdk_root}/components/os/freertos/panic/panic_c.c",
+      ]
+      cflags_c += [
+        "-Wno-int-conversion",
+        "-Wno-incompatible-pointer-types"
+      ]
+    }
+    
     public_configs = [
       ":${sdk_target_name}_config_freertos",
       ":${sdk_target_name}_config",

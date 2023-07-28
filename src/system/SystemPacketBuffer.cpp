@@ -585,6 +585,8 @@ void PacketBuffer::Free(PacketBuffer * aPacket)
 
     if (aPacket != nullptr)
     {
+        // ChipLogProgress(chipSystemLayer, "PacketBuffer: Free %p, %d", aPacket, pbuf_get_allocsrc(aPacket));
+
         pbuf_free(aPacket);
 
         SYSTEM_STATS_UPDATE_LWIP_PBUF_COUNTS();

@@ -93,7 +93,8 @@ class BouffalolabBuilder(GnBuilder):
                  function_mfd: str = "disable",
                  enable_ethernet: bool = False,
                  enable_wifi: bool = False,
-                 enable_thread: bool = False
+                 enable_thread: bool = False,
+                 enable_frame_ptr: bool = False
                  ):
 
         if 'BL602' == module_type:
@@ -188,6 +189,9 @@ class BouffalolabBuilder(GnBuilder):
                 self.argsOpt.append("chip_enable_factory_data=true")
             elif "test" == function_mfd:
                 self.argsOpt.append("chip_enable_factory_data_test=true")
+
+        if enable_frame_ptr:
+            self.argsOpt.append("enable_debug_frame_ptr=true")
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])
