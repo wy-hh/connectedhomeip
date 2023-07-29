@@ -109,8 +109,6 @@ void StartAppTask(void)
 
 CHIP_ERROR AppTask::StartAppShellTask()
 {
-    static TaskHandle_t shellTask;
-
     Engine::Root().Init();
 
     cmd_misc_init();

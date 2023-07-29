@@ -27,6 +27,7 @@
 #include <plat.h>
 
 extern void __libc_init_array(void);
+extern void shell_init_with_task(struct bflb_device_s *shell);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 static int btblecontroller_em_config(void)
