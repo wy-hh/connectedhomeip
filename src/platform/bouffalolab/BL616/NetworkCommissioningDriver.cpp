@@ -371,6 +371,9 @@ extern "C" void wifi_event_handler(uint32_t code)
         case CODE_WIFI_ON_INIT_DONE:
             wifi_mgmr_init(&conf);
             break;
+        case CODE_WIFI_ON_MGMR_DONE:
+            wifi_mgmr_sta_autoconnect_enable();
+            break;
         case CODE_WIFI_ON_SCAN_DONE:
             event.Type                                 = kWiFiOnScanDone;
             PlatformMgr().PostEventOrDie(&event);
