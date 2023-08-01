@@ -18,7 +18,7 @@
 #include <stdio.h>
 
 #include <demo_pwm.h>
-
+#include <mboard.h>
 #include "LEDWidget.h"
 
 bool LEDWidget::GetOnoff(void)

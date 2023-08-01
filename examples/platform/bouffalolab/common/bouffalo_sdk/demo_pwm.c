@@ -24,7 +24,7 @@ void demo_pwm_init(void)
 {
     struct bflb_pwm_v2_config_s cfg = {
         .clk_source = BFLB_SYSTEM_PBCLK,
-        .clk_div = 80,
+        .clk_div = 40,
         .period = 1000,
     };
     struct bflb_device_s * gpio = bflb_device_get_by_name("gpio");
