@@ -31,7 +31,7 @@ MEMORY
     ram_psram  (wxa)   : ORIGIN = 0xA8000000, LENGTH = 4M
     itcm_memory (rx)  : ORIGIN = 0x62FC0000, LENGTH = 20K
     dtcm_memory (rx)  : ORIGIN = 0x62FC5000, LENGTH = 4K
-    nocache_ram_memory (!rx) : ORIGIN = 0x22FC6000, LENGTH = 44K+40K
+    nocache_ram_memory (!rx) : ORIGIN = 0x22FC6000, LENGTH = 4K
     ram_memory  (!rx) : ORIGIN = 0x22FC6000 + LENGTH(nocache_ram_memory), LENGTH = 320K-20K-4K-LENGTH(nocache_ram_memory)
     ram_wifi  (wxa)   : ORIGIN = 0x23010000, LENGTH = 160K - __EM_SIZE
 }

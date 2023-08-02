@@ -135,15 +135,23 @@ Status BLWiFiDriver::ReorderNetwork(ByteSpan networkId, uint8_t index, MutableCh
 
 CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, const char * key, uint8_t keyLen)
 {
-    char wifi_ssid[64] = { 0 };
-    char passwd[64]    = { 0 };
+    wifi_mgmr_sta_connect_params_t conn_param = {0};
 
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
 
-    memcpy(wifi_ssid, ssid, ssidLen);
-    memcpy(passwd, key, keyLen);
+    strncpy((char *)conn_param.ssid, ssid, ssidLen);
+    conn_param.ssid_len = ssidLen;
 
-    wifi_sta_connect(wifi_ssid, passwd, NULL, NULL, 1, 0, 0, 1);
+    if (keyLen) {
+        strncpy((char *)conn_param.key, key, keyLen);
+        conn_param.key_len = keyLen;
+    }
+    conn_param.freq1 = 0;
+    conn_param.freq2 = 0;
+    conn_param.use_dhcp = 1;
+    conn_param.pmf_cfg = 1;
+    conn_param.quick_connect = 1;
+    wifi_mgmr_sta_connect(&conn_param);
 
     return CHIP_NO_ERROR;
 }
