@@ -27,17 +27,17 @@
 
 #include <blog.h>
 
-#ifdef BL702_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL702
 #include <bl702_glb.h>
 #include <bl702_hbn.h>
-#elif BL702L_ENABLE
+#elif CHIP_DEVICE_LAYER_TARGET_BL702L
 #include <bl702l_glb.h>
 #include <bl702l_hbn.h>
-#elif defined(BL602_ENABLE)
+#elif CHIP_DEVICE_LAYER_TARGET_BL602
 #include <wifi_mgmr_ext.h>
 #endif
 #include <bl_irq.h>
-#if defined(BL702L_ENABLE)
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
 #include <bl_rtc.h>
 #endif
 #include <bl_sec.h>
@@ -51,7 +51,7 @@
 
 #include <hosal_uart.h>
 
-#ifdef BL702L_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
 #include <rom_freertos_ext.h>
 #include <rom_hal_ext.h>
 #include <rom_lmac154_ext.h>
@@ -78,7 +78,7 @@ unsigned int sleep(unsigned int seconds)
     return 0;
 }
 
-#ifndef BL702L_ENABLE
+#if !CHIP_DEVICE_LAYER_TARGET_BL702L
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
     printf("Stack Overflow checked. Stack name %s", pcTaskName);
@@ -177,7 +177,7 @@ void vAssertCalled(void)
 }
 #endif
 
-#ifdef BL702L_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
 void __attribute__((weak)) user_vAssertCalled(void)
 {
     void * ra = (void *) __builtin_return_address(0);
@@ -231,7 +231,7 @@ void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
 extern uint8_t _heap_start;
 extern size_t _heap_size; // @suppress("Type cannot be resolved")
 
-#ifdef BL602_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL602
 extern uint8_t _heap_wifi_start;
 extern uint8_t _heap_wifi_size; // @suppress("Type cannot be resolved")
 static const HeapRegion_t xHeapRegions[] = {
@@ -239,12 +239,12 @@ static const HeapRegion_t xHeapRegions[] = {
     { &_heap_wifi_start, (unsigned int) &_heap_wifi_size },
     { NULL, 0 } /* Terminates the array. */
 };
-#elif defined(BL702_ENABLE)
+#elif CHIP_DEVICE_LAYER_TARGET_BL702
 static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
 };
-#elif defined(BL702L_ENABLE)
+#elif CHIP_DEVICE_LAYER_TARGET_BL702L
 static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
@@ -316,9 +316,9 @@ void setup_heap()
 {
     bl_sys_init();
 
-#ifdef BL702_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL702
     bl_sys_em_config();
-#elif defined(BL702L_ENABLE)
+#elif CHIP_DEVICE_LAYER_TARGET_BL702L
     bl_sys_em_config();
 
     // Initialize rom data
@@ -346,7 +346,7 @@ void app_init(void)
 {
     bl_sys_early_init();
 
-#ifdef BL702L_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
     rom_freertos_init(256, 400);
     rom_hal_init();
     rom_lmac154_hook_init();
@@ -356,11 +356,11 @@ void app_init(void)
 
     blog_init();
     bl_irq_init();
-#if defined(BL702L_ENABLE)
+#if CHIP_DEVICE_LAYER_TARGET_BL702L
     bl_rtc_init();
 #endif
     bl_sec_init();
-#if defined(BL702_ENABLE)
+#if CHIP_DEVICE_LAYER_TARGET_BL702
     bl_timer_init();
 #endif
 
@@ -369,10 +369,10 @@ void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
 
-#if defined(BL702L_ENABLE) || CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if CHIP_DEVICE_LAYER_TARGET_BL702L || CHIP_DEVICE_CONFIG_ENABLE_WIFI
     hosal_dma_init();
 #endif
-#ifdef BL602_ENABLE
+#if CHIP_DEVICE_LAYER_TARGET_BL602
     wifi_td_diagnosis_init();
 #endif
 }

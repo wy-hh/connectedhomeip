@@ -25,15 +25,6 @@
 #include <FreeRTOS.h>
 #if CHIP_DEVICE_LAYER_TARGET_BL616
 #include <mem.h>
-extern "C" size_t xPortGetFreeHeapSize(void)
-{
-    return kfree_size();
-}
-
-extern "C" size_t xPortGetMinimumEverFreeHeapSize( void )
-{
-    return kfree_size();
-}
 #endif
 namespace chip {
 namespace DeviceLayer {
@@ -53,22 +44,29 @@ DiagnosticDataProviderImpl & DiagnosticDataProviderImpl::GetDefaultInstance()
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapFree(uint64_t & currentHeapFree)
 {
 #if CHIP_DEVICE_LAYER_TARGET_BL616
-    size_t freeHeapSize = kfree_size();
+    struct meminfo minfo;
+    bflb_mem_usage(KMEM_HEAP, &minfo);
+
+    currentHeapFree = static_cast<uint64_t>(minfo.free_size);
 #else
 #ifdef CFG_USE_PSRAM
     size_t freeHeapSize = xPortGetFreeHeapSize() + xPortGetFreeHeapSizePsram();
 #else
     size_t freeHeapSize = xPortGetFreeHeapSize();
 #endif
-#endif
     currentHeapFree = static_cast<uint64_t>(freeHeapSize);
+#endif
+
     return CHIP_NO_ERROR;
 }
 
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapUsed(uint64_t & currentHeapUsed)
 {
 #if CHIP_DEVICE_LAYER_TARGET_BL616
+    struct meminfo minfo;
+    bflb_mem_usage(KMEM_HEAP, &minfo);
 
+    currentHeapUsed = static_cast<uint64_t>(minfo.used_size);
 #else
 #ifdef CFG_USE_PSRAM
     currentHeapUsed = (get_heap_size() + get_heap3_size() - xPortGetFreeHeapSize() - xPortGetFreeHeapSizePsram());
@@ -83,7 +81,10 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapUsed(uint64_t & currentHeap
 CHIP_ERROR DiagnosticDataProviderImpl::GetCurrentHeapHighWatermark(uint64_t & currentHeapHighWatermark)
 {
 #if CHIP_DEVICE_LAYER_TARGET_BL616
+    struct meminfo minfo;
+    bflb_mem_usage(KMEM_HEAP, &minfo);
 
+    currentHeapHighWatermark = static_cast<uint64_t>(minfo.max_free_size);
 #else
 #ifdef CFG_USE_PSRAM
     currentHeapHighWatermark =

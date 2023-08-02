@@ -48,6 +48,7 @@
 #include <easyflash.h>
 
 #if CHIP_DEVICE_LAYER_TARGET_BL616
+#include <mem.h>
 #ifdef BOOT_PIN_RESET
 #include <bflb_gpio.h>
 #endif
@@ -158,7 +159,7 @@ void AppTask::AppTaskMain(void * pvParameter)
     app_event_t appEvent;
     bool onoff = false;
 
-#if !(defined(BL702_ENABLE) && CHIP_DEVICE_CONFIG_ENABLE_ETHERNET)
+#if !(CHIP_DEVICE_LAYER_TARGET_BL702 && CHIP_DEVICE_CONFIG_ENABLE_ETHERNET)
     sLightLED.Init();
 #endif
 
@@ -206,7 +207,16 @@ void AppTask::AppTaskMain(void * pvParameter)
 
     vTaskSuspend(NULL);
 
-    // ChipLogProgress(NotSpecified, "App Task started, with SRAM heap %d left\r\n", xPortGetFreeHeapSize());
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+    {
+        struct meminfo minfo;
+        bflb_mem_usage(KMEM_HEAP, &minfo);
+
+        ChipLogProgress(NotSpecified, "App Task started, with SRAM heap %d left\r\n", minfo.free_size);
+    }
+#else
+    ChipLogProgress(NotSpecified, "App Task started, with SRAM heap %d left\r\n", xPortGetFreeHeapSize());
+#endif
 
     while (true)
     {

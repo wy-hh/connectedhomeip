@@ -23,6 +23,19 @@
 
 #define EXT_DISCOVERY_TIMEOUT_SECS 20
 
+#ifdef BL602_ENABLE
+#error "BL602_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL602"
+#endif
+#ifdef BL702_ENABLE
+#error "BL702_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL702"
+#endif
+#ifdef BL702L_ENABLE
+#error "BL616_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL702L"
+#endif
+#ifdef BL616_ENABLE
+#error "BL616_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL616"
+#endif
+
 #ifdef __cplusplus
 
 #include <lib/core/CHIPError.h>
