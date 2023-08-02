@@ -105,6 +105,7 @@
 #endif
 #endif
 #define LWIP_HOOK_FILENAME        "lwiphooks.h"
+//#define LWIP_HOOK_FILENAME        "bl_lwip_hooks.h"
 
 #define LWIP_RAW                  1
 #define LWIP_MULTICAST_TX_OPTIONS 1
@@ -136,6 +137,8 @@
 #define LWIP_NETIF_EXT_STATUS_CALLBACK 1
 
 #define LWIP_ERRNO_STDINCLUDE 1
+
+#define LWIP_PBUF_FROM_CUSTOM_RAM_HEAP 1
 
 #if defined(__cplusplus)
 extern "C" long random(void);

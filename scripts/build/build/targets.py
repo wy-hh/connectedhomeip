@@ -615,6 +615,7 @@ def BuildBouffalolabTarget():
     target.AppendModifier('ethernet', enable_ethernet="test")
     target.AppendModifier('wifi', enable_wifi="test")
     target.AppendModifier('thread', enable_thread="test")
+    target.AppendModifier('fp', enable_frame_ptr=True)
 
     return target
 

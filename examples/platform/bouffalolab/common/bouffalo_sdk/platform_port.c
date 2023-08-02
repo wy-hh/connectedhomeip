@@ -18,12 +18,16 @@
 
 #include <bl616_glb.h>
 
+#include <FreeRTOS.h>
+#include <task.h>
+
 #include <easyflash.h>
 #include <bflb_mtd.h>
 #include <bl616dk/board.h>
 #include <plat.h>
 
 extern void __libc_init_array(void);
+extern void shell_init_with_task(struct bflb_device_s *shell);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
 static int btblecontroller_em_config(void)
@@ -63,4 +67,22 @@ void platform_port_init(void)
     __libc_init_array();
 
     bflb_mtd_init();
+}
+
+void vAssertCalled(void)
+{
+    void * ra = (void *) __builtin_return_address(0);
+
+    taskDISABLE_INTERRUPTS();
+    if (xPortIsInsideInterrupt())
+    {
+        printf("vAssertCalled, ra = %p in ISR\r\n", (void *) ra);
+    }
+    else
+    {
+        printf("vAssertCalled, ra = %p in task %s\r\n", (void *) ra, pcTaskGetName(NULL));
+    }
+
+    while (true)
+        ;
 }
