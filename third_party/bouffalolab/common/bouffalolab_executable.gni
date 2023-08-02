@@ -39,12 +39,13 @@ template("bouffalolab_executable") {
   flashing_script_inputs = [
     "${chip_root}/scripts/flashing/bouffalolab_firmware_utils.py",
     "${chip_root}/scripts/flashing/firmware_utils.py",
-
-    "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_2M.toml",
   ]
 
   if (invoker.bl_plat_name == "bl602" || invoker.bl_plat_name == "bl616") {
     flashing_script_inputs += [ "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_4M.toml" ]
+  }
+  else {
+    flashing_script_inputs += [ "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_2M.toml" ]
   }
 
   copy(flashing_runtime_target) {
