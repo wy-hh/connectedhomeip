@@ -6,10 +6,10 @@
  */
 #include <stdio.h>
 
-#include "demo_pwm.h"
 #include <hosal_pwm.h>
 
 #include "mboard.h"
+#include "demo_pwm.h"
 
 #define PWM_FREQ 1000
 #define PWM_DUTY_CYCLE 10000
