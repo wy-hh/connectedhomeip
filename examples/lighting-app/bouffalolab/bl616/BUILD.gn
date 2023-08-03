@@ -95,6 +95,7 @@ bouffalolab_executable("lighting_app") {
   defines = [
     "APP_TASK_STACK_SIZE=2048",
     "CHIP_UART_BAUDRATE=${baudrate}",
+    "BL616_ENABLE=1",
     "START_ENTRY=main",
   ]
 

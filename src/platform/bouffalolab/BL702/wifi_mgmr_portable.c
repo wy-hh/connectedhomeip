@@ -32,8 +32,6 @@ struct bflbwifi_ap_record vnet_ap_record;
 SemaphoreHandle_t vnet_msgSem = NULL;
 static netif_ext_callback_t netifExtCallback;
 
-extern int8_t bl_route_hook_init(void);
-
 /* event callback */
 static int virt_net_spi_event_cb(virt_net_t obj, enum virt_net_event_code code, void * opaque)
 {

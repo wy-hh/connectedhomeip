@@ -47,7 +47,7 @@
 
 #include <easyflash.h>
 
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
 #include <mem.h>
 #ifdef BOOT_PIN_RESET
 #include <bflb_gpio.h>
@@ -106,7 +106,7 @@ void StartAppTask(void)
 
 #if CONFIG_ENABLE_CHIP_SHELL
 
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
 
 CHIP_ERROR AppTask::StartAppShellTask()
 {
@@ -157,7 +157,7 @@ void AppTask::AppTaskMain(void * pvParameter)
     app_event_t appEvent;
     bool onoff = false;
 
-#if !(CHIP_DEVICE_LAYER_TARGET_BL702 && CHIP_DEVICE_CONFIG_ENABLE_ETHERNET)
+#if !(BL702_ENABLE && CHIP_DEVICE_CONFIG_ENABLE_ETHERNET)
     sLightLED.Init();
 #endif
 
@@ -205,7 +205,7 @@ void AppTask::AppTaskMain(void * pvParameter)
 
     vTaskSuspend(NULL);
 
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
     {
         struct meminfo minfo;
         bflb_mem_usage(KMEM_HEAP, &minfo);
@@ -445,7 +445,7 @@ void AppTask::ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction)
 }
 
 #ifdef BOOT_PIN_RESET
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
 static struct bflb_device_s * app_task_gpio_var = NULL;
 static void app_task_gpio_isr(int irq, void *arg) 
 {
@@ -464,7 +464,7 @@ void AppTask::ButtonInit(void)
 {
     GetAppTask().mButtonPressedTime = 0;
 
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
     app_task_gpio_var = bflb_device_get_by_name("gpio");
 
     bflb_gpio_int_init(app_task_gpio_var, BOOT_PIN_RESET, GPIO_INT_TRIG_MODE_SYNC_FALLING_RISING_EDGE);
@@ -480,7 +480,7 @@ void AppTask::ButtonInit(void)
 
 bool AppTask::ButtonPressed(void)
 {
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
     return bflb_gpio_read(app_task_gpio_var, BOOT_PIN_RESET);
 #else
     uint8_t val = 1;
@@ -497,9 +497,9 @@ void AppTask::ButtonEventHandler(void * arg)
 
     if (ButtonPressed())
     {
-#if CHIP_DEVICE_LAYER_TARGET_BL702L
+#if BL702L_ENABLE
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_NEG_LEVEL);
-#elif !CHIP_DEVICE_LAYER_TARGET_BL616
+#elif !BL616_ENABLE
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_NEG_LEVEL);
 #endif
         GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
@@ -508,9 +508,9 @@ void AppTask::ButtonEventHandler(void * arg)
     }
     else
     {
-#if CHIP_DEVICE_LAYER_TARGET_BL702L
+#if BL702L_ENABLE
         bl_set_gpio_intmod(gpio_key.port, HOSAL_IRQ_TRIG_POS_PULSE);
-#elif !CHIP_DEVICE_LAYER_TARGET_BL616
+#elif !BL616_ENABLE
         bl_set_gpio_intmod(gpio_key.port, 1, HOSAL_IRQ_TRIG_POS_PULSE);
 #endif
 

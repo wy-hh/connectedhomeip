@@ -27,7 +27,7 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
-#if ! CHIP_DEVICE_LAYER_TARGET_BL616
+#if CHIP_DEVICE_LAYER_TARGET_BL602 || CHIP_DEVICE_LAYER_TARGET_BL702 || CHIP_DEVICE_LAYER_TARGET_BL702L
 #include <utils_log.h>
 #endif
 
@@ -40,7 +40,6 @@ static char formattedMsg[CHIP_CONFIG_LOG_MESSAGE_MAX_SIZE];
 void LogV(const char * module, uint8_t category, const char * msg, va_list v)
 {
 #ifndef PW_RPC_ENABLED
-    uint32_t len = strlen(msg);
 
     vsnprintf(formattedMsg, sizeof(formattedMsg), msg, v);
 

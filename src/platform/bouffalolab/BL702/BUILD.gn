@@ -20,10 +20,8 @@ import("${chip_root}/src/platform/device.gni")
 import("${chip_root}/src/platform/bouffalolab/common/args.gni")
 
 assert(chip_device_platform == "bl702")
-assert(false == (chip_enable_wifi && chip_enable_openthread),
-       "Not support Wi-Fi and Thread together")
-
 assert(chip_enable_factory_data == false)
+
 if (enable_openthread_border_router) {
   assert(chip_enable_openthread==false)
 }
@@ -33,6 +31,9 @@ if (chip_enable_openthread) {
 }
 
 static_library("BL702") {
+
+  defines = []
+
   sources = [
     "DiagnosticDataProviderImpl.cpp",
     "PlatformManagerImpl.cpp",
@@ -66,7 +67,7 @@ static_library("BL702") {
 
   if (chip_enable_factory_data || chip_enable_factory_data_test) {
     if (chip_enable_factory_data) {
-      defines = [ "CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE" ]
+      defines += [ "CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE" ]
     }
     common_sources += [
       "${chip_root}/src/credentials/CHIPCert.h",
@@ -118,14 +119,13 @@ static_library("BL702") {
       "EthernetInterface.c",
     ]
     
-    defines = [ "CHIP_DEVICE_CONFIG_ENABLE_ETHERNET" ]
+    defines += [ "CHIP_DEVICE_CONFIG_ENABLE_ETHERNET" ]
     deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
   }
 
   if (enable_openthread_border_router) {  
-    defines = [
-      "ENABLE_OPENTHREAD_BORDER_ROUTER"
-    ]
+    defines += [ "ENABLE_OPENTHREAD_BORDER_ROUTER" ]
   }
+
   public_deps = [ "${chip_root}/src/platform:platform_base" ]
 }

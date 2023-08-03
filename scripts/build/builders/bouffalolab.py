@@ -93,7 +93,6 @@ class BouffalolabBuilder(GnBuilder):
                  enable_cdc: bool = False,
                  enable_resetCnt: bool = False,
                  enable_rotating_device_id: bool = False,
-                 function_mfd: str = "disable",
                  enable_otbr: bool = False,
                  function_mfd: str = "disable",
                  enable_ethernet: bool = False,
@@ -122,6 +121,7 @@ class BouffalolabBuilder(GnBuilder):
         self.argsOpt = []
         self.chip_name = bouffalo_chip
 
+        openthread_project_core_config_file = None
         toolchain = os.path.join(root, os.path.split(os.path.realpath(__file__))[0], '../../../config/bouffalolab/toolchain')
         toolchain = 'custom_toolchain="{}:riscv_gcc"'.format(toolchain)
         if toolchain:
@@ -136,52 +136,69 @@ class BouffalolabBuilder(GnBuilder):
         if bouffalo_chip == "bl602":
 
             enable_wifi = True
-            if enable_ethernet or enable_thread:
-                raise_exception('SoC %s doesn\'t connectivity Ethernet/Thread.' % bouffalo_chip)
+            if enable_ethernet or enable_thread or enable_otbr:
+                raise_exception('SoC %s doesn\'t support connectivity Ethernet/Thread.' % bouffalo_chip)
 
         elif bouffalo_chip == "bl702":
 
             self.argsOpt.append('module_type=\"{}\"'.format(module_type))
             if board != BouffalolabBoard.BL706DK:
-                if enable_ethernet:
-                    raise_exception('Board %s doesn\'t connectivity Ethernet.' % board)
-                if enable_wifi:
-                    raise_exception('Board %s doesn\'t connectivity Wi-Fi.' % board)
-            
-            if not enable_wifi and not enable_ethernet:
+                if enable_ethernet or enable_wifi:
+                    raise_exception('Board %s doesn\'t support connectivity Ethernet/Wi-Fi.' % board)
+                if enable_otbr:
+                    raise_exception('Board %s doesn\'t support OTBR function.' % board)
+
+            if enable_otbr:
+                if not enable_wifi and not enable_ethernet:
+                    raise_exception('Wi-Fi or Ethernet should be specified for infra network')
+
+                # for otbr, thread is not maintained by Matter
+                enable_thread = False
+                openthread_project_core_config_file = "bl702-openthread-core-bl-otbr-config.h"
+            elif not enable_wifi and not enable_ethernet:
                 enable_thread = True
+                openthread_project_core_config_file = "bl702-openthread-core-bl-config.h"
 
         elif bouffalo_chip == "bl702l":
 
             if board == BouffalolabBoard.BL704L_DVK:
                 raise_exception('Board bl704l-dvk renames to bl704ldk.')
-            if enable_ethernet or enable_wifi:
-                raise_exception('Board %s doesn\'t connectivity Ethernet/Wi-Fi.' % bouffalo_chip)
+            if enable_ethernet or enable_wifi or enable_otbr:
+                raise_exception('SoC %s doesn\'t support connectivity Ethernet/Wi-Fi and OTBR currently.' % bouffalo_chip)
 
-            if not enable_wifi and not enable_ethernet:
-                enable_thread = True
-
+            enable_thread = True
+            openthread_project_core_config_file = "bl702l-openthread-core-bl-config.h"
         elif bouffalo_chip == "bl616":
             if not enable_ethernet and not enable_wifi and not enable_thread:
                 raise_exception('No connectivity specified. Connectivity option -wifi supports for %s.' % bouffalo_chip)
+            if enable_ethernet or enable_thread or enable_otbr:
+                raise_exception('SoC %s doesn\'t support connectivity Ethernet/Thread currently.' % bouffalo_chip)
+
+        if enable_wifi or enable_thread:
+            self.argsOpt.append('chip_config_network_layer_ble=true')
+        else:
+            # for enable_ethernet, do not need ble for commissioning
+            self.argsOpt.append('chip_config_network_layer_ble=false')
 
         if enable_ethernet:
-            self.argsOpt.append('chip_config_network_layer_ble=false')
-            self.argsOpt.append('chip_enable_openthread=false')
-            self.argsOpt.append('chip_enable_wifi=false')
             self.argsOpt.append('chip_enable_ethernet=true')
-        elif enable_wifi:
-            self.argsOpt.append('chip_config_network_layer_ble=true')
-            self.argsOpt.append('chip_enable_openthread=false')
-            self.argsOpt.append('chip_enable_wifi=true')
-            self.argsOpt.append('chip_enable_ethernet=false')
-        elif enable_thread:
-            self.argsOpt.append('chip_config_network_layer_ble=true')
-            self.argsOpt.append('chip_enable_openthread=true')
-            self.argsOpt.append('chip_enable_wifi=false')
-            self.argsOpt.append('chip_enable_ethernet=false')
         else:
-            raise_exception('None of connectivity specified')
+            self.argsOpt.append('chip_enable_ethernet=false')
+
+        if enable_wifi:
+            self.argsOpt.append('chip_enable_wifi=true')
+        else:
+            self.argsOpt.append('chip_enable_wifi=false')
+            
+        if enable_thread:
+            self.argsOpt.append('chip_enable_openthread=true')
+        else:
+            self.argsOpt.append('chip_enable_openthread=false')
+
+        if enable_otbr or enable_thread:
+            self.argsOpt.append('openthread_project_core_config_file="{}"'.format(openthread_project_core_config_file))
+        if enable_otbr:
+            self.argsOpt.append('enable_openthread_border_router=true')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":
@@ -202,12 +219,6 @@ class BouffalolabBuilder(GnBuilder):
         if enable_rotating_device_id:
             self.argsOpt.append('chip_enable_additional_data_advertising=true')
             self.argsOpt.append('chip_enable_rotating_device_id=true')
-        if enable_otbr:
-            if board == BouffalolabBoard.BL706_ETH or board == BouffalolabBoard.BL706_WIFI:
-                self.argsOpt.append('enable_openthread_border_router=true')
-                self.argsOpt.append('openthread_project_core_config_file="bl702-openthread-core-bl-otbr-config.h"')
-            else:
-                raise Exception('Only board BL706-ETH and BL706-WIFI support openthread border router function')
 
         if "disable" != function_mfd:
             if bouffalo_chip != "bl602":
@@ -255,7 +266,6 @@ class BouffalolabBuilder(GnBuilder):
     def PostBuildCommand(self):
 
         # Generate Bouffalo Lab format OTA image for development purpose.
-
         ota_images_folder_path = self.output_dir + "/ota_images"
         ota_images_dev_image = self.output_dir + "/" + self.app.AppNamePrefix(self.chip_name) + ".bin.xz.hash"
         ota_images_image = self.output_dir + "/ota_images/FW_OTA.bin.xz.hash"

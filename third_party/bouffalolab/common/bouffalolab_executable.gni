@@ -42,7 +42,9 @@ template("bouffalolab_executable") {
   ]
 
   if (invoker.bl_plat_name == "bl602" || invoker.bl_plat_name == "bl616") {
-    flashing_script_inputs += [ "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_4M.toml" ]
+    flashing_script_inputs += [ 
+      "${chip_root}/examples/platform/bouffalolab/${invoker.bl_plat_name}/flash_config/partition_cfg_4M.toml" 
+    ]
   }
   else if (defined(invoker.enable_openthread_border_router) && invoker.enable_openthread_border_router) {
     flashing_script_inputs += [
@@ -78,21 +80,17 @@ template("bouffalolab_executable") {
   }
 
   flashing_options += [ "--pt" ]
-  if (invoker.bl_plat_name == "bl702" || invoker.bl_plat_name == "bl702l") {
-
-    if (defined(invoker.enable_openthread_border_router) && invoker.enable_openthread_border_router) {
-      flashing_options +=
-          [ rebase_path("partition_cfg_2M_noOTA.toml", root_out_dir, root_out_dir) ]
-    }
-    else {
-      flashing_options +=
-          [ rebase_path("partition_cfg_2M.toml", root_out_dir, root_out_dir) ]
-    }
-
-
-  } else {
+  if (invoker.bl_plat_name == "bl602" || invoker.bl_plat_name == "bl616") {
     flashing_options +=
         [ rebase_path("partition_cfg_4M.toml", root_out_dir, root_out_dir) ]
+  } 
+  else if (defined(invoker.enable_openthread_border_router) && invoker.enable_openthread_border_router) {
+      flashing_options +=
+          [ rebase_path("partition_cfg_2M_noOTA.toml", root_out_dir, root_out_dir) ]
+  }
+  else {
+      flashing_options +=
+          [ rebase_path("partition_cfg_2M.toml", root_out_dir, root_out_dir) ]
   }
 
   flashing_options += [ "--ota" ]

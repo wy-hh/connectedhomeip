@@ -887,7 +887,6 @@ template("bl_iot_sdk") {
       "PBUF_POOL_SIZE=20",
       "PBUF_POOL_BUFSIZE=1600",
       "LWIP_NETIF_EXT_STATUS_CALLBACK",
-      "LWIP_HOOK_FILENAME=\"bl_lwip_hooks.h\""
     ]
 
     if (defined(invoker.enable_openthread_border_router) && invoker.enable_openthread_border_router) {
@@ -993,7 +992,7 @@ template("bl_iot_sdk") {
         "${bl_iot_sdk_root}/components/network/lwip/src/core/ipv6/mld6.c"
       ]
       defines = [
-        "LWIP_HOOK_FILENAME=\"lwip_default_hooks.h\""
+        "LWIP_HOOK_FILENAME=\"bl_lwip_hooks.h\""
       ]
     }
 

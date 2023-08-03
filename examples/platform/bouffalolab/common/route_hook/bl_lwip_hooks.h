@@ -4,7 +4,7 @@
 #include "lwip/err.h"
 #include "lwip/ip_addr.h"
 
-#if CHIP_DEVICE_LAYER_TARGET_BL616
+#if BL616_ENABLE
 #include "lwiphooks.h"
 #endif
 

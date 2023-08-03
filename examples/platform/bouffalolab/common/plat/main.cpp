@@ -17,11 +17,9 @@
  */
 
 #include <AppTask.h>
+
 #include <easyflash.h>
 #include <plat.h>
-#if CHIP_DEVICE_LAYER_TARGET_BL616
-#include <mem.h>
-#endif
 
 using namespace ::chip;
 using namespace ::chip::Inet;
@@ -59,24 +57,6 @@ extern "C" int START_ENTRY(void)
 
     ChipLogProgress(NotSpecified, "Starting App Task");
     StartAppTask();
-
-#if CHIP_DEVICE_LAYER_TARGET_BL616
-    {
-        struct meminfo minfo;
-        bflb_mem_usage(KMEM_HEAP, &minfo);
-
-        ChipLogProgress(NotSpecified, "Heap %u", minfo.free_size);
-    }
-#else
-#ifdef CFG_USE_PSRAM
-    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p], %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
-                    &_heap_start + (unsigned int) &_heap_size, (unsigned int) &_heap3_size, &_heap3_start,
-                    &_heap3_start + (unsigned int) &_heap3_size);
-#else
-    ChipLogProgress(NotSpecified, "Heap %u@[%p:%p]", (unsigned int) &_heap_size, &_heap_start,
-                    &_heap_start + (unsigned int) &_heap_size);
-#endif
-#endif
 
     ChipLogProgress(NotSpecified, "Starting OS Scheduler...");
     vTaskStartScheduler();

@@ -23,10 +23,6 @@
 static struct dhcp6 dhcp6_val;
 static netif_ext_callback_t netifExtCallback;
 
-#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
-extern int8_t bl_route_hook_init(void);
-#endif
-
 static void netif_status_callback(struct netif * netif)
 {
     if ((netif->flags & NETIF_FLAG_UP) && !ip4_addr_isany(netif_ip4_addr(netif)))

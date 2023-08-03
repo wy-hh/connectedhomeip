@@ -23,6 +23,7 @@
 
 #include "FreeRTOS.h"
 #include "timers.h"
+
 #include <platform/CHIPDeviceLayer.h>
 
 using namespace ::chip;

@@ -61,10 +61,10 @@
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET || CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <lwip/netif.h>
 #include <bl_route_hook.h>
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI && CHIP_DEVICE_LAYER_TARGET_BL602
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI && BL602_ENABLE
 #include <wifi_mgmr_ext.h>
 #endif
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI && CHIP_DEVICE_LAYER_TARGET_BL702
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI && BL702_ENABLE
 #include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
 #endif
 #if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
@@ -129,7 +129,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
             chip::app::DnssdServer::Instance().StartServer();
 
-#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
+#ifndef ENABLE_OPENTHREAD_BORDER_ROUTER
             bl_route_hook_init();
 #endif
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
