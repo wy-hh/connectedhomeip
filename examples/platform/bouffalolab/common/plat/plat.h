@@ -23,11 +23,30 @@
 
 #define EXT_DISCOVERY_TIMEOUT_SECS 20
 
+#ifdef BL602_ENABLE
+#error "BL602_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL602"
+#endif
+#ifdef BL702_ENABLE
+#error "BL702_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL702"
+#endif
+#ifdef BL702L_ENABLE
+#error "BL616_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL702L"
+#endif
+#ifdef BL616_ENABLE
+#error "BL616_ENABLE is deprecated, please use CHIP_DEVICE_LAYER_TARGET_BL616"
+#endif
+
 #ifdef __cplusplus
+
 #include <lib/core/CHIPError.h>
 void appError(CHIP_ERROR error);
+
+extern "C" void platform_port_init(void);
 #else
+
 void appError(int err);
+void platform_port_init(void);
+
 #endif
 
 #if defined (ENABLE_OPENTHREAD_BORDER_ROUTER) && CONFIG_ENABLE_CHIP_SHELL

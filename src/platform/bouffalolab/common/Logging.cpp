@@ -27,7 +27,9 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#if ! CHIP_DEVICE_LAYER_TARGET_BL616
 #include <utils_log.h>
+#endif
 
 
 namespace chip {
@@ -45,13 +47,25 @@ void LogV(const char * module, uint8_t category, const char * msg, va_list v)
     switch (category)
     {
     case kLogCategory_Error:
-        __utils_printf("[%10u][%s][ERROR] %s%s", xTaskGetTickCount(), module, formattedMsg, (len && msg[len - 1] == '\n')? "": "\r\n");
+#if ! CHIP_DEVICE_LAYER_TARGET_BL616
+        __utils_printf("[%10lu][%s][ERROR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#else
+        printf("[%10lu][%s][ERROR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#endif
         break;
     case kLogCategory_Progress:
-        __utils_printf("[%10u][%s][PROGR] %s%s", xTaskGetTickCount(), module, formattedMsg, (len && msg[len - 1] == '\n')? "": "\r\n");
+#if ! CHIP_DEVICE_LAYER_TARGET_BL616
+        __utils_printf("[%10lu][%s][PROGR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#else
+        printf("[%10lu][%s][PROGR] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#endif
         break;
     case kLogCategory_Detail:
-        __utils_printf("[%10u][%s][DETAIL] %s%s", xTaskGetTickCount(), module, formattedMsg, (len && msg[len - 1] == '\n')? "": "\r\n");
+#if ! CHIP_DEVICE_LAYER_TARGET_BL616
+        __utils_printf("[%10lu][%s][DETAIL] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#else
+        printf("[%10lu][%s][DETAIL] %s\r\n", xTaskGetTickCount(), module, formattedMsg);
+#endif
         break;
     }
 #else

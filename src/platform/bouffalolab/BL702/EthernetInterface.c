@@ -21,6 +21,7 @@
 
 #include "EthernetInterface.h"
 static struct dhcp6 dhcp6_val;
+static netif_ext_callback_t netifExtCallback;
 
 #ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
 extern int8_t bl_route_hook_init(void);
@@ -28,23 +29,13 @@ extern int8_t bl_route_hook_init(void);
 
 static void netif_status_callback(struct netif * netif)
 {
-    if (netif->flags & NETIF_FLAG_UP)
+    if ((netif->flags & NETIF_FLAG_UP) && !ip4_addr_isany(netif_ip4_addr(netif)))
     {
-        for (uint32_t i = 0; i < LWIP_IPV6_NUM_ADDRESSES; i++)
-        {
-            if (!ip6_addr_isany(netif_ip6_addr(netif, i)) && ip6_addr_ispreferred(netif_ip6_addr_state(netif, i)))
-            {
+        printf("IP: %s\r\n", ip4addr_ntoa(netif_ip4_addr(netif)));
+        printf("MASK: %s\r\n", ip4addr_ntoa(netif_ip4_netmask(netif)));
+        printf("Gateway: %s\r\n", ip4addr_ntoa(netif_ip4_gw(netif)));
 
-                const ip6_addr_t * ip6addr = netif_ip6_addr(netif, i);
-                if (ip6_addr_isany(ip6addr) || ip6_addr_islinklocal(ip6addr))
-                {
-                    continue;
-                }
-
-                ethernetInterface_eventGotIP(netif);
-                break;
-            }
-        }
+        ethernetInterface_eventGotIP(netif);
     }
 }
 
@@ -83,9 +74,7 @@ void ethernetInterface_init(void)
     /* Set callback to be called when interface is brought up/down or address is changed while up */
     netif_set_status_callback(&eth_mac, netif_status_callback);
 
-#ifdef CONFIG_BL_ROUTE_HOOK_ENABLE
-    bl_route_hook_init();
-#endif
+    netif_add_ext_callback(&netifExtCallback, network_netif_ext_callback);
 }
 
 struct netif * deviceInterface_getNetif(void)

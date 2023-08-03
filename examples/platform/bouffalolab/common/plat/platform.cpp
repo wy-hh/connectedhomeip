@@ -51,25 +51,25 @@
 #include <app/clusters/network-commissioning/network-commissioning.h>
 #endif
 
-#if CHIP_ENABLE_OPENTHREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/OpenThread/OpenThreadUtils.h>
 #include <platform/ThreadStackManager.h>
 #include <platform/bouffalolab/common/ThreadStackManagerImpl.h>
 #include <utils_list.h>
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET || CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <lwip/netif.h>
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#if defined(BL602_ENABLE)
+#include <bl_route_hook.h>
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI && CHIP_DEVICE_LAYER_TARGET_BL602
 #include <wifi_mgmr_ext.h>
-#else
-#include <platform/bouffalolab/BL702/WiFiInterface.h>
 #endif
-#else
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI && CHIP_DEVICE_LAYER_TARGET_BL702
+#include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
+#endif
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif
-#include <bl_route_hook.h>
 #endif
 
 #include <AppTask.h>
@@ -115,7 +115,9 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
                                                         OTAConfig::InitOTARequestorHandler, nullptr);
         }
         break;
-#else
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
     case DeviceEventType::kInterfaceIpAddressChanged:
         if ((event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV4_Assigned) ||
             (event->InterfaceIpAddressChanged.Type == InterfaceIpChangeType::kIpV6_Assigned))
@@ -190,7 +192,7 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
 
     chip::DeviceLayer::ConnectivityMgr().SetBLEDeviceName(CHIP_BLE_DEVICE_NAME);
 
-#if CHIP_ENABLE_OPENTHREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
 #if CONFIG_ENABLE_CHIP_SHELL
     cmd_otcli_init();
@@ -205,7 +207,9 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
     ReturnLogErrorOnFailure(ConnectivityMgr().SetThreadDeviceType(ConnectivityManager::kThreadDeviceType_MinimalEndDevice));
 #endif
 
-#elif CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#endif
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     ReturnLogErrorOnFailure(sWiFiNetworkCommissioningInstance.Init());
 #endif
 
@@ -242,7 +246,7 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
 
     chip::DeviceLayer::PlatformMgr().UnlockChipStack();
 
-#if CHIP_ENABLE_OPENTHREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     ChipLogProgress(NotSpecified, "Starting OpenThread task");
     // Start OpenThread task
     ReturnLogErrorOnFailure(ThreadStackMgrImpl().StartThreadTask());

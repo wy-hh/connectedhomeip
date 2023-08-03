@@ -18,6 +18,9 @@ bool wifi_mgmr_security_type_is_wpa2(void);
 bool wifi_mgmr_security_type_is_wpa3(void);
 struct netif * deviceInterface_getNetif(void);
 
+void wifi_event_handler(uint32_t code);
+void wifi_start_firmware_task(void);
+
 #ifdef __cplusplus
 }
 #endif

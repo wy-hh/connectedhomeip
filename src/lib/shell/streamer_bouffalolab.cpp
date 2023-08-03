@@ -23,44 +23,83 @@
 #include <lib/shell/Engine.h>
 #include <lib/shell/streamer.h>
 
+#if !CHIP_DEVICE_LAYER_TARGET_BL616
 #include <stdio.h>
 #include <string.h>
 #include <uart.h>
+#endif
 
 namespace chip {
 namespace Shell {
-namespace {
 
-int streamer_bl702_init(streamer_t * streamer)
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+namespace {
+int streamer_bouffalo_sdk_init(streamer_t * streamer)
 {
     (void) streamer;
-    // uartInit();
     return 0;
 }
 
-ssize_t streamer_bl702_read(streamer_t * streamer, char * buffer, size_t length)
+ssize_t streamer_bouffalo_sdk_read(streamer_t * streamer, char * buffer, size_t length)
 {
-    (void) streamer;
-    return (ssize_t) uartRead(buffer, (uint16_t) length);
+    (void) (streamer);
+    return 0;
 }
 
-ssize_t streamer_bl702_write(streamer_t * streamer, const char * buffer, size_t length)
+ssize_t streamer_bouffalo_sdk_write(streamer_t * streamer, const char * buffer, size_t length)
 {
-    (void) streamer;
-    return uartWrite(buffer, (uint16_t) length);
+    (void) (streamer);
+
+    printf ("%s", buffer);
+    return 0;
 }
 
-static streamer_t streamer_bl702 = {
-    .init_cb  = streamer_bl702_init,
-    .read_cb  = streamer_bl702_read,
-    .write_cb = streamer_bl702_write,
+static streamer_t streamer_bouffalo_sdk = {
+    .init_cb  = streamer_bouffalo_sdk_init,
+    .read_cb  = streamer_bouffalo_sdk_read,
+    .write_cb = streamer_bouffalo_sdk_write,
 };
 } // namespace
 
 streamer_t * streamer_get(void)
 {
-    return &streamer_bl702;
+    return &streamer_bouffalo_sdk;
 }
+
+#else
+
+namespace {
+
+int streamer_iot_sdk_init(streamer_t * streamer)
+{
+    (void) streamer;
+    return 0;
+}
+
+ssize_t streamer_iot_sdk_read(streamer_t * streamer, char * buffer, size_t length)
+{
+    (void) streamer;
+    return (ssize_t) uartRead(buffer, (uint16_t) length);
+}
+
+ssize_t streamer_iot_sdk_write(streamer_t * streamer, const char * buffer, size_t length)
+{
+    (void) streamer;
+    return uartWrite(buffer, (uint16_t) length);
+}
+
+static streamer_t streamer_iot_sdk = {
+    .init_cb  = streamer_iot_sdk_init,
+    .read_cb  = streamer_iot_sdk_read,
+    .write_cb = streamer_iot_sdk_write,
+};
+
+} // namespace
+streamer_t * streamer_get(void)
+{
+    return &streamer_iot_sdk;
+}
+#endif
 
 } // namespace Shell
 } // namespace chip

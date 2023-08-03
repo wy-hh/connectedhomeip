@@ -25,8 +25,8 @@
 
 #include <lwip/tcpip.h>
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-#include <platform/bouffalolab/BL702/WiFiInterface.h>
-#endif
+#include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD || defined (ENABLE_OPENTHREAD_BORDER_ROUTER)
 #include <openthread_port.h>
@@ -44,7 +44,7 @@
 
 #if !CHIP_DEVICE_CONFIG_ENABLE_WIFI && !CHIP_DEVICE_CONFIG_ENABLE_THREAD
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
 extern "C" {
 #include <bl_sec.h>
@@ -75,17 +75,21 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     tcpip_init(NULL, NULL);
     
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    wifiInterface_init();
-#elif CHIP_DEVICE_CONFIG_ENABLE_THREAD
+    wifi_start_firmware_task();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+    ethernetInterface_init();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     otRadio_opt_t opt;
     opt.bf.isFtd = true;
     opt.bf.isCoexEnable = true;
 
     ot_alarmInit();
     ot_radioInit(opt);
-#else
-    ethernetInterface_init();
-#endif
+#endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
 #if !CHIP_DEVICE_CONFIG_ENABLE_THREAD && defined(ENABLE_OPENTHREAD_BORDER_ROUTER) 
     otRadio_opt_t opt;

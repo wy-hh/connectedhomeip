@@ -600,11 +600,11 @@ def BuildBouffalolabTarget():
                    module_type="BL706C-22"),
         TargetPart('BL706-NIGHT-LIGHT',
                    board=BouffalolabBoard.BL706_NIGHT_LIGHT, module_type="BL706C-22"),
-        TargetPart('BL706-ETH',
-                   board=BouffalolabBoard.BL706_ETH, module_type="BL706C-22"),
-        TargetPart('BL706-WIFI',
-                   board=BouffalolabBoard.BL706_WIFI, module_type="BL706C-22"),
+        TargetPart('BL706DK',
+                   board=BouffalolabBoard.BL706DK, module_type="BL706C-22"),
+        TargetPart('BL704LDK', board=BouffalolabBoard.BL704LDK, module_type="BL704L"),
         TargetPart('BL704L-DVK', board=BouffalolabBoard.BL704L_DVK, module_type="BL704L"),
+        TargetPart('BL616DK', board=BouffalolabBoard.BL616DK, module_type="BL616"),
     ])
 
     # Apps
@@ -621,6 +621,10 @@ def BuildBouffalolabTarget():
     target.AppendModifier('mfd', function_mfd="release")
     target.AppendModifier('mfdtest', function_mfd="test")
     target.AppendModifier('otbr', enable_otbr=True)
+    target.AppendModifier('ethernet', enable_ethernet="test")
+    target.AppendModifier('wifi', enable_wifi="test")
+    target.AppendModifier('thread', enable_thread="test")
+    target.AppendModifier('fp', enable_frame_ptr=True)
 
     return target
 

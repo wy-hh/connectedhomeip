@@ -33,11 +33,14 @@
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
 #include <platform/internal/GenericConnectivityManagerImpl_WiFi.ipp>
-#ifdef BL602
+#if CHIP_DEVICE_LAYER_TARGET_BL602
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
 #endif
-#ifdef BL702
+#if CHIP_DEVICE_LAYER_TARGET_BL702
 #include <platform/bouffalolab/BL702/NetworkCommissioningDriver.h>
+#endif
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#include <platform/bouffalolab/BL616/NetworkCommissioningDriver.h>
 #endif
 #endif
 
@@ -71,6 +74,8 @@ CHIP_ERROR ConnectivityManagerImpl::_Init()
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
     mWiFiStationState = ConnectivityManager::kWiFiStationState_NotConnected;
     ReturnErrorOnFailure(SetWiFiStationMode(kWiFiStationMode_Enabled));
+
+    PlatformMgr().AddEventHandler(NetworkCommissioning::NetworkEventHandler, 0);
 #endif
 
     return CHIP_NO_ERROR;
@@ -247,7 +252,7 @@ void ConnectivityManagerImpl::DriveStationState(::chip::System::Layer * aLayer, 
 }
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET || CHIP_DEVICE_CONFIG_ENABLE_WIFI
 void ConnectivityManagerImpl::OnConnectivityChanged(struct netif * interface)
 {
     bool haveIPv4Conn      = false;
