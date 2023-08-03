@@ -129,6 +129,7 @@ def BuildHostTarget():
         TargetPart('chip-cert', app=HostApp.CERT_TOOL),
         TargetPart('address-resolve-tool', app=HostApp.ADDRESS_RESOLVE),
         TargetPart('contact-sensor', app=HostApp.CONTACT_SENSOR),
+        TargetPart('dishwasher', app=HostApp.DISHWASHER),
     ]
 
     if (HostBoard.NATIVE.PlatformName() == 'darwin'):
@@ -230,7 +231,8 @@ def BuildEfr32Target():
         TargetPart('unit-test', app=Efr32App.UNIT_TEST),
         TargetPart('light', app=Efr32App.LIGHT),
         TargetPart('lock', app=Efr32App.LOCK),
-        TargetPart('thermostat', app=Efr32App.THERMOSTAT)
+        TargetPart('thermostat', app=Efr32App.THERMOSTAT),
+        TargetPart('pump', app=Efr32App.PUMP)
     ])
 
     target.AppendModifier('rpc', enable_rpcs=True)
@@ -326,6 +328,8 @@ def BuildAndroidTarget():
         TargetPart('tv-casting-app', app=AndroidApp.TV_CASTING_APP),
         TargetPart('java-matter-controller',
                    app=AndroidApp.JAVA_MATTER_CONTROLLER),
+        TargetPart('virtual-device-app',
+                   app=AndroidApp.VIRTUAL_DEVICE_APP),
     ])
 
     # Modifiers
@@ -415,6 +419,7 @@ def BuildASRTarget():
     target.AppendFixedTargets([
         TargetPart('asr582x', board=ASRBoard.ASR582X),
         TargetPart('asr595x', board=ASRBoard.ASR595X),
+        TargetPart('asr550x', board=ASRBoard.ASR550X),
     ])
 
     # apps
@@ -428,6 +433,7 @@ def BuildASRTarget():
         TargetPart('temperature-measurement', app=ASRApp.TEMPERATURE_MEASUREMENT),
         TargetPart('thermostat', app=ASRApp.THERMOSTAT),
         TargetPart('ota-requestor', app=ASRApp.OTA_REQUESTOR),
+        TargetPart('dishwasher', app=ASRApp.DISHWASHER),
     ])
 
     # modifiers
@@ -436,6 +442,7 @@ def BuildASRTarget():
     target.AppendModifier('no_logging', chip_logging=False)
     target.AppendModifier('factory', enable_factory=True)
     target.AppendModifier('rotating_id', enable_rotating_device_id=True)
+    target.AppendModifier('rio', enable_lwip_ip6_hook=True)
 
     return target
 
@@ -543,7 +550,7 @@ def BuildQorvoTarget():
         TargetPart('qpg6105', board=QpgBoard.QPG6105),
     ])
 
-   # apps
+    # apps
     target.AppendFixedTargets([
         TargetPart('lock', app=QpgApp.LOCK),
         TargetPart('light', app=QpgApp.LIGHT),
@@ -610,6 +617,7 @@ def BuildBouffalolabTarget():
     target.AppendModifier('rpc', enable_rpcs=True)
     target.AppendModifier('cdc', enable_cdc=True)
     target.AppendModifier('resetCnt', enable_resetCnt=True)
+    target.AppendModifier('rotating_device_id', enable_rotating_device_id=True)
     target.AppendModifier('mfd', function_mfd="release")
     target.AppendModifier('mfdtest', function_mfd="test")
     target.AppendModifier('otbr', enable_otbr=True)
@@ -664,6 +672,8 @@ def BuildTelinkTarget():
         TargetPart('ota-requestor', app=TelinkApp.OTA_REQUESTOR),
         TargetPart('pump', app=TelinkApp.PUMP),
         TargetPart('pump-controller', app=TelinkApp.PUMP_CONTROLLER),
+        TargetPart('shell', app=TelinkApp.SHELL),
+        TargetPart('smoke-co-alarm', app=TelinkApp.SMOKE_CO_ALARM),
         TargetPart('temperature-measurement',
                    app=TelinkApp.TEMPERATURE_MEASUREMENT),
         TargetPart('thermostat', app=TelinkApp.THERMOSTAT),

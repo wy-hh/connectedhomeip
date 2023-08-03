@@ -25,12 +25,15 @@
 
 static const uint16_t kLocalPort = 5541;
 static const uint16_t kTestVendorId = 0xFFF1u;
-static const uint16_t kTestProductId = 0x8001u;
+static const uint16_t kTestProductId1 = 0x8000u;
+static const uint16_t kTestProductId2 = 0x8001u;
 static const uint16_t kTestDiscriminator1 = 1111u;
 static const uint16_t kTestDiscriminator2 = 1112u;
-static const uint16_t kTestDiscriminator3 = 3840u;
+static const uint16_t kTestDiscriminator3 = 1113u;
+static const uint16_t kTestDiscriminator4 = 3840u;
+static const uint16_t kTestDiscriminator5 = 3839u;
 static const uint16_t kDiscoverDeviceTimeoutInSeconds = 10;
-static const uint16_t kExpectedDiscoveredDevicesCount = 3;
+static const uint16_t kExpectedDiscoveredDevicesCount = 5;
 
 // Singleton controller we use.
 static MTRDeviceController * sController = nil;
@@ -73,9 +76,10 @@ static MTRDeviceController * sController = nil;
 
     XCTAssertEqual(instanceName.length, 16); // The  instance name is random, so just ensure the len is right.
     XCTAssertEqualObjects(vendorId, @(kTestVendorId));
-    XCTAssertEqualObjects(productId, @(kTestProductId));
+    XCTAssertTrue([productId isEqual:@(kTestProductId1)] || [productId isEqual:@(kTestProductId2)]);
     XCTAssertTrue([discriminator isEqual:@(kTestDiscriminator1)] || [discriminator isEqual:@(kTestDiscriminator2)] ||
-        [discriminator isEqual:@(kTestDiscriminator3)]);
+        [discriminator isEqual:@(kTestDiscriminator3)] || [discriminator isEqual:@(kTestDiscriminator4)] ||
+        [discriminator isEqual:@(kTestDiscriminator5)]);
     XCTAssertEqual(commissioningMode, YES);
 
     NSLog(@"Found Device (%@) with discriminator: %@ (vendor: %@, product: %@)", instanceName, discriminator, vendorId, productId);

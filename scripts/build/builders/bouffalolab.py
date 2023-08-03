@@ -14,7 +14,6 @@
 
 import logging
 import os
-import platform
 from enum import Enum, auto
 
 from .gn import GnBuilder
@@ -83,6 +82,7 @@ class BouffalolabBuilder(GnBuilder):
                  enable_shell: bool = False,
                  enable_cdc: bool = False,
                  enable_resetCnt: bool = False,
+                 enable_rotating_device_id: bool = False,
                  function_mfd: str = "disable",
                  enable_otbr: bool = False
                  ):
@@ -154,6 +154,9 @@ class BouffalolabBuilder(GnBuilder):
         if enable_resetCnt:
             self.argsOpt.append('enable_reset_counter=true')
 
+        if enable_rotating_device_id:
+            self.argsOpt.append('chip_enable_additional_data_advertising=true')
+            self.argsOpt.append('chip_enable_rotating_device_id=true')
         if enable_otbr:
             if board == BouffalolabBoard.BL706_ETH or board == BouffalolabBoard.BL706_WIFI:
                 self.argsOpt.append('enable_openthread_border_router=true')
