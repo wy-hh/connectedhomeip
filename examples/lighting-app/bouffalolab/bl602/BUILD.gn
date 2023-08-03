@@ -60,8 +60,7 @@ bl_iot_sdk("sdk") {
 
   include_dirs = [
     "${example_dir}/bl602",
-    "${example_dir}/bl602/include",
-    "${examples_plat_dir}",
+    "${examples_plat_dir}/bl602",
     "${examples_plat_dir}/common/route_hook",
     "${chip_root}/src/platform/bouffalolab/BL602",
   ]

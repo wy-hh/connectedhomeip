@@ -532,7 +532,7 @@ PacketBufferHandle PacketBufferHandle::New(size_t aAvailableSize, uint16_t aRese
 
     if (aAvailableSize > UINT16_MAX || lAllocSize > PacketBuffer::kMaxSizeWithoutReserve || lBlockSize > UINT16_MAX)
     {
-        ChipLogError(chipSystemLayer, "PacketBuffer: allocation too large.");
+        ChipLogError(chipSystemLayer, "PacketBuffer: allocation too large. %d, %d, %d", aAvailableSize, lAllocSize, lBlockSize);
         return PacketBufferHandle();
     }
 
@@ -594,7 +594,7 @@ PacketBufferHandle PacketBufferHandle::NewWithData(const void * aData, size_t aD
 {
     if (aDataSize > UINT16_MAX)
     {
-        ChipLogError(chipSystemLayer, "PacketBuffer: allocation too large.");
+        ChipLogError(chipSystemLayer, "NewWithData PacketBuffer: allocation too large. %d", aDataSize);
         return PacketBufferHandle();
     }
     // Since `aDataSize` fits in uint16_t, the sum `aDataSize + aAdditionalSize` will not overflow.
