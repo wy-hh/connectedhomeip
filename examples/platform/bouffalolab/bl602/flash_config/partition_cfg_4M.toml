@@ -18,8 +18,8 @@ len = 0
 type = 2
 name = "mfg"
 device = 0
-address0 = 0x390000
-size0 = 0x32000
+address0 = 0x1F7000
+size0 = 0x199000
 address1 = 0
 size1 = 0
 # compressed image must set len,normal image can left it to 0

@@ -936,6 +936,30 @@ template("bl_iot_sdk") {
     public_configs = [ ":${sdk_target_name}_config_factory_data" ]
   }
 
+  config("${sdk_target_name}_config_xz") {
+    include_dirs = [ "${bl_iot_sdk_root}/components/stage/xz/inc" ]
+  }
+
+  source_set("${sdk_target_name}_xz") {
+    include_dirs = [ "${bl_iot_sdk_root}/components/stage/xz/src" ]
+    sources = [ 
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_api.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_crc32.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_crc64.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_dec_bcj.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_dec_lzma2.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_dec_stream.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_decompress.c",
+      "${bl_iot_sdk_root}/components/stage/xz/src/xz_port.c",
+    ]
+    
+    configs += [ 
+      ":${sdk_target_name}_config",
+      ":${sdk_target_name}_config_freertos"
+    ]
+    public_configs = [ ":${sdk_target_name}_config_xz" ]
+  }
+
   group(sdk_target_name) {
     public_deps = [
       ":${sdk_target_name}_BSP_Driver",
@@ -953,6 +977,7 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_sys",
       ":${sdk_target_name}_utils",
       ":${sdk_target_name}_wifi",
+      ":${sdk_target_name}_xz",
     ]
   }
 }

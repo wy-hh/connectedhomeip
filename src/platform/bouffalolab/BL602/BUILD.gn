@@ -30,6 +30,8 @@ static_library("BL602") {
     "NetworkCommissioningDriver.cpp",
     "PlatformManagerImpl.cpp",
     "wifi_mgmr_portable.c",
+    "uncompress_lzma2.c",
+    "ota_image_check.c"
   ]
 
   common_sources = [
