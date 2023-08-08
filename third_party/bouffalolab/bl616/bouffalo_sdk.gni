@@ -280,6 +280,7 @@ template("bouffalo_sdk") {
   source_set("${sdk_target_name}_board") {
     defines = [
       "CONFIG_MBEDTLS",
+      "CONFIG_BFLOG",
       "BL616"
     ]
 
@@ -638,7 +639,7 @@ template("bouffalo_sdk") {
     ]
 
     defines = [
-      "ONFIG_LOG_LEVEL=3",
+      "CONFIG_LOG_LEVEL=3",
       "CONFIG_BFLOG",
       "CONFIG_BFLOG_DEBUG",
     ]
@@ -646,7 +647,7 @@ template("bouffalo_sdk") {
 
   source_set("${sdk_target_name}_utils") {
     defines = [
-      "ONFIG_LOG_LEVEL=3",
+      "CONFIG_LOG_LEVEL=3",
       "CONFIG_BFLOG",
       "CONFIG_BFLOG_DEBUG",
     ]
