@@ -146,6 +146,10 @@ CHIP_ERROR BLEManagerImpl::_Init()
     return CHIP_NO_ERROR;
 }
 
+void BLEManagerImpl::_Shutdown()
+{
+    bt_disable();
+}
 void BLEManagerImpl::DriveBLEState(intptr_t arg)
 {
     BLEMgrImpl().DriveBLEState();
@@ -435,7 +439,7 @@ CHIP_ERROR BLEManagerImpl::HandleGAPDisconnect(const ChipDeviceEvent * event)
         {
         case BT_HCI_ERR_REMOTE_USER_TERM_CONN:
             // Do not treat proper connection termination as an error and exit.
-            VerifyOrExit(!ConfigurationMgr().IsFullyProvisioned(), );
+            VerifyOrExit(!ConfigurationMgr().IsFullyProvisioned(),BLEMgrImpl()._Shutdown());
             disconReason = BLE_ERROR_REMOTE_DEVICE_DISCONNECTED;
             break;
         case BT_HCI_ERR_LOCALHOST_TERM_CONN:
@@ -457,7 +461,6 @@ exit:
     ChipDeviceEvent disconnectEvent;
     disconnectEvent.Type = DeviceEventType::kCHIPoBLEConnectionClosed;
     ReturnErrorOnFailure(PlatformMgr().PostEvent(&disconnectEvent));
-
     // Force a reconfiguration of advertising in case we switched to non-connectable mode when
     // the BLE connection was established.
     mFlags.Set(Flags::kAdvertisingRefreshNeeded);
@@ -592,7 +595,6 @@ void BLEManagerImpl::_OnPlatformEvent(const ChipDeviceEvent * event)
     case DeviceEventType::kPlatformZephyrBleC2IndDoneEvent:
         err = HandleTXCharComplete(event);
         break;
-
     default:
         break;
     }

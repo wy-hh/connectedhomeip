@@ -44,7 +44,7 @@ private:
         std::conditional_t<std::is_same<bt_gatt_indicate_func_t, void (*)(bt_conn *, bt_gatt_indicate_params *, uint8_t)>::value,
                            bt_gatt_indicate_params *, const bt_gatt_attr *>;
     CHIP_ERROR _Init(void);
-    void _Shutdown() {}
+    void _Shutdown();
     bool _IsAdvertisingEnabled(void);
     CHIP_ERROR _SetAdvertisingEnabled(bool val);
     bool _IsAdvertising(void);
