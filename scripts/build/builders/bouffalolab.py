@@ -199,6 +199,7 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append('openthread_project_core_config_file="{}"'.format(openthread_project_core_config_file))
         if enable_otbr:
             self.argsOpt.append('enable_openthread_border_router=true')
+            self.argsOpt.append('chip_openthread_ftd=true')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":

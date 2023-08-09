@@ -72,6 +72,12 @@ bl_iot_sdk("sdk") {
     "${chip_root}/src/platform/bouffalolab/common",
   ]
 
+  if (chip_enable_wifi || chip_enable_ethernet) {
+    include_dirs += [
+      "${examples_plat_dir}/bl702/lwipopts",
+    ]
+  }
+
   freertos_config = "${examples_plat_dir}/bl702/FreeRTOSConfig.h"
 
   defines = [
@@ -93,6 +99,10 @@ bl_iot_sdk("sdk") {
 
   if (chip_enable_openthread || enable_openthread_border_router) {
     defines += [ "OPENTHREAD_CONFIG_PLATFORM_XTAL_ACCURACY=40" ]
+  }
+  
+  if (enable_openthread_border_router) {  
+    defines += [ "ENABLE_OPENTHREAD_BORDER_ROUTER" ]
   }
 
   if (enable_psram) {
@@ -171,6 +181,12 @@ bouffalolab_executable("lighting_app") {
     "${examples_plat_dir}/common/iot_sdk",
   ]
 
+  if (chip_enable_wifi || chip_enable_ethernet) {
+    include_dirs += [
+      "${examples_plat_dir}/bl702/lwipopts",
+    ]
+  }
+
   if (enable_psram) {
     defines += [ "CFG_USE_PSRAM=1" ]
   }
@@ -179,26 +195,7 @@ bouffalolab_executable("lighting_app") {
     defines += [ "CFG_USB_CDC_ENABLE" ]
   }
 
-  if (chip_enable_openthread) {
-    deps += [
-      "${chip_root}/third_party/openthread/platforms:libopenthread-platform",
-      "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
-    ]
 
-    if (chip_openthread_ftd) {
-      defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
-      deps += [
-        "${chip_root}/third_party/openthread/repo:libopenthread-cli-ftd",
-        "${chip_root}/third_party/openthread/repo:libopenthread-ftd",
-      ]
-    } else {
-      defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=0" ]
-      deps += [
-        "${chip_root}/third_party/openthread/repo:libopenthread-cli-mtd",
-        "${chip_root}/third_party/openthread/repo:libopenthread-mtd",
-      ]
-    }
-  }
  
   if (chip_enable_wifi || chip_enable_ethernet) {
     include_dirs += [
@@ -220,15 +217,26 @@ bouffalolab_executable("lighting_app") {
 
     if (enable_openthread_border_router) {
       defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
-      defines += [ "ENABLE_OPENTHREAD_BORDER_ROUTER" ]
+    }
+  }
 
+  if (chip_enable_openthread || enable_openthread_border_router) {
+    deps += [
+      "${chip_root}/third_party/openthread/platforms:libopenthread-platform",
+      "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
+    ]
+
+    if (chip_openthread_ftd) {
+      defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
       deps += [
-        "${chip_root}/third_party/openthread/platforms:libopenthread-platform",
-        "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
+        "${chip_root}/third_party/openthread/repo:libopenthread-cli-ftd",
+        "${chip_root}/third_party/openthread/repo:libopenthread-ftd",
       ]
+    } else {
+      defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=0" ]
       deps += [
-        "${chip_root}/third_party/openthread/platforms:libopenthread-platform",
-        "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
+        "${chip_root}/third_party/openthread/repo:libopenthread-cli-mtd",
+        "${chip_root}/third_party/openthread/repo:libopenthread-mtd",
       ]
     }
   }

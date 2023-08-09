@@ -274,12 +274,29 @@ a lot of data that needs to be copied, this should be set high. */
 #define LWIP_AUTOIP                     1
 #define LWIP_IPV6_MLD                   1
 #define LWIP_ND6_RDNSS_MAX_DNS_SERVERS  1
-#define LWIP_HOOK_FILENAME              "bl_lwip_hooks.h"
+#define LWIP_NETIF_EXT_STATUS_CALLBACK  1
 
 #define LWIP_PBUF_FROM_CUSTOM_RAM_HEAP  1
 
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE               LWIP_MEM_ALIGN_SIZE(TCP_MSS+40+PBUF_LINK_ENCAPSULATION_HLEN+PBUF_LINK_HLEN)
+
+#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#define MEMP_NUM_MLD6_GROUP  300
+#define LWIP_SOCKET_MAX_MEMBERSHIPS  300
+#define LWIP_MULTICAST_PING  1
+#define LWIP_NETBUF_RECVINFO  1
+#define LWIP_IPV6_FORWARD  1
+#define LWIP_IPV6_NUM_ADDRESSES  20
+#define DEFAULT_RAW_RECVMBOX_SIZE  64
+#define MEMP_NUM_NETBUF  16
+#define OPENTHREAD_BORDER_ROUTER
+#define LWIP_HOOK_FILENAME              "otbr_lwip_hooks.h"
+#else
+#define LWIP_HOOK_FILENAME              "bl_lwip_hooks.h"
+xxxxxxxxxxxxxxxxxxxxxxx
+#endif
+
 /*
    ---------------------------------
    ---------- MISC. options ----------

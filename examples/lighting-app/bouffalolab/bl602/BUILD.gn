@@ -61,6 +61,7 @@ bl_iot_sdk("sdk") {
   include_dirs = [
     "${example_dir}/bl602",
     "${examples_plat_dir}/bl602",
+    "${examples_plat_dir}/bl602/lwipopts",
     "${examples_plat_dir}/common/route_hook",
     "${chip_root}/src/platform/bouffalolab/BL602",
   ]
@@ -162,6 +163,7 @@ bouffalolab_executable("lighting_app") {
     "${chip_root}/src/platform/bouffalolab/BL602",
     "${example_dir}/common",
     "${example_dir}/bl602",
+    "${examples_plat_dir}/bl602/lwipopts",
     "${examples_plat_dir}/common/route_hook",
     "${examples_plat_dir}/common/plat",
     "${examples_plat_dir}/common/iot_sdk",
