@@ -50,18 +50,10 @@
    byte alignment -> define MEM_ALIGNMENT to 2. */
 #define MEM_ALIGNMENT           4
 
-/* MEM_SIZE: the size of the heap memory. If the application will send
-a lot of data that needs to be copied, this should be set high. */
-#define MEM_SIZE                (8*1024)
-
-
 /* MEMP_NUM_PBUF: the number of memp struct pbufs. If the application
    sends a lot of data out of ROM (or other static memory), this
    should be set high. */
 #define MEMP_NUM_PBUF           26
-/* MEMP_NUM_UDP_PCB: the number of UDP protocol control blocks. One
-   per active UDP "connection". */
-#define MEMP_NUM_UDP_PCB        6
 
 /* MEMP_NUM_TCP_PCB: the number of simulatenously active TCP
    connections. */
@@ -94,7 +86,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_MSS                 (1500 - 40)	  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
 
 /* TCP sender buffer space (bytes). */
-#define TCP_SND_BUF             (3*TCP_MSS)
+#ifdef CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+#define TCP_SND_BUF              (6*TCP_MSS)
+#else
+#define TCP_SND_BUF              (3*TCP_MSS)
+#endif
 
 /*  TCP_SND_QUEUELEN: TCP sender buffer space (pbufs). This must be at least
   as much as (2 * TCP_SND_BUF/TCP_MSS) for things to work. */
@@ -111,7 +107,11 @@ a lot of data that needs to be copied, this should be set high. */
 #define TCP_SNDQUEUELOWAT               ((TCP_SND_QUEUELEN)/2)
 
 /* TCP receive window. */
+#ifdef CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+#define TCP_WND                 (6*TCP_MSS)
+#else
 #define TCP_WND                 (3*TCP_MSS)
+#endif
 
 /**
  * TCP_WND_UPDATE_THRESHOLD: difference in window to trigger an
@@ -168,7 +168,11 @@ a lot of data that needs to be copied, this should be set high. */
 */
 
 #define LWIP_CHECKSUM_ON_COPY            1
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+#define LWIP_NETIF_TX_SINGLE_PBUF    0
+#else
 #define LWIP_NETIF_TX_SINGLE_PBUF    1
+#endif /* CHIP_DEVICE_CONFIG_ENABLE_ETHERNET */
 
 #ifdef CHECKSUM_BY_HARDWARE
   /* CHECKSUM_GEN_IP==0: Generate checksums by hardware for outgoing IP packets.*/
@@ -291,10 +295,15 @@ a lot of data that needs to be copied, this should be set high. */
 #define DEFAULT_RAW_RECVMBOX_SIZE  64
 #define MEMP_NUM_NETBUF  16
 #define OPENTHREAD_BORDER_ROUTER
+
+#define MEM_SIZE                (32*1024)
+#define MEMP_NUM_UDP_PCB        24
 #define LWIP_HOOK_FILENAME              "otbr_lwip_hooks.h"
 #else
+
+#define MEM_SIZE                (8*1024)
+#define MEMP_NUM_UDP_PCB        8
 #define LWIP_HOOK_FILENAME              "bl_lwip_hooks.h"
-xxxxxxxxxxxxxxxxxxxxxxx
 #endif
 
 /*
