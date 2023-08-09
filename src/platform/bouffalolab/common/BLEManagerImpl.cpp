@@ -148,8 +148,11 @@ CHIP_ERROR BLEManagerImpl::_Init()
 
 void BLEManagerImpl::_Shutdown()
 {
-    bt_disable();
+    // Release BLE Stack resources
+    mFlags.Set(Flags::kChipoBleShutDown);
+    
 }
+
 void BLEManagerImpl::DriveBLEState(intptr_t arg)
 {
     BLEMgrImpl().DriveBLEState();
@@ -461,6 +464,20 @@ exit:
     ChipDeviceEvent disconnectEvent;
     disconnectEvent.Type = DeviceEventType::kCHIPoBLEConnectionClosed;
     ReturnErrorOnFailure(PlatformMgr().PostEvent(&disconnectEvent));
+    
+    if (mFlags.Has(Flags::kChipoBleShutDown))
+    {
+        int ret = bt_disable();
+        if(ret)
+        {
+            ChipLogError(DeviceLayer, "CHIPoBLE Shutdown faild =%d",ret);
+        }
+        else
+        {
+            mFlags.Clear(Flags::kChipoBleShutDown);
+        }
+        return CHIP_NO_ERROR;
+    }
     // Force a reconfiguration of advertising in case we switched to non-connectable mode when
     // the BLE connection was established.
     mFlags.Set(Flags::kAdvertisingRefreshNeeded);
