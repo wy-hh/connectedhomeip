@@ -86,7 +86,7 @@
 #define TCP_MSS                 (1500 - 40)	  /* TCP_MSS = (Ethernet MTU - IP header size - TCP header size) */
 
 /* TCP sender buffer space (bytes). */
-#ifdef CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #define TCP_SND_BUF              (6*TCP_MSS)
 #else
 #define TCP_SND_BUF              (3*TCP_MSS)
@@ -107,7 +107,7 @@
 #define TCP_SNDQUEUELOWAT               ((TCP_SND_QUEUELEN)/2)
 
 /* TCP receive window. */
-#ifdef CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #define TCP_WND                 (6*TCP_MSS)
 #else
 #define TCP_WND                 (3*TCP_MSS)
@@ -274,7 +274,6 @@
 
 #define LWIP_IPV4                       1
 #define LWIP_IPV6_DHCP6                 1
-#define LWIP_IPV6_SCOPES                1
 #define LWIP_AUTOIP                     1
 #define LWIP_IPV6_MLD                   1
 #define LWIP_ND6_RDNSS_MAX_DNS_SERVERS  1
@@ -285,7 +284,9 @@
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE               LWIP_MEM_ALIGN_SIZE(TCP_MSS+40+PBUF_LINK_ENCAPSULATION_HLEN+PBUF_LINK_HLEN)
 
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
+#define LWIP_IPV6_SCOPES                0
+
 #define MEMP_NUM_MLD6_GROUP  300
 #define LWIP_SOCKET_MAX_MEMBERSHIPS  300
 #define LWIP_MULTICAST_PING  1
@@ -300,6 +301,7 @@
 #define MEMP_NUM_UDP_PCB        24
 #define LWIP_HOOK_FILENAME              "otbr_lwip_hooks.h"
 #else
+#define LWIP_IPV6_SCOPES                1
 
 #define MEM_SIZE                (8*1024)
 #define MEMP_NUM_UDP_PCB        8

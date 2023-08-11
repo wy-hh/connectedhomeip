@@ -40,8 +40,8 @@
 #include <lib/support/StringBuilder.h>
 
 // Enable detailed mDNS logging for received queries
-#undef DETAIL_LOGGING
-// #define DETAIL_LOGGING
+// #undef DETAIL_LOGGING
+#define DETAIL_LOGGING
 
 namespace chip {
 namespace Dnssd {

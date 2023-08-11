@@ -95,10 +95,6 @@ FactoryDataProvider sFactoryDataProvider;
 
 static chip::DeviceLayer::DeviceInfoProviderImpl gExampleDeviceInfoProvider;
 
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
-extern "C" void otbr_netif_init(void);
-#endif
-
 void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 {
     switch (event->Type)
@@ -129,7 +125,7 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
 
             chip::app::DnssdServer::Instance().StartServer();
 
-#ifndef ENABLE_OPENTHREAD_BORDER_ROUTER
+#if !ENABLE_OPENTHREAD_BORDER_ROUTER
             bl_route_hook_init();
 #endif
             chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Seconds32(OTAConfig::kInitOTARequestorDelaySec),
@@ -151,9 +147,6 @@ void ChipEventHandler(const ChipDeviceEvent * event, intptr_t arg)
         if (event->InternetConnectivityChange.IPv6 == kConnectivity_Established)
         {
             ChipLogProgress(NotSpecified, "IPv6 connectivity ready...");
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
-            otbr_netif_init();
-#endif
         }
         else if (event->InternetConnectivityChange.IPv6 == kConnectivity_Lost)
         {
@@ -250,7 +243,7 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
     ChipLogProgress(NotSpecified, "Starting OpenThread task");
     // Start OpenThread task
     ReturnLogErrorOnFailure(ThreadStackMgrImpl().StartThreadTask());
-#elif defined (ENABLE_OPENTHREAD_BORDER_ROUTER) && CONFIG_ENABLE_CHIP_SHELL
+#elif ENABLE_OPENTHREAD_BORDER_ROUTER && CONFIG_ENABLE_CHIP_SHELL
     cli_otc_init();
 #endif
 

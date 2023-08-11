@@ -135,7 +135,7 @@ extern "C" void network_netif_ext_callback(struct netif* nif, netif_nsc_reason_t
 
         if (netif_ip6_addr_state(nif, args->ipv6_addr_state_changed.addr_index) != args->ipv6_addr_state_changed.old_state &&
             ip6_addr_ispreferred(netif_ip6_addr_state(nif, args->ipv6_addr_state_changed.addr_index))) {
-            event.Type                                 = kWiFiOnGotIpv6Address;
+            event.Type                                 = kGotIpv6Address;
             PlatformMgr().PostEventOrDie(&event);
         }
     }

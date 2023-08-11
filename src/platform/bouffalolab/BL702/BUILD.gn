@@ -77,7 +77,6 @@ static_library("BL702") {
     ]
   }
 
-  sources += common_sources
 
   if (chip_enable_wifi) {
     sources += [
@@ -119,13 +118,17 @@ static_library("BL702") {
       "EthernetInterface.c",
     ]
     
-    defines += [ "CHIP_DEVICE_CONFIG_ENABLE_ETHERNET" ]
     deps = [ "${chip_root}/src/lib/dnssd:platform_header" ]
   }
 
   if (enable_openthread_border_router) {  
-    defines += [ "ENABLE_OPENTHREAD_BORDER_ROUTER" ]
+    common_sources += [
+      "../common/DnssdImpl.cpp",
+      "../common/WiFiDnssdImpl.cpp",
+    ]
   }
+
+  sources += common_sources
 
   public_deps = [ "${chip_root}/src/platform:platform_base" ]
 }

@@ -129,13 +129,6 @@ bouffalolab_executable("lighting_app") {
     defines += [ "BL602_NIGHT_LIGHT" ]
   }
 
-  if (chip_enable_ethernet) {
-    defines += [ "CHIP_DEVICE_CONFIG_ENABLE_ETHERNET=1" ]
-  }
-  else {
-    defines += [ "CHIP_DEVICE_CONFIG_ENABLE_ETHERNET=0" ]
-  }
-
   sources += [
     "${chip_root}/examples/providers/DeviceInfoProviderImpl.cpp",
     "${example_dir}/common/AppTask.cpp",

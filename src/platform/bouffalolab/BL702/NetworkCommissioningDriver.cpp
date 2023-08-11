@@ -377,11 +377,11 @@ void NetworkEventHandler(const ChipDeviceEvent * event, intptr_t arg)
     case kWiFiOnConnected:
         BLWiFiDriver::GetInstance().OnNetworkStatusChange();
         break;
-    case kWiFiOnGotIpAddress:
+    case kGotIpAddress:
         ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
         ConnectivityMgrImpl().OnConnectivityChanged(deviceInterface_getNetif());
         break;
-    case kWiFiOnGotIpv6Address:
+    case kGotIpv6Address:
         ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
         ConnectivityMgrImpl().OnConnectivityChanged(deviceInterface_getNetif());
         break;

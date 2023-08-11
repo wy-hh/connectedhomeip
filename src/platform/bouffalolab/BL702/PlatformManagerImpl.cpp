@@ -28,12 +28,12 @@
 #include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD || defined (ENABLE_OPENTHREAD_BORDER_ROUTER)
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD || ENABLE_OPENTHREAD_BORDER_ROUTER
 #include <openthread_port.h>
 #include <utils_list.h>
 #endif
 
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
 #include <openthread/thread.h>
 
 #include <openthread/dataset.h>
@@ -42,7 +42,7 @@
 #include <openthread_br.h>
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI && !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
@@ -91,7 +91,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     ot_radioInit(opt);
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD && defined(ENABLE_OPENTHREAD_BORDER_ROUTER) 
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
     otRadio_opt_t opt;
     opt.bf.isFtd = true;
     opt.bf.isCoexEnable = true;
@@ -123,7 +123,7 @@ exit:
 } // namespace DeviceLayer
 } // namespace chip
 
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
 
 #define THREAD_CHANNEL      11
 #define THREAD_PANID        0x1234
@@ -162,5 +162,7 @@ extern "C" void otr_start_default(void)
 extern "C" void otrInitUser(otInstance * instance)
 {
     otr_start_default();
+
+    otbr_netif_init();
 }
 #endif

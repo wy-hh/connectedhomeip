@@ -53,6 +53,11 @@
 #include <platform/internal/GenericConnectivityManagerImpl_Thread.ipp>
 #endif
 
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
+#include <openthread/instance.h>
+#include <openthread_br.h>
+#endif
+
 using namespace ::chip;
 using namespace ::chip::Inet;
 using namespace ::chip::System;
@@ -337,6 +342,10 @@ void ConnectivityManagerImpl::OnIPv6AddressAvailable()
     event.Type                           = DeviceEventType::kInterfaceIpAddressChanged;
     event.InterfaceIpAddressChanged.Type = InterfaceIpChangeType::kIpV6_Assigned;
     PlatformMgr().PostEventOrDie(&event);
+
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
+    otbr_instance_routing_init();
+#endif
 }
 
 #endif
