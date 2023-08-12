@@ -94,6 +94,16 @@ struct netif * deviceInterface_getNetif(void)
     return NULL;
 }
 
+struct netif * otbr_getBackboneNetif(void) 
+{
+    if (vnet_spi)
+    {
+        return (struct netif *) &vnet_spi->netif;
+    }
+
+    return NULL;
+}
+
 void wifiInterface_getMacAddress(uint8_t * pmac)
 {
     virt_net_get_mac(vnet_spi, pmac);

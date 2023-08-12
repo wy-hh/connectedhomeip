@@ -43,10 +43,10 @@ void ChipDnssdShutdown() {}
 CHIP_ERROR ChipDnssdPublishService(const DnssdService * service, DnssdPublishCallback callback, void * context)
 {
 
-    ChipLogProgress(DeviceLayer, "ChipDnssdPublishService %d\r\n", ConnectivityMgr().IsWiFiStationProvisioned());
+    ChipLogProgress(DeviceLayer, "ChipDnssdPublishService %d\r\n", ConnectivityMgr().IsWiFiStationConnected());
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    if (ConnectivityMgr().IsWiFiStationProvisioned())
+    if (ConnectivityMgr().IsWiFiStationConnected())
     {
         ReturnErrorOnFailure(WiFiDnssdPublishService(service, callback, context));
     }
@@ -61,10 +61,10 @@ CHIP_ERROR ChipDnssdPublishService(const DnssdService * service, DnssdPublishCal
 
 CHIP_ERROR ChipDnssdRemoveServices()
 {
-    ChipLogProgress(DeviceLayer, "ChipDnssdRemoveServices %d\r\n", ConnectivityMgr().IsWiFiStationProvisioned());
+    ChipLogProgress(DeviceLayer, "ChipDnssdRemoveServices %d\r\n", ConnectivityMgr().IsWiFiStationConnected());
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    if (ConnectivityMgr().IsWiFiStationProvisioned())
+    if (ConnectivityMgr().IsWiFiStationConnected())
     {
         ReturnErrorOnFailure(WiFiDnssdRemoveServices());
     }
@@ -86,10 +86,10 @@ CHIP_ERROR ChipDnssdBrowse(const char * type, DnssdServiceProtocol protocol, chi
                            chip::Inet::InterfaceId interface, DnssdBrowseCallback callback, void * context,
                            intptr_t * browseIdentifier)
 {
-    ChipLogProgress(DeviceLayer, "ChipDnssdBrowse %d\r\n", ConnectivityMgr().IsWiFiStationProvisioned());
+    ChipLogProgress(DeviceLayer, "ChipDnssdBrowse %d\r\n", ConnectivityMgr().IsWiFiStationConnected());
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    if (ConnectivityMgr().IsWiFiStationProvisioned())
+    if (ConnectivityMgr().IsWiFiStationConnected())
     {
         ReturnErrorOnFailure(WiFiDnssdBrowse(type, protocol, addressType, interface, callback, context, browseIdentifier));
     }
@@ -110,10 +110,10 @@ CHIP_ERROR ChipDnssdStopBrowse(intptr_t browseIdentifier)
 CHIP_ERROR ChipDnssdResolve(DnssdService * service, chip::Inet::InterfaceId interface, DnssdResolveCallback callback,
                             void * context)
 {
-    ChipLogProgress(DeviceLayer, "ChipDnssdResolve %d\r\n", ConnectivityMgr().IsWiFiStationProvisioned());
+    ChipLogProgress(DeviceLayer, "ChipDnssdResolve %d\r\n", ConnectivityMgr().IsWiFiStationConnected());
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    if (ConnectivityMgr().IsWiFiStationProvisioned())
+    if (ConnectivityMgr().IsWiFiStationConnected())
     {
         ReturnErrorOnFailure(WiFiDnssdResolve(service, interface, callback, context));
     }

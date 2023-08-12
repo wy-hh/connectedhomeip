@@ -243,7 +243,9 @@ CHIP_ERROR PlatformManagerImpl::PlatformInit(void)
     ChipLogProgress(NotSpecified, "Starting OpenThread task");
     // Start OpenThread task
     ReturnLogErrorOnFailure(ThreadStackMgrImpl().StartThreadTask());
-#elif ENABLE_OPENTHREAD_BORDER_ROUTER && CONFIG_ENABLE_CHIP_SHELL
+#endif
+
+#if ENABLE_OPENTHREAD_BORDER_ROUTER && CONFIG_ENABLE_CHIP_SHELL
     cli_otc_init();
 #endif
 

@@ -19,6 +19,7 @@
 #include <platform/logging/LogV.h>
 
 #include <lib/core/CHIPConfig.h>
+#include <CHIPDevicePlatformConfig.h>
 #include <lib/support/logging/Constants.h>
 
 #ifdef PW_RPC_ENABLED

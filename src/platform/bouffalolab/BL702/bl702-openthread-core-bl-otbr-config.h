@@ -121,6 +121,6 @@
 #define tcp_output tcp_output_ot
 #define tcp_close tcp_close_ot
 
-#define OPENTHREAD_CONFIG_LOG_LEVEL OT_LOG_LEVEL_DEBG
+// #define OPENTHREAD_CONFIG_LOG_LEVEL OT_LOG_LEVEL_DEBG
 
 #endif // OPENTHREAD_CORE_BL702_CONFIG_H_

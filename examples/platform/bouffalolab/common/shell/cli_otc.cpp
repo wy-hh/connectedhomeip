@@ -106,6 +106,10 @@ exit:
 
 void cli_otc_init(void)
 {
+    if (NULL == otrGetInstance()) {
+        return;
+    }
+
     otCliInit(otrGetInstance(), &OnOtCliOutput, NULL);
 
     // Register the root otcli command with the top-level shell.

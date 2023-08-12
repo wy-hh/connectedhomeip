@@ -415,7 +415,7 @@ extern "C" void wifi_event_handler(uint32_t code)
             PlatformMgr().PostEventOrDie(&event);
             break;
         case CODE_WIFI_ON_GOT_IP: 
-            event.Type                                 = kWiFiOnGotIpAddress;
+            event.Type                                 = kGotIpAddress;
             PlatformMgr().PostEventOrDie(&event);
             break;
         case CODE_WIFI_ON_DISCONNECT: 
