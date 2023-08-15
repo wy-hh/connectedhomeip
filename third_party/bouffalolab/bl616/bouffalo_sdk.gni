@@ -935,7 +935,7 @@ template("bouffalo_sdk") {
 
     defines = [
       "CONFIG_VIF_MAX=2",
-      "CONFIG_STA_MAX=4",
+      "CONFIG_STA_MAX=2",
     ]
 
     include_dirs = [
