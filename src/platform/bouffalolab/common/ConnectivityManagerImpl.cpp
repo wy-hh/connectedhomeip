@@ -236,7 +236,7 @@ void ConnectivityManagerImpl::DriveStationState()
     }
     break;
     case ConnectivityManager::kWiFiStationState_Connected: {
-        ChipLogProgress(DeviceLayer, "Wi-Fi stattion connected.");
+        ChipLogProgress(DeviceLayer, "Wi-Fi station connected.");
         OnWiFiStationConnected();
         SystemLayer().ScheduleLambda([]() { NetworkCommissioning::BLWiFiDriver::GetInstance().OnConnectWiFiNetwork(true); });
     }
@@ -318,11 +318,13 @@ void ConnectivityManagerImpl::OnConnectivityChanged(struct netif * interface)
 
         if (haveIPv4Conn != hadIPv4Conn)
         {
+            memset(&m_ip4addr, 0, sizeof(ip4_addr_t));
             ChipLogProgress(DeviceLayer, "%s Internet connectivity %s", "IPv4", (haveIPv4Conn) ? "ESTABLISHED" : "LOST");
         }
 
         if (haveIPv6Conn != hadIPv6Conn)
         {
+            memset(&m_ip6addr, 0, sizeof(ip6_addr_t) * LWIP_IPV6_NUM_ADDRESSES);
             ChipLogProgress(DeviceLayer, "%s Internet connectivity %s", "IPv6", (haveIPv6Conn) ? "ESTABLISHED" : "LOST");
         }
     }

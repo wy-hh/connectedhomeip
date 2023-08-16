@@ -74,14 +74,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
     
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    wifi_start_firmware_task();
-#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
-
-#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
-    ethernetInterface_init();
-#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
-
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     otRadio_opt_t opt;
     opt.bf.isFtd = true;
@@ -91,19 +83,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     ot_radioInit(opt);
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
-#if ENABLE_OPENTHREAD_BORDER_ROUTER
-    otRadio_opt_t opt;
-    opt.bf.isFtd = true;
-    opt.bf.isCoexEnable = true;
-    opt.bf.isLinkMetricEnable = true;
-
-    otrStart(opt);
-#endif
-
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
-
-    SetConfigurationMgr(&ConfigurationManagerImpl::GetDefaultInstance());
-    SetDiagnosticDataProvider(&DiagnosticDataProviderImpl::GetDefaultInstance());
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);
@@ -115,6 +95,23 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     err                  = Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::_InitChipStack();
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
+
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+    wifi_start_firmware_task();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+    ethernetInterface_init();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
+    otRadio_opt_t opt;
+    opt.bf.isFtd = true;
+    opt.bf.isCoexEnable = true;
+    opt.bf.isLinkMetricEnable = true;
+
+    otrStart(opt);
+#endif
 
 exit:
     return err;

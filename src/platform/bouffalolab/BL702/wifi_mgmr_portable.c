@@ -28,28 +28,33 @@
 #include <wifi_mgmr_portable.h>
 
 virt_net_t vnet_spi;
-struct bflbwifi_ap_record vnet_ap_record;
-SemaphoreHandle_t vnet_msgSem = NULL;
+static struct bflbwifi_ap_record vnet_ap_record;
 static netif_ext_callback_t netifExtCallback;
 
 /* event callback */
 static int virt_net_spi_event_cb(virt_net_t obj, enum virt_net_event_code code, void * opaque)
 {
+    struct bflbwifi_ap_record * record;
+
     assert(obj != NULL);
 
     if (VIRT_NET_EV_ON_LINK_STATUS_DONE == code) {
-        struct bflbwifi_ap_record * record;
         netbus_fs_link_status_ind_cmd_msg_t * pkg_data;
 
         pkg_data = (netbus_fs_link_status_ind_cmd_msg_t *) ((struct pkg_protocol *) opaque)->payload;
         record   = &pkg_data->record;
-
+        
+        memcpy(&vnet_ap_record, record, sizeof(struct bflbwifi_ap_record));
         if (record->link_status == BF1B_WIFI_LINK_STATUS_DOWN){
             code = VIRT_NET_EV_ON_DISCONNECT;
         }
         else {
+            code = -1;
             return 0;
         }
+    }
+    else if (VIRT_NET_EV_ON_SCAN_DONE == code) {
+        wifiInterface_eventScanDone((struct netif *)&obj->netif, opaque);
     }
 
     wifi_event_handler(code);
@@ -66,12 +71,6 @@ bool wifi_start_firmware_task(void)
     }
 
     if (vnet_spi->init(vnet_spi))
-    {
-        return false;
-    }
-
-    vnet_msgSem = xSemaphoreCreateBinary();
-    if (vnet_msgSem == NULL)
     {
         return false;
     }
@@ -106,7 +105,7 @@ struct netif * otbr_getBackboneNetif(void)
 
 void wifiInterface_getMacAddress(uint8_t * pmac)
 {
-    virt_net_get_mac(vnet_spi, pmac);
+    memcpy(pmac, vnet_spi->mac, sizeof(vnet_spi->mac));
 }
 
 void wifiInterface_connect(char * ssid, char * passwd)
@@ -119,19 +118,15 @@ void wifiInterface_disconnect(void)
     virt_net_disconnect(vnet_spi);
 }
 
-bool wifiInterface_getApInfo(struct bflbwifi_ap_record * ap_info)
+struct bflbwifi_ap_record * wifiInterface_getApInfo(void)
 {
-    virt_net_get_link_status(vnet_spi);
-
-    if (vnet_msgSem && xSemaphoreTake(vnet_msgSem, 3000))
+    memset(&vnet_ap_record, 0, sizeof(struct bflbwifi_ap_record));
+    if (0 == virt_net_get_link_status(vnet_spi))
     {
-        if (ap_info)
-        {
-            memcpy(ap_info, &vnet_ap_record, sizeof(struct bflbwifi_ap_record));
-        }
-        return true;
+        return &vnet_ap_record;
     }
-    return false;
+
+    return NULL;
 }
 
 void wifiInterface_startScan(void)

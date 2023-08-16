@@ -64,6 +64,7 @@ bouffalo_sdk("sdk") {
     "${examples_plat_dir}",
     "${examples_plat_dir}/common/route_hook",
     "${chip_root}/src/platform/bouffalolab/BL616",
+    "${chip_root}/src/platform/bouffalolab/common",
   ]
 
   if (chip_enable_wifi || chip_enable_ethernet) {

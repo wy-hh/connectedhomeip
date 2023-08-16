@@ -17,7 +17,8 @@
 
 #include <crypto/CHIPCryptoPAL.h>
 #include <platform/internal/CHIPDeviceLayerInternal.h>
-
+#include <platform/FreeRTOS/SystemTimeSupport.h>
+#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 #include <platform/PlatformManager.h>
 #include <platform/bouffalolab/BL602/NetworkCommissioningDriver.h>
 
@@ -45,10 +46,10 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
 
+    ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
+
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);
-
-    wifi_start_firmware_task();
 
     // Call _InitChipStack() on the generic implementation base class
     // to finish the initialization process.
@@ -58,6 +59,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
 
+    wifi_start_firmware_task();
 exit:
     return err;
 }
