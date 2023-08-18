@@ -136,7 +136,7 @@ extern "C" void otr_start_default(void)
     if (!otDatasetIsCommissioned(otrGetInstance())) {
 
         if (OT_ERROR_NONE != otDatasetCreateNewNetwork(otrGetInstance(), &ds)) {
-            printf("Failed to create dataset for Thread Network\r\n");
+            ChipLogError(DeviceLayer, "OTBR is failed to create dataset for Thread Network.");
         }
 
         memcpy(&ds.mNetworkKey, default_network_key, sizeof(default_network_key));
@@ -146,7 +146,7 @@ extern "C" void otr_start_default(void)
         ds.mPanId = THREAD_PANID;
         
         if (OT_ERROR_NONE != otDatasetSetActive(otrGetInstance(), &ds)) {
-            printf("Failed to set active dataset\r\n");
+            ChipLogError(DeviceLayer, "OTBR is failed to set active dataset.");
         }
     }
 

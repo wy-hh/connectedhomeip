@@ -131,6 +131,8 @@ Status BLWiFiDriver::ReorderNetwork(ByteSpan networkId, uint8_t index, MutableCh
 CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, const char * key, uint8_t keyLen)
 {
     ChipLogProgress(NetworkProvisioning, "ConnectWiFiNetwork [%s]", ssid);
+    wifiInterface_disconnect();
+    vTaskDelay(500);
     wifiInterface_connect((char *) ssid, (char *) key);
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
     return CHIP_NO_ERROR;
@@ -305,7 +307,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
     Network configuredNetwork;
     bool staConnected = false;
 
-    ChipLogProgress(DeviceLayer, "OnNetworkStatusChange %p", mpStatusChangeCallback);
+    ChipLogProgress(DeviceLayer, "OnNetworkStatusChange");
 
     VerifyOrReturn(mpStatusChangeCallback != nullptr);
 

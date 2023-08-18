@@ -123,8 +123,7 @@ static_library("BL702") {
 
   if (enable_openthread_border_router) {  
     common_sources += [
-      "../common/DnssdImpl.cpp",
-      "../common/WiFiDnssdImpl.cpp",
+      "../common/OtbrDnssdImpl.cpp",
     ]
   }
 

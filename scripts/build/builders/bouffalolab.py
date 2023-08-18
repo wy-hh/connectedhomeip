@@ -205,6 +205,11 @@ class BouffalolabBuilder(GnBuilder):
         elif enable_wifi or enable_ethernet:
             self.argsOpt.append('chip_mdns="minimal"')
 
+        if enable_ethernet or enable_wifi:
+            self.argsOpt.append('chip_inet_config_enable_ipv4=true')
+        else:
+            self.argsOpt.append('chip_inet_config_enable_ipv4=false')
+
         if enable_cdc:
             if bouffalo_chip != "bl702":
                 self.raise_exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
