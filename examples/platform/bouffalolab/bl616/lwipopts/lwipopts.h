@@ -116,6 +116,8 @@
 #define LWIP_ERRNO_STDINCLUDE     1
 #define LWIP_SOCKET_SET_ERRNO     1
 
+#define LWIP_TCPIP_CORE_LOCKING	  		1
+#define LWIP_NETCONN_SEM_PER_THREAD     0
 #define LWIP_IPV4                 1
 #define LWIP_IGMP                 1
 #define LWIP_DHCP                 1

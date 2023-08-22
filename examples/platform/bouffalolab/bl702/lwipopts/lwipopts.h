@@ -253,7 +253,8 @@
 #define TCPIP_THREAD_PRIO               (configMAX_PRIORITIES - 2)
 
 #define LWIP_COMPAT_MUTEX               0
-#define LWIP_TCPIP_CORE_LOCKING         0
+#define LWIP_TCPIP_CORE_LOCKING         1
+#define LWIP_NETCONN_SEM_PER_THREAD     0
 #define LWIP_SOCKET_SET_ERRNO           1
 #define SO_REUSE                        1
 #define LWIP_TCP_KEEPALIVE              1
@@ -332,17 +333,5 @@ extern int * __errno(void);
 
 #define LWIP_RANDOMIZE_INITIAL_LOCAL_PORTS 1
 #define LWIP_RAND() ((u32_t)bl_rand())
-
-#ifdef LWIP_NETCONN_DUPLEX_SWITCH
-#define LWIP_NETCONN_FULLDUPLEX 1
-#define LWIP_NETCONN_SEM_PER_THREAD     1
-
-void *sys_thread_sem_get(void);
-void sys_thread_sem_init(void);
-void sys_thread_sem_deinit(void);
-#define LWIP_NETCONN_THREAD_SEM_GET() sys_thread_sem_get()
-#define LWIP_NETCONN_THREAD_SEM_ALLOC() sys_thread_sem_init()
-#define LWIP_NETCONN_THREAD_SEM_FREE() sys_thread_sem_deinit()
-#endif
 
 #endif /* __LWIPOPTS_H__ */
