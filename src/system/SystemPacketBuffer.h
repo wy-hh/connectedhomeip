@@ -162,7 +162,7 @@ public:
         else
             return LWIP_MEM_ALIGN_SIZE(memp_sizes[this->pool]) - kStructureSize;
 #elif CHIP_SYSTEM_PACKETBUFFER_FROM_LWIP_RAM_HEAP
-        return mem_get_size(this) - kStructureSize;
+        return lwip_mem_size(this) - kStructureSize;
 #else
 #error "Unimplemented PacketBuffer storage case"
 #endif
