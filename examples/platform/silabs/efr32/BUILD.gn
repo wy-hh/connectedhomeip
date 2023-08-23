@@ -40,9 +40,6 @@ declare_args() {
   #default Wifi Password
   chip_default_wifi_psk = ""
 
-  # Use default handler to negotiate subscription max interval
-  chip_config_use_icd_subscription_callbacks = chip_enable_icd_server
-
   # Enable TestEventTrigger in GeneralDiagnostics cluster
   silabs_test_event_trigger_enabled = false
 
@@ -98,33 +95,6 @@ config("chip_examples_project_config") {
     "-Wl,--wrap=_free_r",
     "-Wl,--wrap=_calloc_r",
   ]
-}
-
-if (enable_dic) {
-  config("efr32_dic_config") {
-    include_dirs = [
-      "${chip_root}/third_party/silabs/mqtt/stack",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/include",
-      "${chip_root}/examples/platform/silabs/DIC/matter_abs_interface/include",
-    ]
-  }
-
-  source_set("efr32-dic") {
-    sources = [
-      "${chip_root}/examples/platform/silabs/DIC/matter_abs_interface/src/dic.c",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/src/MQTT_transport.c",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/src/altcp.c",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/src/altcp_alloc.c",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/src/altcp_tcp.c",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/src/altcp_tls_mbedtls.c",
-      "${chip_root}/third_party/silabs/mqtt/mqtt_transport_interface/src/altcp_tls_mbedtls_mem.c",
-    ]
-    public_deps = [
-      "${chip_root}/src/inet",
-      "${chip_root}/src/lwip",
-    ]
-    public_configs = [ ":efr32_dic_config" ]
-  }
 }
 
 source_set("openthread_core_config_efr32_chip_examples") {
@@ -197,21 +167,6 @@ source_set("silabs-factory-data-provider") {
   ]
 }
 
-config("ICD-subscription-callback-config") {
-  defines = [ "CHIP_CONFIG_USE_ICD_SUBSCRIPTION_CALLBACKS=1" ]
-}
-
-source_set("efr32-ICD-subscription-callback") {
-  sources = [
-    "${silabs_common_plat_dir}/ICDSubscriptionCallback.cpp",
-    "${silabs_common_plat_dir}/ICDSubscriptionCallback.h",
-  ]
-
-  public_deps = [ "${chip_root}/src/app:app" ]
-
-  public_configs = [ ":ICD-subscription-callback-config" ]
-}
-
 config("efr32-common-config") {
   defines = [ "OTA_PERIODIC_TIMEOUT=${ota_periodic_query_timeout_sec}" ]
 
@@ -277,9 +232,17 @@ source_set("efr32-common") {
     "${efr32_sdk_build_root}:silabs_config",
   ]
 
-  # MQTT
+  # DIC
   if (enable_dic) {
-    deps += [ "${examples_plat_dir}:efr32-dic" ]
+    public_deps +=
+        [ "${silabs_common_plat_dir}/DIC/matter_abs_interface:silabs-dic" ]
+  }
+
+  # AWS SDK OTA
+  if (aws_sdk_ota) {
+    public_deps += [
+      "${silabs_common_plat_dir}/DIC/matter_abs_interface:silabs-aws-sdk-ota",
+    ]
   }
 
   include_dirs = [ "." ]
@@ -354,10 +317,6 @@ source_set("efr32-common") {
   # Factory Data Provider
   if (use_efr32_factory_data_provider) {
     public_deps += [ ":silabs-factory-data-provider" ]
-  }
-
-  if (chip_config_use_icd_subscription_callbacks) {
-    public_deps += [ ":efr32-ICD-subscription-callback" ]
   }
 
   if (silabs_test_event_trigger_enabled) {

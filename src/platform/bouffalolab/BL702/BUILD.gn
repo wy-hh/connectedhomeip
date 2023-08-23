@@ -39,7 +39,7 @@ static_library("BL702") {
     "PlatformManagerImpl.cpp",
   ]
 
-  common_sources = [
+  sources += [
     "../../FreeRTOS/SystemTimeSupport.cpp",
     "../../SingletonConfigurationManager.cpp",
     "../common/BLConfig.cpp",
@@ -52,31 +52,27 @@ static_library("BL702") {
   ]
 
   if (chip_enable_ota_requestor) {
-    common_sources += [
+    sources += [
       "../common/OTAImageProcessorImpl.cpp",
       "../common/OTAImageProcessorImpl.h",
     ]
   }
 
   if (chip_enable_ble) {
-    common_sources += [
+    sources += [
       "../common/BLEManagerImpl.cpp",
       "../common/BLEManagerImpl.h",
     ]
   }
 
+  defines =
+      [ "CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE=${chip_enable_factory_data}" ]
   if (chip_enable_factory_data || chip_enable_factory_data_test) {
-    if (chip_enable_factory_data) {
-      defines += [ "CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE" ]
-    }
-    common_sources += [
-      "${chip_root}/src/credentials/CHIPCert.h",
-      "${chip_root}/src/credentials/DeviceAttestationCredsProvider.h",
+    sources += [
       "../common/FactoryDataProvider.cpp",
       "../common/FactoryDataProvider.h",
     ]
   }
-
 
   if (chip_enable_wifi) {
     sources += [
@@ -122,12 +118,11 @@ static_library("BL702") {
   }
 
   if (enable_openthread_border_router) {  
-    common_sources += [
+    sources += [
       "../common/OtbrDnssdImpl.cpp",
     ]
   }
 
-  sources += common_sources
-
+  deps += [ "${chip_root}/src/credentials:credentials_header" ]
   public_deps = [ "${chip_root}/src/platform:platform_base" ]
 }
