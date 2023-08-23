@@ -18,7 +18,6 @@ from enum import Enum, auto
 
 from .gn import GnBuilder
 
-
 def raise_exception(info):
     logging.fatal('*' * 80)
     logging.fatal('\t%s', info)
@@ -199,6 +198,17 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append('openthread_project_core_config_file="{}"'.format(openthread_project_core_config_file))
         if enable_otbr:
             self.argsOpt.append('enable_openthread_border_router=true')
+            self.argsOpt.append('chip_openthread_ftd=true')
+
+        if enable_otbr or enable_thread:
+            self.argsOpt.append('chip_mdns="platform"')
+        elif enable_wifi or enable_ethernet:
+            self.argsOpt.append('chip_mdns="minimal"')
+
+        if enable_ethernet or enable_wifi:
+            self.argsOpt.append('chip_inet_config_enable_ipv4=true')
+        else:
+            self.argsOpt.append('chip_inet_config_enable_ipv4=false')
 
         if enable_cdc:
             if bouffalo_chip != "bl702":

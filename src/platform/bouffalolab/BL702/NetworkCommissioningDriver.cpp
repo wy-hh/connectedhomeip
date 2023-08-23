@@ -32,6 +32,10 @@ CHIP_ERROR BLWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChangeC
     size_t ssidLen        = 0;
     size_t credentialsLen = 0;
 
+    mpScanCallback         = nullptr;
+    mpConnectCallback      = nullptr;
+    mpStatusChangeCallback = networkStatusChangeCallback;
+    
     err = PersistedStorage::KeyValueStoreMgr().Get(BLConfig::kConfigKey_WiFiSSID, mSavedNetwork.credentials,
                                                    sizeof(mSavedNetwork.credentials), &credentialsLen);
     SuccessOrExit(err);
@@ -43,9 +47,6 @@ CHIP_ERROR BLWiFiDriver::Init(NetworkStatusChangeCallback * networkStatusChangeC
     mSavedNetwork.ssidLen        = ssidLen;
 
     mStagingNetwork        = mSavedNetwork;
-    mpScanCallback         = nullptr;
-    mpConnectCallback      = nullptr;
-    mpStatusChangeCallback = networkStatusChangeCallback;
     mScanSpecific          = false;
 
 exit:
@@ -129,7 +130,9 @@ Status BLWiFiDriver::ReorderNetwork(ByteSpan networkId, uint8_t index, MutableCh
 
 CHIP_ERROR BLWiFiDriver::ConnectWiFiNetwork(const char * ssid, uint8_t ssidLen, const char * key, uint8_t keyLen)
 {
-    ChipLogProgress(NetworkProvisioning, "ConnectWiFiNetwork");
+    ChipLogProgress(NetworkProvisioning, "ConnectWiFiNetwork [%s]", ssid);
+    wifiInterface_disconnect();
+    vTaskDelay(500);
     wifiInterface_connect((char *) ssid, (char *) key);
     ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
     return CHIP_NO_ERROR;
@@ -183,6 +186,8 @@ void BLWiFiDriver::ScanNetworks(ByteSpan ssid, WiFiDriver::ScanCallback * callba
 {
     if (callback != nullptr)
     {
+        ChipLogError(NetworkProvisioning, "ssid.data(): %s", ssid.data());
+
         if (ssid.data())
         {
             memset(mScanSSID, 0, sizeof(mScanSSID));
@@ -199,11 +204,12 @@ void BLWiFiDriver::OnScanWiFiNetworkDone(void *opaque)
     netbus_wifi_mgmr_msg_cmd_t * pkg_data = (netbus_wifi_mgmr_msg_cmd_t *) ((struct pkg_protocol *) opaque)->payload;
     netbus_fs_scan_ind_cmd_msg_t * pmsg = (netbus_fs_scan_ind_cmd_msg_t *) ((netbus_fs_scan_ind_cmd_msg_t *) pkg_data);
 
-    size_t i = 0, ap_num = pmsg->num;
+    size_t i = 0, ap_num = 0;
     WiFiScanResponse *pScanResponse, *p;
 
     for (i = 0; i < pmsg->num; i++)
     {
+        ChipLogProgress(DeviceLayer, "OnScanWiFiNetworkDone %s", pmsg->records[i].ssid);
         if (mScanSpecific && !strcmp(mScanSSID, (char *) (pmsg->records[i].ssid)))
         {
             ap_num = 1;
@@ -211,7 +217,7 @@ void BLWiFiDriver::OnScanWiFiNetworkDone(void *opaque)
         }
     }
 
-    if (0 == ap_num || (mScanSpecific && ap_num == pmsg->num))
+    if (0 == pmsg->num || (mScanSpecific && 0 == ap_num))
     {
         ChipLogProgress(DeviceLayer, "No AP found");
         if (mpScanCallback != nullptr)
@@ -222,7 +228,13 @@ void BLWiFiDriver::OnScanWiFiNetworkDone(void *opaque)
         return;
     }
 
-    p = pScanResponse = (WiFiScanResponse *) malloc(sizeof(WiFiScanResponse) * ap_num);
+    if (ap_num) {
+        p = pScanResponse = (WiFiScanResponse *) malloc(sizeof(WiFiScanResponse) * ap_num);
+    }
+    else {
+        p = pScanResponse = (WiFiScanResponse *) malloc(sizeof(WiFiScanResponse) * pmsg->num);
+        ap_num = pmsg->num;
+    }
     for (i = 0; i < pmsg->num; i++)
     {
         if (mScanSpecific && strcmp(mScanSSID, (char *) (pmsg->records[i].ssid)))
@@ -269,22 +281,23 @@ void BLWiFiDriver::OnScanWiFiNetworkDone(void *opaque)
 
 CHIP_ERROR GetConfiguredNetwork(Network & network)
 {
-    struct bflbwifi_ap_record ap_info;
+    struct bflbwifi_ap_record *pApInfo = wifiInterface_getApInfo();
 
-    ChipLogProgress(DeviceLayer, "GetConfiguredNetwork");
-
-    if (!wifiInterface_getApInfo(&ap_info))
+    if (NULL == pApInfo)
     {
         return CHIP_ERROR_INTERNAL;
     }
 
-    uint8_t length = strnlen(reinterpret_cast<const char *>(ap_info.ssid), DeviceLayer::Internal::kMaxWiFiSSIDLength);
+    ChipLogProgress(DeviceLayer, "GetConfiguredNetwork [%s]", pApInfo->ssid);
+
+    uint8_t length = strnlen(reinterpret_cast<const char *>(pApInfo->ssid), DeviceLayer::Internal::kMaxWiFiSSIDLength);
     if (length > sizeof(network.networkID))
     {
         ChipLogError(DeviceLayer, "SSID too long");
         return CHIP_ERROR_INTERNAL;
     }
-    memcpy(network.networkID, ap_info.ssid, length);
+
+    memcpy(network.networkID, pApInfo->ssid, length);
     network.networkIDLen = length;
     return CHIP_NO_ERROR;
 }
@@ -306,6 +319,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
 
     if (ConnectivityMgrImpl().GetWiFiStationState() == ConnectivityManager::kWiFiStationState_Connected)
     {
+        ChipLogProgress(DeviceLayer, "OnNetworkStatusChange kWiFiStationState_Connected, %s", configuredNetwork.networkID);
         staConnected = true;
     }
 
@@ -313,7 +327,6 @@ void BLWiFiDriver::OnNetworkStatusChange()
     {
         mpStatusChangeCallback->OnNetworkingStatusChange(
             Status::kSuccess, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)), NullOptional);
-        return;
     }
     mpStatusChangeCallback->OnNetworkingStatusChange(
         Status::kUnknownError, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)), NullOptional);
@@ -371,17 +384,14 @@ void NetworkEventHandler(const ChipDeviceEvent * event, intptr_t arg)
     switch (event->Type) {
     case kWiFiOnInitDone:
         break;
-    case kWiFiOnScanDone:
-        BLWiFiDriver::GetInstance().OnScanWiFiNetworkDone();
-        break;
     case kWiFiOnConnected:
         BLWiFiDriver::GetInstance().OnNetworkStatusChange();
         break;
-    case kWiFiOnGotIpAddress:
+    case kGotIpAddress:
         ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
         ConnectivityMgrImpl().OnConnectivityChanged(deviceInterface_getNetif());
         break;
-    case kWiFiOnGotIpv6Address:
+    case kGotIpv6Address:
         ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManagerImpl::kWiFiStationState_Connected);
         ConnectivityMgrImpl().OnConnectivityChanged(deviceInterface_getNetif());
         break;
@@ -403,16 +413,12 @@ extern "C" void wifi_event_handler(uint32_t code)
 
     memset(&event, 0, sizeof(ChipDeviceEvent));
     switch (code) {
-        case VIRT_NET_EV_ON_SCAN_DONE:
-            event.Type                                 = kWiFiOnScanDone;
-            PlatformMgr().PostEventOrDie(&event);
-            break;
         case VIRT_NET_EV_ON_CONNECTED:
             event.Type                                 = kWiFiOnConnected;
             PlatformMgr().PostEventOrDie(&event);
             break;
         case VIRT_NET_EV_ON_GOT_IP: 
-            event.Type                                 = kWiFiOnGotIpAddress;
+            event.Type                                 = kGotIpAddress;
             PlatformMgr().PostEventOrDie(&event);
             break;
         case VIRT_NET_EV_ON_DISCONNECT: 

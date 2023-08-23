@@ -396,6 +396,7 @@ if (chip_device_platform != "none") {
       "../include/platform/KvsPersistentStorageDelegate.h",
       "../include/platform/PersistedStorage.h",
       "../include/platform/PlatformManager.h",
+      "../include/platform/RuntimeOptionsProvider.h",
       "../include/platform/TestOnlyCommissionableDataProvider.h",
       "../include/platform/ThreadStackManager.h",
       "../include/platform/internal/BLEManager.h",
@@ -439,6 +440,7 @@ if (chip_device_platform != "none") {
       "LockTracker.cpp",
       "PersistedStorage.cpp",
       "PlatformEventSupport.cpp",
+      "RuntimeOptionsProvider.cpp",
     ]
 
     # Linux has its own NetworkCommissioningThreadDriver
@@ -456,6 +458,7 @@ if (chip_device_platform != "none") {
       ":platform_base",
       "${chip_root}/src/app:app_config",
       "${chip_root}/src/app/common:cluster-objects",
+      "${chip_root}/src/credentials:build_time_header",
       "${chip_root}/src/crypto",
       "${chip_root}/src/lib/support",
     ]

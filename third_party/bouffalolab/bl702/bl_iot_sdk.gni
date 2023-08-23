@@ -20,6 +20,8 @@ import("${chip_root}/src/lib/lib.gni")
 
 declare_args() {
   bl_iot_sdk_root = "${chip_root}/third_party/bouffalolab/repo"
+
+  enable_debug_frame_ptr = true
 }
 
 assert(bl_iot_sdk_root != "", "bl_iot_sdk_root must be specified")
@@ -58,6 +60,10 @@ template("bl_iot_sdk") {
       "-include",
       rebase_path("${invoker.freertos_config}", root_build_dir),
     ]
+
+    if (defined(invoker.enable_frame_ptr) && invoker.enable_frame_ptr) {
+      cflags += [ "-fno-omit-frame-pointer" ]
+    }
   }
 
   config("${sdk_target_name}_config_soc") {
@@ -140,7 +146,6 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/platform/soc/bl702/bl702_std/BSP_Driver/std_drv/src/bl702_xip_sflash_ext.c",
     ]
 
-
     configs += [ ":${sdk_target_name}_config_freertos" ]
     public_configs = [
       ":${sdk_target_name}_config",
@@ -162,6 +167,10 @@ template("bl_iot_sdk") {
 
   source_set("${sdk_target_name}_bl702_freertos") {
     defines = [ "portasmHANDLE_INTERRUPT=interrupt_entry" ]
+    if (defined(invoker.enable_frame_ptr) && invoker.enable_frame_ptr) {
+      defines += [ "CONF_ENABLE_FRAME_PTR" ]
+    }
+
     include_dirs = [ "${bl_iot_sdk_root}/components/platform/soc/bl702/bl702_freertos/portable/GCC/RISC-V/chip_specific_extensions/RV32F_float_abi_single" ]
 
     sources = [
@@ -866,48 +875,19 @@ template("bl_iot_sdk") {
 
     include_dirs = [
       "${bl_iot_sdk_root}/components/network/lwip/lwip-port",
-      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/config",
     ]
 
     include_dirs += [
-      "${bl_iot_sdk_root}/components/network/lwip/lwip-port/config",
       "${bl_iot_sdk_root}/components/network/lwip/src/include",
       "${bl_iot_sdk_root}/components/network/lwip/src/include/lwip/apps",
       "${bl_iot_sdk_root}/components/network/lwip/lwip-port",
       "${bl_iot_sdk_root}/components/network/lwip/lwip-port/FreeRTOS",
       "${bl_iot_sdk_root}/components/network/lwip/lwip-port/hook",
     ]
-
+    
     defines = [
-      "CFG_ETHERNET_ENABLE=1",
       "LWIP_IPV6=1",
-      "LWIP_IPV4=1",
-      "LWIP_IPV6_DHCP6=1",
-      "LWIP_IPV6_SCOPES=0",
-      "PBUF_POOL_SIZE=20",
-      "PBUF_POOL_BUFSIZE=1600",
-      "LWIP_NETIF_EXT_STATUS_CALLBACK",
     ]
-
-    if (defined(invoker.enable_openthread_border_router) && invoker.enable_openthread_border_router) {
-      defines += [
-        "LWIP_DHCP=1",
-        "LWIP_AUTOIP=1",
-        "LWIP_IPV6_DHCP6=1",
-        "LWIP_IPV6_MLD=1",
-        "LWIP_ND6_RDNSS_MAX_DNS_SERVERS=1",
-        "MEMP_NUM_MLD6_GROUP=300",
-        "LWIP_SOCKET_MAX_MEMBERSHIPS=300",
-        "LWIP_MULTICAST_PING=1",
-        "LWIP_NETBUF_RECVINFO=1",
-        "LWIP_IPV6_SCOPES=0",
-        "LWIP_IPV6_FORWARD=1",
-        "LWIP_IPV6_NUM_ADDRESSES=20",
-        "DEFAULT_RAW_RECVMBOX_SIZE=64",
-        "MEMP_NUM_NETBUF=16",
-        "OPENTHREAD_BORDER_ROUTER"
-      ]
-    }
   }
 
   source_set("${sdk_target_name}_lwip") {
@@ -980,9 +960,6 @@ template("bl_iot_sdk") {
         [ "${bl_iot_sdk_root}/components/network/lwip/src/apps/mdns/mdns.c" ]
 
     if (defined(invoker.enable_openthread_border_router) && invoker.enable_openthread_border_router) {
-      defines = [
-        "LWIP_HOOK_FILENAME=\"otbr_lwip_hooks.h\""
-      ]
       include_dirs = [
         "${bl_iot_sdk_root}/components/network/thread/openthread_br/include"
       ]
@@ -990,9 +967,6 @@ template("bl_iot_sdk") {
     else {
       sources += [
         "${bl_iot_sdk_root}/components/network/lwip/src/core/ipv6/mld6.c"
-      ]
-      defines = [
-        "LWIP_HOOK_FILENAME=\"bl_lwip_hooks.h\""
       ]
     }
 
@@ -1014,7 +988,6 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_BSP_Driver",
       ":${sdk_target_name}_bl702_freertos",
       ":${sdk_target_name}_ble",
-      ":${sdk_target_name}_ethernet",
       ":${sdk_target_name}_fs",
       ":${sdk_target_name}_hosal",
       ":${sdk_target_name}_libc",

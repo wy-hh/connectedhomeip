@@ -123,7 +123,6 @@ void aosUartRxCallback(int fd, void * param)
         xSemaphoreGiveFromISR(chipUart_var.sema, &xHigherPriorityTaskWoken);
     }
 }
-#endif
 
 static int uartTxCallback(void * p_arg)
 {
@@ -163,6 +162,7 @@ static int uartRxCallback(void * p_arg)
 
     return 0;
 }
+#endif
 
 void uartInit(void)
 {

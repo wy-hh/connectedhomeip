@@ -369,7 +369,7 @@ void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
 
-#if BL702L_ENABLE || CHIP_DEVICE_CONFIG_ENABLE_WIFI
+#if BL702L_ENABLE || CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
     hosal_dma_init();
 #endif
 #if BL602_ENABLE

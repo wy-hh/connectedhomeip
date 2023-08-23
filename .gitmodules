@@ -318,7 +318,11 @@
 	url = https://github.com/asriot/ASR550X_Freertos.git
 	branch = matter
 	platforms = asr
-	platforms = linux,android
+[submodule "third_party/silabs/wifi_sdk"]
+	path = third_party/silabs/wifi_sdk
+	url = https://github.com/SiliconLabs/wiseconnect
+	branch = master
+	platforms = efr32
 [submodule "third_party/bouffalolab/bouffalo_sdk"]
 	path = third_party/bouffalolab/bouffalo_sdk
 	url = https://github.com/bouffalolab/bouffalo_sdk.git

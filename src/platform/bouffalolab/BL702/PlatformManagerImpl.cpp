@@ -28,12 +28,12 @@
 #include <platform/bouffalolab/BL702/wifi_mgmr_portable.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
 
-#if CHIP_DEVICE_CONFIG_ENABLE_THREAD || defined (ENABLE_OPENTHREAD_BORDER_ROUTER)
+#if CHIP_DEVICE_CONFIG_ENABLE_THREAD || ENABLE_OPENTHREAD_BORDER_ROUTER
 #include <openthread_port.h>
 #include <utils_list.h>
 #endif
 
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
 #include <openthread/thread.h>
 
 #include <openthread/dataset.h>
@@ -42,7 +42,7 @@
 #include <openthread_br.h>
 #endif
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_WIFI && !CHIP_DEVICE_CONFIG_ENABLE_THREAD
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 #include <platform/bouffalolab/BL702/EthernetInterface.h>
 #endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
 
@@ -74,14 +74,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
     
-#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
-    wifi_start_firmware_task();
-#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
-
-#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
-    ethernetInterface_init();
-#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
-
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     otRadio_opt_t opt;
     opt.bf.isFtd = true;
@@ -91,19 +83,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     ot_radioInit(opt);
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD
 
-#if !CHIP_DEVICE_CONFIG_ENABLE_THREAD && defined(ENABLE_OPENTHREAD_BORDER_ROUTER) 
-    otRadio_opt_t opt;
-    opt.bf.isFtd = true;
-    opt.bf.isCoexEnable = true;
-    opt.bf.isLinkMetricEnable = true;
-
-    otrStart(opt);
-#endif
-
     ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
-
-    SetConfigurationMgr(&ConfigurationManagerImpl::GetDefaultInstance());
-    SetDiagnosticDataProvider(&DiagnosticDataProviderImpl::GetDefaultInstance());
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);
@@ -116,6 +96,23 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
 
+#if CHIP_DEVICE_CONFIG_ENABLE_WIFI
+    wifi_start_firmware_task();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_WIFI
+
+#if CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+    ethernetInterface_init();
+#endif // CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
+    otRadio_opt_t opt;
+    opt.bf.isFtd = true;
+    opt.bf.isCoexEnable = true;
+    opt.bf.isLinkMetricEnable = true;
+
+    otrStart(opt);
+#endif
+
 exit:
     return err;
 }
@@ -123,7 +120,7 @@ exit:
 } // namespace DeviceLayer
 } // namespace chip
 
-#ifdef ENABLE_OPENTHREAD_BORDER_ROUTER
+#if ENABLE_OPENTHREAD_BORDER_ROUTER
 
 #define THREAD_CHANNEL      11
 #define THREAD_PANID        0x1234
@@ -139,7 +136,7 @@ extern "C" void otr_start_default(void)
     if (!otDatasetIsCommissioned(otrGetInstance())) {
 
         if (OT_ERROR_NONE != otDatasetCreateNewNetwork(otrGetInstance(), &ds)) {
-            printf("Failed to create dataset for Thread Network\r\n");
+            ChipLogError(DeviceLayer, "OTBR is failed to create dataset for Thread Network.");
         }
 
         memcpy(&ds.mNetworkKey, default_network_key, sizeof(default_network_key));
@@ -149,7 +146,7 @@ extern "C" void otr_start_default(void)
         ds.mPanId = THREAD_PANID;
         
         if (OT_ERROR_NONE != otDatasetSetActive(otrGetInstance(), &ds)) {
-            printf("Failed to set active dataset\r\n");
+            ChipLogError(DeviceLayer, "OTBR is failed to set active dataset.");
         }
     }
 
@@ -162,5 +159,7 @@ extern "C" void otr_start_default(void)
 extern "C" void otrInitUser(otInstance * instance)
 {
     otr_start_default();
+
+    otbr_netif_init();
 }
 #endif

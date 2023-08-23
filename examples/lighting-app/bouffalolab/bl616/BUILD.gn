@@ -64,7 +64,14 @@ bouffalo_sdk("sdk") {
     "${examples_plat_dir}",
     "${examples_plat_dir}/common/route_hook",
     "${chip_root}/src/platform/bouffalolab/BL616",
+    "${chip_root}/src/platform/bouffalolab/common",
   ]
+
+  if (chip_enable_wifi || chip_enable_ethernet) {
+    include_dirs += [
+      "${examples_plat_dir}/bl616/lwipopts",
+    ]
+  }
 
   defines = [
     "INCLUDE_xSemaphoreGetMutexHolder=1",
@@ -147,6 +154,12 @@ bouffalolab_executable("lighting_app") {
     "${examples_plat_dir}/common/bouffalo_sdk",
   ]
 
+  if (chip_enable_wifi || chip_enable_ethernet) {
+    include_dirs += [
+      "${examples_plat_dir}/bl616/lwipopts",
+    ]
+  }
+  
   if (chip_enable_pw_rpc) {
     defines += [
       "PW_RPC_ENABLED",

@@ -23,11 +23,7 @@
 #include <lib/shell/Engine.h>
 #include <lib/shell/streamer.h>
 
-#if !CHIP_DEVICE_LAYER_TARGET_BL616
-#include <stdio.h>
-#include <string.h>
-#include <uart.h>
-#endif
+
 
 namespace chip {
 namespace Shell {
@@ -67,6 +63,10 @@ streamer_t * streamer_get(void)
 }
 
 #else
+
+#include <stdio.h>
+#include <string.h>
+#include <uart.h>
 
 namespace {
 

@@ -28,7 +28,7 @@ struct netif * deviceInterface_getNetif(void);
 void wifiInterface_getMacAddress(uint8_t * pmac);
 void wifiInterface_connect(char * ssid, char * passwd);
 void wifiInterface_disconnect(void);
-bool wifiInterface_getApInfo(struct bflbwifi_ap_record * ap_info);
+struct bflbwifi_ap_record * wifiInterface_getApInfo(void);
 void wifiInterface_startScan(void);
 
 void wifiInterface_eventConnected(struct netif * interface);

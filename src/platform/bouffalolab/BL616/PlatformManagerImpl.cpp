@@ -55,7 +55,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
 
-    wifi_start_firmware_task();
+    ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
 
     err = chip::Crypto::add_entropy_source(app_entropy_source, NULL, 16);
     SuccessOrExit(err);
@@ -68,6 +68,7 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     SuccessOrExit(err);
     Internal::GenericPlatformManagerImpl_FreeRTOS<PlatformManagerImpl>::mEventLoopTask = backup_eventLoopTask;
 
+    wifi_start_firmware_task();
 exit:
     return err;
 }

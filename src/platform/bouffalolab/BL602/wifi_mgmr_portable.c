@@ -18,6 +18,7 @@
 #include <wifi_mgmr_portable.h>
 
 extern struct wpa_sm gWpaSm;
+static netif_ext_callback_t netifExtCallback;
 
 int wifi_mgmr_get_bssid(uint8_t * bssid)
 {
