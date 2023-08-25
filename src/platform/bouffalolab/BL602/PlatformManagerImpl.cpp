@@ -45,8 +45,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     CHIP_ERROR err = CHIP_NO_ERROR;
     TaskHandle_t backup_eventLoopTask;
 
-    ota_image_get_public_key(NULL, NULL);
-
     // Initialize LwIP.
     tcpip_init(NULL, NULL);
 
