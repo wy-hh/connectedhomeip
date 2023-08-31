@@ -33,7 +33,6 @@
 #include <utils_log.h>
 #endif
 
-
 namespace chip {
 namespace Logging {
 namespace Platform {

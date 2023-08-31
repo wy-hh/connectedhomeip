@@ -25,6 +25,14 @@ def raise_exception(info):
 
     raise Exception(info)
 
+def raise_exception(info):
+    logging.fatal('*' * 80)
+    logging.fatal('\t%s', info)
+    logging.fatal('*' * 80)
+
+    raise Exception(info)
+
+
 class BouffalolabApp(Enum):
     LIGHT = auto()
 
@@ -54,7 +62,6 @@ class BouffalolabBoard(Enum):
     BL706_NIGHT_LIGHT = auto()
     BL706DK = auto()
     BL704LDK = auto()
-    BL704L_DVK = auto()
     BL616DK = auto()
 
     def GnArgName(self):
@@ -70,8 +77,6 @@ class BouffalolabBoard(Enum):
             return 'BL706DK'
         elif self == BouffalolabBoard.BL704LDK:
             return 'BL704LDK'
-        elif self == BouffalolabBoard.BL704L_DVK:
-            return 'BL704L-DVK'
         elif self == BouffalolabBoard.BL616DK:
             return 'BL616DK'
         else:
@@ -119,6 +124,7 @@ class BouffalolabBuilder(GnBuilder):
 
         self.argsOpt = []
         self.chip_name = bouffalo_chip
+        self.enable_frame_ptr = enable_frame_ptr
 
         openthread_project_core_config_file = None
         toolchain = os.path.join(root, os.path.split(os.path.realpath(__file__))[0], '../../../config/bouffalolab/toolchain')
@@ -160,8 +166,6 @@ class BouffalolabBuilder(GnBuilder):
 
         elif bouffalo_chip == "bl702l":
 
-            if board == BouffalolabBoard.BL704L_DVK:
-                raise_exception('Board bl704l-dvk renames to bl704ldk.')
             if enable_ethernet or enable_wifi or enable_otbr:
                 raise_exception('SoC %s doesn\'t support connectivity Ethernet/Wi-Fi and OTBR currently.' % bouffalo_chip)
 
@@ -210,6 +214,24 @@ class BouffalolabBuilder(GnBuilder):
         else:
             self.argsOpt.append('chip_inet_config_enable_ipv4=false')
 
+        if enable_thread:
+            self.argsOpt.append('chip_enable_openthread=true')
+        else:
+            self.argsOpt.append('chip_enable_openthread=false')
+
+        if enable_thread:
+            self.argsOpt.append('openthread_project_core_config_file="{}"'.format(openthread_project_core_config_file))
+
+        if enable_thread:
+            self.argsOpt.append('chip_mdns="platform"')
+        elif enable_wifi or enable_ethernet:
+            self.argsOpt.append('chip_mdns="minimal"')
+
+        if enable_ethernet or enable_wifi:
+            self.argsOpt.append('chip_inet_config_enable_ipv4=true')
+        else:
+            self.argsOpt.append('chip_inet_config_enable_ipv4=false')
+
         if enable_cdc:
             if bouffalo_chip != "bl702":
                 self.raise_exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
@@ -241,6 +263,8 @@ class BouffalolabBuilder(GnBuilder):
 
         if enable_frame_ptr:
             self.argsOpt.append("enable_debug_frame_ptr=true")
+        else:
+            self.argsOpt.append("enable_debug_frame_ptr=false")
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])
@@ -259,7 +283,10 @@ class BouffalolabBuilder(GnBuilder):
         logging.fatal('*' * 80)
 
     def GnBuildArgs(self):
-        return self.argsOpt
+        if self.enable_frame_ptr:
+            return self.argsOpt + ["debug_output_file=\"{}\"".format(os.path.join(self.output_dir, '%s.out' % self.app.AppNamePrefix(self.chip_name)))]
+        else:
+            return self.argsOpt
 
     def build_outputs(self):
         items = {

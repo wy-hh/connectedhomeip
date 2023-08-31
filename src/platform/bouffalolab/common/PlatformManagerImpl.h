@@ -61,14 +61,13 @@ private:
     friend PlatformManagerImpl & PlatformMgrImpl(void);
     friend class Internal::BLEManagerImpl;
 
-    CHIP_ERROR _PostEvent(const ChipDeviceEvent * event);
-
 #if CHIP_DEVICE_LAYER_TARGET_BL616 && CHIP_DEVICE_CONFIG_ENABLE_WIFI
     friend void OnWiFiPlatformEvent(uint32_t code, void * private_data);
 #elif CHIP_DEVICE_LAYER_TARGET_BL602 && CHIP_DEVICE_CONFIG_ENABLE_WIFI
     friend void OnWiFiPlatformEvent(input_event_t * event, void * private_data);
 #endif
 
+    CHIP_ERROR _PostEvent(const ChipDeviceEvent * event);
     System::Clock::Timestamp mStartTime = System::Clock::kZero;
 
     static PlatformManagerImpl sInstance;

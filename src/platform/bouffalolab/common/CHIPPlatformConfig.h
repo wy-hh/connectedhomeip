@@ -19,6 +19,9 @@
 
 #include <stdint.h>
 
+extern "C" void bflb_assert(void);
+#define CHIP_CONFIG_ABORT() bflb_assert()
+
 // ==================== General Platform Adaptations ====================
 #define CHIP_CONFIG_PERSISTED_STORAGE_KEY_TYPE const char *
 #define CHIP_CONFIG_PERSISTED_STORAGE_ENC_MSG_CNTR_ID 1
@@ -27,8 +30,6 @@
 #define CHIP_CONFIG_LIFETIIME_PERSISTED_COUNTER_KEY BLConfig::kConfigKey_LifeTimeCounter
 
 // ==================== Security Adaptations ====================
-
-
 #define CHIP_CONFIG_AES_IMPLEMENTATION_OPENSSL 0
 #define CHIP_CONFIG_AES_IMPLEMENTATION_AESNI 0
 #define CHIP_CONFIG_AES_IMPLEMENTATION_MBEDTLS 1

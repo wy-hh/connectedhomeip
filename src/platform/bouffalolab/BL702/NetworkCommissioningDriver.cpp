@@ -327,6 +327,7 @@ void BLWiFiDriver::OnNetworkStatusChange()
     {
         mpStatusChangeCallback->OnNetworkingStatusChange(
             Status::kSuccess, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)), NullOptional);
+        return;
     }
     mpStatusChangeCallback->OnNetworkingStatusChange(
         Status::kUnknownError, MakeOptional(ByteSpan(configuredNetwork.networkID, configuredNetwork.networkIDLen)), NullOptional);

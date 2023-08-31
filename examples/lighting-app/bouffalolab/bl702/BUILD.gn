@@ -117,7 +117,16 @@ bl_iot_sdk("sdk") {
 }
 
 chip_data_model("bouffalolab-lighting") {
-  zap_file = "${example_dir}/data_model/lighting-app-wifi.zap"
+
+  if (chip_enable_openthread) {
+    zap_file = "${example_dir}/data_model/lighting-app-thread.zap"
+  }
+  else if (chip_enable_wifi) {
+    zap_file = "${example_dir}/data_model/lighting-app-wifi.zap"
+  }
+  else {
+    zap_file = "${example_dir}/data_model/lighting-app-ethernet.zap"
+  }
 
   zap_pregenerated_dir = "${chip_root}/zzz_generated/lighting-app/zap-generated"
   is_server = true
@@ -134,6 +143,10 @@ bouffalolab_executable("lighting_app") {
     "START_ENTRY=bl702_main",
   ]
 
+  if (enable_debug_frame_ptr) {
+    defines += [ "CONF_ENABLE_FRAME_PTR=1" ]
+  }
+  
   if (chip_config_network_layer_ble) {
     defines += [
       "CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE=1"

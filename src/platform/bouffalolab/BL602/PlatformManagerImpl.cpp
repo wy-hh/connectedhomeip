@@ -27,8 +27,6 @@
 #include <bl_sec.h>
 #include <wifi_mgmr_portable.h>
 
-extern "C" bool ota_image_get_public_key(uint8_t key[], uint32_t *p_len);
-
 namespace chip {
 namespace DeviceLayer {
 

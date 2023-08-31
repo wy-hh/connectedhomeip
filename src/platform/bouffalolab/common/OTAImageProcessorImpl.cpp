@@ -18,7 +18,7 @@
 #include <app/clusters/ota-requestor/OTADownloader.h>
 #include <app/clusters/ota-requestor/OTARequestorInterface.h>
 
-#include "OTAImageProcessorImpl.h"
+#if CHIP_DEVICE_LAYER_TARGET_BL602 || CHIP_DEVICE_LAYER_TARGET_BL702 || CHIP_DEVICE_LAYER_TARGET_BL702L
 extern "C" {
 #if CHIP_DEVICE_LAYER_TARGET_BL616
 #include <bflb_ota.h>
