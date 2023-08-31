@@ -253,9 +253,6 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append('chip_enable_rotating_device_id=true')
 
         if "disable" != function_mfd:
-            if bouffalo_chip not in { "bl602", "bl616"}:
-                self.raise_exception('Only BL602 & BL616 support matter factory data feature currently.')
-
             if "release" == function_mfd:
                 self.argsOpt.append("chip_enable_factory_data=true")
             elif "test" == function_mfd:

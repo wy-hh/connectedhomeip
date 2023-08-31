@@ -220,6 +220,7 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hal_tcal.c",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hosal_adc.c",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hosal_dma.c",
+      "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hosal_efuse.c",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hosal_flash.c",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hosal_gpio.c",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/hosal_i2c.c",
@@ -685,6 +686,19 @@ template("bl_iot_sdk") {
     ]
   }
 
+  config("${sdk_target_name}_config_factory_data") {
+    include_dirs = [ "${bl_iot_sdk_root}/components/network/matter/matter_factory_data/include" ]
+  }
+
+  source_set("${sdk_target_name}_factory_data") {
+    sources = [
+      "${bl_iot_sdk_root}/components/network/matter/matter_factory_data/efuse_slot.c",
+      "${bl_iot_sdk_root}/components/network/matter/matter_factory_data/matter_factory_data.c",
+    ]
+    configs += [ ":${sdk_target_name}_config",  ":${sdk_target_name}_config_bl702l_rom_a0", ":${sdk_target_name}_config_BSP_Driver", ":${sdk_target_name}_config_hosal"]
+    public_configs = [ ":${sdk_target_name}_config_factory_data" ]
+  }
+
   group(sdk_target_name) {
     public_deps = [
       ":${sdk_target_name}_bl702l_rom_a0",
@@ -697,6 +711,7 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_stage",
       ":${sdk_target_name}_sys",
       ":${sdk_target_name}_utils",
+      ":${sdk_target_name}_factory_data",
     ]
     public_configs = [ ":${sdk_target_name}_config_BSP_Driver" ]
     if (defined(invoker.chip_enable_openthread) &&
