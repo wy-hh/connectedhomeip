@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import("//build_overrides/bouffalolab_iot_sdk.gni")
-import("${bouffalolab_iot_sdk_build_root}/bl602/bl_iot_sdk.gni")
+import("${bouffalolab_iot_sdk_build_root}/bl616/bouffalo_sdk.gni")
 
 declare_args() {
   # Build target to use for Bouffalo Lab IOT SDK. Use this to set global SDK defines.

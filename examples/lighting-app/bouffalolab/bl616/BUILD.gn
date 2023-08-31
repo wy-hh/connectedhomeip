@@ -106,7 +106,7 @@ bouffalolab_executable("lighting_app") {
     "BL616_ENABLE=1",
     "START_ENTRY=main",
   ]
-
+  
   if (chip_config_network_layer_ble) {
     defines += [
       "CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE=1"
