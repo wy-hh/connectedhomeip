@@ -34,7 +34,6 @@ extern "C" {
 }
 #include "wifi_mgmr_portable.h"
 
-
 namespace chip {
 namespace DeviceLayer {
 
