@@ -307,11 +307,11 @@ class Flasher(firmware_utils.Flasher):
             if self.option.erase:
                 arguments.append("--erase")
 
-                if chip_name == "bl602":
-                    chip_config_path = os.path.join(tool_path, "chips", chip_name, "builtin_imgs")
-                    boot2_image = self.get_boot_image(chip_config_path, boot2_image)
-                    arguments.append("--boot2")
-                    arguments.append(boot2_image)
+            if chip_name in {"bl602", "bl702", "bl616"}:
+                chip_config_path = os.path.join(tool_path, "chips", chip_name, "builtin_imgs")
+                boot2_image = self.get_boot_image(chip_config_path, boot2_image)
+                arguments.append("--boot2")
+                arguments.append(boot2_image)
 
         os.chdir(work_dir)
         arguments[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', arguments[0])

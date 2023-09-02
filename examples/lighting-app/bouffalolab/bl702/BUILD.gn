@@ -25,8 +25,6 @@ import("${chip_root}/src/platform/bouffalolab/common/args.gni")
 
 import("${chip_root}/src/app/chip_data_model.gni")
 
-import("${chip_root}/src/platform/bouffalolab/common/args.gni")
-
 if (chip_enable_pw_rpc) {
   import("//build_overrides/pigweed.gni")
   import("$dir_pw_build/target_types.gni")
@@ -159,6 +157,10 @@ bouffalolab_executable("lighting_app") {
 
   if (false == enable_reset_counter) {
     defines += [ "BOOT_PIN_RESET=31" ]
+  }
+
+  if (chip_enable_factory_data) {
+    defines += [ "CONFIG_BOUFFALOLAB_FACTORY_DATA_ENABLE" ]
   }
 
   if ("XT-ZB6-DevKit" == board) {
