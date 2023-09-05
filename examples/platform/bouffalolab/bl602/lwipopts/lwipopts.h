@@ -42,7 +42,7 @@
  * ATTENTION: this does not work when tcpip_input() is called from
  * interrupt context!
  */
-#define LWIP_TCPIP_CORE_LOCKING_INPUT   0
+#define LWIP_TCPIP_CORE_LOCKING_INPUT   1
 
 /* ---------- Memory options ---------- */
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
