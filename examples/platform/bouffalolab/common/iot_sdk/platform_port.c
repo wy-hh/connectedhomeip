@@ -249,6 +249,7 @@ static const HeapRegion_t xHeapRegions[] = {
 #elif BL702_ENABLE
 static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
+    { &_heap2_start, (size_t) &_heap2_size }, // set on runtime
     { NULL, 0 }                             /* Terminates the array. */
 };
 #elif BL702L_ENABLE
@@ -335,6 +336,13 @@ void setup_heap()
     memcpy((void *) &_rom_data_run, (void *) &_rom_data_load, (size_t) &_rom_data_size);
 #endif
 
+#if BL602_ENABLE || BL702_ENABLE
+    extern uint8_t __ocram_bss_start[],  __ocram_bss_end[];
+    if (NULL != __ocram_bss_start && NULL != __ocram_bss_end && __ocram_bss_end > __ocram_bss_start) {
+        memset(__ocram_bss_start, 0, __ocram_bss_end - __ocram_bss_start);
+    }
+#endif
+
     vPortDefineHeapRegions(xHeapRegions);
 
 #ifdef CFG_USE_PSRAM
@@ -391,6 +399,7 @@ void platform_port_init(void)
 #if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
     uartInit();
 #endif
+
 #ifdef SYS_AOS_LOOP_ENABLE
     aos_loop_start();
 #else

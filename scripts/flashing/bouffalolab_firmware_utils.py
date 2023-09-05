@@ -164,6 +164,9 @@ class Flasher(firmware_utils.Flasher):
                 if chip_name == 'bl616':
                     if name.find("bl_factory_params_IoTKitA_auto.dts") >= 0:
                         return os.path.join(config_path, name)
+                elif chip_name == 'bl702':
+                    if name.find("bl_factory_params_IoTKitA_32M.dts") >= 0:
+                        return os.path.join(config_path, name)
                 else:
                     if name.find(xtal_value) >= 0:
                         return os.path.join(config_path, name)

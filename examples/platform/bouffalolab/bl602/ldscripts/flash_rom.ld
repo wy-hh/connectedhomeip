@@ -145,6 +145,12 @@ SECTIONS
     *libwifi_drv.a:bl_utils.o(COMMON)
     *libwifi_drv.a:bl_utils.o(.bss*)
     *(.wifi_ram*)
+
+    . = ALIGN(4);
+    PROVIDE( __ocram_bss_start = . );
+    KEEP(*PlatformManagerImpl.*.o(.bss.*))
+    . = ALIGN(4);
+    PROVIDE( __ocram_bss_end = . );
     . = ALIGN(16);
   } > ram_wifi
 
@@ -201,13 +207,13 @@ SECTIONS
 
   .boot2 (NOLOAD) :
   {
-      PROVIDE ( __boot2_pt_addr_start = . );
-      *(.bss.boot2_partition_table)
-      PROVIDE ( __boot2_pt_addr_end   = . );
+    PROVIDE ( __boot2_pt_addr_start = . );
+    *(.bss.boot2_partition_table)
+    PROVIDE ( __boot2_pt_addr_end   = . );
 
-      PROVIDE ( __boot2_flashCfg_start = . );
-      *(.bss.boot2_flashCfg)
-      PROVIDE ( __boot2_flashCfg_end = . );
+    PROVIDE ( __boot2_flashCfg_start = . );
+    *(.bss.boot2_flashCfg)
+    PROVIDE ( __boot2_flashCfg_end = . );
 
   } > ram_tcm
 
