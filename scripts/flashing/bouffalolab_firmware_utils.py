@@ -20,9 +20,7 @@ import sys
 import logging
 import coloredlogs
 import shutil
-
-import bflb_iot_tool
-import bflb_iot_tool.__main__
+import importlib.metadata
 import firmware_utils
 
 coloredlogs.install(level='DEBUG')
@@ -184,6 +182,20 @@ class Flasher(firmware_utils.Flasher):
         """Perform actions on the device according to self.option."""
         self.log(3, 'Options:', self.option)
 
+        try:
+            import bflb_iot_tool
+            import bflb_iot_tool.__main__
+
+            importlib.metadata.version("bflb_iot_tool")
+        except Exception as e:
+
+            logging.error('Please try the following command for Bouffalo Lab enviroment setup:')
+            logging.error('source scripts/activate.sh -p bouffalolab')
+            logging.error('Or')
+            logging.error('source scripts/bootstrap.sh -p bouffalolab')
+            
+            raise Exception(e)
+
         tool_path = os.path.dirname(bflb_iot_tool.__file__)
 
         options_keys = BOUFFALO_OPTIONS["configuration"].keys()
@@ -326,6 +338,8 @@ class Flasher(firmware_utils.Flasher):
             os.mkdir(ota_output_folder)
 
         logging.info("Arguments {}".format(arguments))
+
+
         bflb_iot_tool.__main__.run_main()
 
         if ota_output_folder:

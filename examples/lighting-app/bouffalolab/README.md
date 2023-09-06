@@ -11,9 +11,8 @@ The steps were verified on `Bouffalo Lab` BL602 and BL706 development board.
 -   `BL602-NIGHT-LIGHT`
 -   `XT-ZB6-DevKit`
 -   `BL706-NIGHT-LIGHT`
--   `BL706-ETHERNET`
--   `BL706-WIFI`
--   `BL704L-DVK`
+-   `BL706DK`
+-   `BL704LDK`
 -   `BL616DK`
 
 > Warning: Changing the VID/PID may cause compilation problems, we recommend leaving
@@ -74,11 +73,11 @@ Mac OS.
     git clone https://github.com/project-chip/connectedhomeip.git
     cd connectedhomeip
     git submodule update --init --recursive
-    source ./scripts/activate.sh
+    source ./scripts/activate.sh -p bouffalolab
     ```
 
     > After environment setup `Bouffalo Lab` flash tool, `bflb-iot-tool`, imports
-    > under this environment. If not, please try `scripts/bootstrap.sh` for
+    > under this environment. If not, please try `scripts/bootstrap.sh -p bouffalolab` for
     > matter environment update.
 
 -   Setup build environment for `Bouffalo Lab` SoC
@@ -100,17 +99,16 @@ Mac OS.
 ## Build CHIP Lighting App example
 
 The following steps take examples for BL602 develop board `BL602-IoT-Matter-V1`,
-BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704L-DVK` and BL706 Ethernet and Wi-Fi Board, and BL616DK Board.
+BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704LDK` and BL706 Ethernet and Wi-Fi Board, and BL616DK Board.
 
 -   Build lighting app with UART baudrate 2000000
 
     ```
     ./scripts/build/build_examples.py --target bouffalolab-bl602-iot-matter-v1-light build
     ./scripts/build/build_examples.py --target bouffalolab-xt-zb6-devkit-light build
-    ./scripts/build/build_examples.py --target bouffalolab-bl704l-dvk-light build
-    ./scripts/build/build_examples.py --target bouffalolab-bl706-eth-light build
-    ./scripts/build/build_examples.py --target bouffalolab-bl706-wifi-light build
-    ./scripts/build/build_examples.py --target bouffalolab-bl616dk-light-wifi build
+    ./scripts/build/build_examples.py --target bouffalolab-bl704ldk-light build
+    ./scripts/build/build_examples.py --target bouffalolab-bl706dk-light-ethernet build
+    ./scripts/build/build_examples.py --target bouffalolab-bl706dk-light-wifi build
     ```
 
 -   Build lighting app with UART baudrate 115200
@@ -137,6 +135,9 @@ BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704L-DVK` and BL706 Eth
     - Please contact to `Bouffalo Lab` for Matter factory data support.
 - `-mfdtest`, enable Matter factory data module, but only load factory data from `FactoryDataProvider.cpp` file.
 - `-wifi`, to specifiy that connectivity Wi-Fi is enabled for Matter application.
+- `-ethernet`, to specifiy that connectivity Ethernet is enabled for Matter application.
+- `-thread`, to specifiy that connectivity Thread is enabled for Matter application.
+- `-fp`, to specifiy to enable frame pointer feature to print call stack when hit an exception for debug purpose.
 
 ## Download image
 
@@ -169,12 +170,13 @@ BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704L-DVK` and BL706 Eth
     -   Type following command for image download. Please set serial port
         accordingly, here we use /dev/ttyACM0 as a serial port example.
 
-        -   `bl602-iot-matter-v1`, `bl704l-dvk` and `bl616dk` without additional build
+        -   `bl602-iot-matter-v1`, `xt-zb6-devkit`, `bl704ldk` and `bl616dk` without additional build
             options
 
             ```shell
             ./out/bouffalolab-bl602-iot-matter-v1-light/chip-bl602-lighting-example.flash.py --port /dev/ttyACM0
-            ./out/bouffalolab-bl602-iot-matter-v1-light/chip-bl602-lighting-example.flash.py --port /dev/ttyACM0
+            ./out/bouffalolab-xt-zb6-devkit-light/chip-bl702-lighting-example.flash.py --port /dev/ttyACM0
+            ./out/bouffalolab-bl704ldk-light/chip-bl702l-lighting-example.flash.py --port /dev/ttyACM0
             ./out/bouffalolab-bl616dk-light-wifi/chip-bl616-lighting-example.flash.py --port /dev/ttyACM0
             ```
 
@@ -190,7 +192,8 @@ BL706 develop board `XT-ZB6-DevKit`, BL704L DVK board `BL704L-DVK` and BL706 Eth
             ```shell
             ./out/bouffalolab-bl602-iot-matter-v1-light/chip-bl602-lighting-example.flash.py --port /dev/ttyACM0 --erase
             ./out/bouffalolab-xt-zb6-devkit-light-115200/chip-bl702-lighting-example.flash.py --port /dev/ttyACM0 --erase
-            ./out/bouffalolab-bl704l-dvk-light/chip-bl702l-lighting-example.flash.py --port /dev/ttyACM0 --erase
+            ./out/bouffalolab-bl704ldk-light/chip-bl702l-lighting-example.flash.py --port /dev/ttyACM0 --erase
+            ./out/bouffalolab-bl616dk-light-wifi/chip-bl616-lighting-example.flash.py --port /dev/ttyACM0 --erase
             ```
 
             > Note, better to append --erase option to download image for BL602

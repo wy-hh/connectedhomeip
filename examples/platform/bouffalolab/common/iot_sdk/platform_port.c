@@ -247,6 +247,8 @@ static const HeapRegion_t xHeapRegions[] = {
     { NULL, 0 } /* Terminates the array. */
 };
 #elif BL702_ENABLE
+extern uint8_t _heap2_start;
+extern uint8_t _heap2_size; // @suppress("Type cannot be resolved")
 static const HeapRegion_t xHeapRegions[] = {
     { &_heap_start, (size_t) &_heap_size }, // set on runtime
     { &_heap2_start, (size_t) &_heap2_size }, // set on runtime
