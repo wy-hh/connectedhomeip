@@ -338,7 +338,7 @@ void setup_heap()
     memcpy((void *) &_rom_data_run, (void *) &_rom_data_load, (size_t) &_rom_data_size);
 #endif
 
-#if BL602_ENABLE || BL702_ENABLE
+#if BL702_ENABLE
     extern uint8_t __ocram_bss_start[],  __ocram_bss_end[];
     if (NULL != __ocram_bss_start && NULL != __ocram_bss_end && __ocram_bss_end > __ocram_bss_start) {
         memset(__ocram_bss_start, 0, __ocram_bss_end - __ocram_bss_start);

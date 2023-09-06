@@ -142,12 +142,6 @@ SECTIONS
     *libwifi_drv.a:bl_utils.o(COMMON)
     *libwifi_drv.a:bl_utils.o(.bss*)
     *(.wifi_ram*)
-
-    . = ALIGN(4);
-    PROVIDE( __ocram_bss_start = . );
-    KEEP(*PlatformManagerImpl.*.o(.bss.*))
-    . = ALIGN(4);
-    PROVIDE( __ocram_bss_end = . );
     . = ALIGN(16);
   } > ram_wifi
 
@@ -221,9 +215,13 @@ SECTIONS
 
     *(.sbss*)
     *(.gnu.linkonce.sb.*)
-    *(.bss .bss.*)
+    *(.bss)
+    *(EXCLUDE_FILE(*libCHIP.a: *PlatformManagerImpl.cpp.o) .bss.*)
     *(.gnu.linkonce.b.*)
     *(COMMON)
+
+    . = ALIGN(4);
+    KEEP(*PlatformManagerImpl.*.o(.bss.*))
   } > ram_tcm
 
   .stack (NOLOAD)   :
