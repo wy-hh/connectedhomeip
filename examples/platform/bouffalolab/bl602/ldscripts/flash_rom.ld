@@ -213,15 +213,16 @@ SECTIONS
     PROVIDE( __bss_start = ADDR(.bss) );
     PROVIDE( __bss_end = ADDR(.bss) + SIZEOF(.bss) );
 
-    *(.sbss*)
+    *(.sbss)
+    *(EXCLUDE_FILE(*libCHIP.a:BL602.PlatformManagerImpl.cpp.o) .sbss.*)
     *(.gnu.linkonce.sb.*)
     *(.bss)
-    *(EXCLUDE_FILE(*libCHIP.a: *PlatformManagerImpl.cpp.o) .bss.*)
+    *(EXCLUDE_FILE(*libCHIP.a:BL602.PlatformManagerImpl.cpp.o) .bss.*)
     *(.gnu.linkonce.b.*)
-    *(COMMON)
+    *(EXCLUDE_FILE(*libCHIP.a:BL602.PlatformManagerImpl.cpp.o) COMMON)
 
     . = ALIGN(4);
-    KEEP(*PlatformManagerImpl.*.o(.bss.*))
+    *libCHIP.a:BL602.PlatformManagerImpl.cpp.o(.sbss.* .bss.* COMMON)
   } > ram_tcm
 
   .stack (NOLOAD)   :

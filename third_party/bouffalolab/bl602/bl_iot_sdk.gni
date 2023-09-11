@@ -271,6 +271,7 @@ template("bl_iot_sdk") {
       "-Wno-stringop-overflow",
       "-Wno-format-truncation",
       "-Wno-unused-variable",
+      "-Wno-array-bounds"
     ]
     configs += [
       ":${sdk_target_name}_config_wifi",

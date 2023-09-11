@@ -624,6 +624,7 @@ def BuildBouffalolabTarget():
     target.AppendModifier('wifi', enable_wifi="test")
     target.AppendModifier('thread', enable_thread="test")
     target.AppendModifier('fp', enable_frame_ptr=True)
+    target.AppendModifier('memmonitor', enable_heap_monitoring=True)
 
     return target
 

@@ -102,7 +102,8 @@ class BouffalolabBuilder(GnBuilder):
                  enable_ethernet: bool = False,
                  enable_wifi: bool = False,
                  enable_thread: bool = False,
-                 enable_frame_ptr: bool = False
+                 enable_frame_ptr: bool = False,
+                 enable_heap_monitoring: bool = False
                  ):
 
         if 'BL602' == module_type:
@@ -214,24 +215,6 @@ class BouffalolabBuilder(GnBuilder):
         else:
             self.argsOpt.append('chip_inet_config_enable_ipv4=false')
 
-        if enable_thread:
-            self.argsOpt.append('chip_enable_openthread=true')
-        else:
-            self.argsOpt.append('chip_enable_openthread=false')
-
-        if enable_thread:
-            self.argsOpt.append('openthread_project_core_config_file="{}"'.format(openthread_project_core_config_file))
-
-        if enable_thread:
-            self.argsOpt.append('chip_mdns="platform"')
-        elif enable_wifi or enable_ethernet:
-            self.argsOpt.append('chip_mdns="minimal"')
-
-        if enable_ethernet or enable_wifi:
-            self.argsOpt.append('chip_inet_config_enable_ipv4=true')
-        else:
-            self.argsOpt.append('chip_inet_config_enable_ipv4=false')
-
         if enable_cdc:
             if bouffalo_chip != "bl702":
                 self.raise_exception('Chip %s does NOT support USB CDC' % bouffalo_chip)
@@ -262,6 +245,9 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append("enable_debug_frame_ptr=true")
         else:
             self.argsOpt.append("enable_debug_frame_ptr=false")
+
+        if enable_heap_monitoring:
+            self.argsOpt.append("enable_heap_monitoring=true")
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])

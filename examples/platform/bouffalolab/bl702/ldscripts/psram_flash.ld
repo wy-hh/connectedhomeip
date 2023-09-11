@@ -212,7 +212,7 @@ SECTIONS
     PROVIDE( __ocram_bss_start = ADDR(.ocram_bss) );
     PROVIDE( __ocram_bss_end = ADDR(.ocram_bss) + SIZEOF(.ocram_bss) );
 
-    KEEP(*PlatformManagerImpl.*.o(.bss.*))
+    *libCHIP.a:BL702.PlatformManagerImpl.cpp.o(.sbss.* .bss.* COMMON)
     . = ALIGN(4);
     *(.sha_ocram*)
 

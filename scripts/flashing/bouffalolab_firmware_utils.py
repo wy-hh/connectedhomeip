@@ -235,6 +235,8 @@ class Flasher(firmware_utils.Flasher):
                     arg = ("--{}={}".format(key, os.path.join(os.getcwd(), str(value)))).strip()
                 else:
                     arg = ("--{}={}".format(key, value)).strip()
+                    
+                arguments.append(arg)
 
             if key == "chipname":
                 chip_name = value
@@ -256,8 +258,6 @@ class Flasher(firmware_utils.Flasher):
                     has_private_key = True
             elif "ota" == key and value:
                 ota_output_folder = os.path.join(os.getcwd(), value)
-
-            arguments.append(arg)
 
         if is_for_ota_image_building and is_for_programming:
             logging.error("ota imge build can't work with image programming")
