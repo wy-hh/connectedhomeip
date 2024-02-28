@@ -324,3 +324,7 @@
 	url = https://github.com/Infineon/optiga-trust-m.git
 	branch = matter_support
 	platforms = infineon
+[submodule "third_party/bouffalolab/bouffalo_sdk"]
+	path = third_party/bouffalolab/bouffalo_sdk
+	url = git@github.com:bouffalolab/bouffalo_sdk-matter.git
+	platforms = bouffalolab
