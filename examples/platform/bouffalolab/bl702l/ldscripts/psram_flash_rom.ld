@@ -297,4 +297,5 @@ SECTIONS
 
   /* rom driver */
   INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/romdriver.ld
+  INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/A0/rom_map.ld
 }

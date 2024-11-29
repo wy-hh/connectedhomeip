@@ -67,7 +67,7 @@ bl_iot_sdk("sdk") {
     "${chip_root}/src/platform/bouffalolab/common",
   ]
 
-  freertos_config = "${examples_plat_dir}/bl702l/FreeRTOSConfig.h"
+  freertos_config = "${example_dir}/bl702l/FreeRTOSConfig.h"
 
   defines = [
     "INCLUDE_xSemaphoreGetMutexHolder=1",
@@ -90,9 +90,8 @@ bl_iot_sdk("sdk") {
     defines += [ "OPENTHREAD_CONFIG_PLATFORM_XTAL_ACCURACY=40" ]
   }
 
-  if (enable_psram) {
-    defines += [ "CFG_USE_PSRAM=1" ]
-  }
+  assert(enable_psram == true, "BL702L must have psram for this application")
+  defines += [ "CFG_USE_PSRAM=1" ]
 }
 
 chip_data_model("bouffalolab_contact_sensor") {
@@ -120,6 +119,13 @@ bouffalolab_executable("contact_sensor_app") {
 
   if ("BL704LDK" == board) {
     defines += [ "XT_ZB6_DevKit" ]
+  }
+
+  if (enable_low_power_pds) {
+    defines += [ "CFG_USE_ROM_CODE=1" ]
+  }
+  else {
+    defines += [ "CFG_USE_ROM_CODE=0" ]
   }
 
   include_dirs = [
@@ -156,18 +162,11 @@ bouffalolab_executable("contact_sensor_app") {
       "${chip_root}/third_party/openthread/platforms:libopenthread-platform-utils",
     ]
 
-    if (chip_openthread_ftd) {
-      defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=1" ]
-      deps += [
-        "${openthread_root}:libopenthread-cli-ftd",
-        "${openthread_root}:libopenthread-ftd",
-      ]
-    } else {
-      defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=0" ]
-      deps += [
-        "${openthread_root}:libopenthread-cli-mtd",
-        "${openthread_root}:libopenthread-mtd",
-      ]
+    assert(chip_openthread_ftd == false, "Only Thread MTD support on contact sensor application.")
+    defines += [ "CHIP_DEVICE_CONFIG_THREAD_FTD=0" ]
+    deps += [ "${openthread_root}:libopenthread-mtd" ]
+    if (chip_build_libshell) {
+      deps += [ "${openthread_root}:libopenthread-cli-mtd" ]
     }
   }
 
@@ -240,12 +239,9 @@ bouffalolab_executable("contact_sensor_app") {
     sources += [ "${examples_plat_dir}/common/plat/MemMonitoring.cpp" ]
   }
 
-  if (enable_psram) {
-    defines += [ "CFG_USE_PSRAM=1" ]
-    ldscript = "${examples_plat_dir}/bl702l/ldscripts/psram_flash_rom.ld"
-  } else {
-    ldscript = "${examples_plat_dir}/bl702l/ldscripts/flash_rom.ld"
-  }
+  assert(enable_psram == true, "BL702L must have psram for this application")
+  defines += [ "CFG_USE_PSRAM=1" ]
+  ldscript = "${examples_plat_dir}/bl702l/ldscripts/psram_flash_rom.ld"
 
   inputs = [ ldscript ]
 

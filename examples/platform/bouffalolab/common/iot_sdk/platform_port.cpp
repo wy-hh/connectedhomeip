@@ -42,8 +42,6 @@
 #endif
 #include <bl_timer.h>
 
-#include <hosal_uart.h>
-
 extern "C" {
 #include <bl_irq.h>
 #include <bl_rtc.h>
@@ -54,9 +52,15 @@ extern "C" {
 #if CHIP_DEVICE_LAYER_TARGET_BL602
 #include <wifi_mgmr_ext.h>
 #elif CHIP_DEVICE_LAYER_TARGET_BL702L
+#if CFG_USE_ROM_CODE
+#include <rom_hal_ext.h>
+#include <rom_freertos_ext.h>
+#endif
 #include <bl_flash.h>
 #endif
 }
+
+#include <hosal_uart.h>
 
 #include <uart.h>
 
@@ -79,7 +83,12 @@ extern "C" unsigned int sleep(unsigned int seconds)
     return 0;
 }
 
+
+#if CHIP_DEVICE_LAYER_TARGET_BL702L && CFG_USE_ROM_CODE
+extern "C" void user_vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
+#else
 extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
+#endif
 {
     printf("Stack Overflow checked. Stack name %s", pcTaskName);
     while (true)
@@ -87,8 +96,11 @@ extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskN
         /*empty here*/
     }
 }
-
+#if CHIP_DEVICE_LAYER_TARGET_BL702L && CFG_USE_ROM_CODE
+extern "C" void user_vApplicationMallocFailedHook(void)
+#else
 extern "C" void vApplicationMallocFailedHook(void)
+#endif
 {
     printf("Memory Allocate Failed. Current left size is %d bytes", xPortGetFreeHeapSize());
     while (true)
@@ -97,14 +109,31 @@ extern "C" void vApplicationMallocFailedHook(void)
     }
 }
 
+#if !CHIP_DEVICE_LAYER_TARGET_BL702L || !CFG_USE_ROM_CODE
 extern "C" void vApplicationIdleHook(void)
 {
     //    bl_wdt_feed();
     __asm volatile("   wfi     ");
 }
 
+#if (configUSE_TICK_HOOK != 0)
+extern "C" void vApplicationTickHook(void)
+{
+#if defined(CFG_USB_CDC_ENABLE)
+    extern void usb_cdc_monitor(void);
+    usb_cdc_monitor();
+#endif
+}
+#endif
+#endif
+
+#if CHIP_DEVICE_LAYER_TARGET_BL702L && CFG_USE_ROM_CODE
+extern "C" void user_vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuffer, StackType_t ** ppxIdleTaskStackBuffer,
+                                              uint32_t * pulIdleTaskStackSize)
+#else
 extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuffer, StackType_t ** ppxIdleTaskStackBuffer,
                                               uint32_t * pulIdleTaskStackSize)
+#endif
 {
     /* If the buffers to be provided to the Idle task are declared inside this
     function then they must be declared static - otherwise they will be allocated on
@@ -126,8 +155,13 @@ extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuff
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
 application must provide an implementation of vApplicationGetTimerTaskMemory()
 to provide the memory that is used by the Timer service task. */
+#if CHIP_DEVICE_LAYER_TARGET_BL702L && CFG_USE_ROM_CODE
+extern "C" void user_vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBuffer, StackType_t ** ppxTimerTaskStackBuffer,
+                                               uint32_t * pulTimerTaskStackSize)
+#else
 extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBuffer, StackType_t ** ppxTimerTaskStackBuffer,
                                                uint32_t * pulTimerTaskStackSize)
+#endif
 {
     /* If the buffers to be provided to the Timer task are declared inside this
     function then they must be declared static - otherwise they will be allocated on
@@ -146,18 +180,10 @@ extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBu
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 
-#if (configUSE_TICK_HOOK != 0)
-extern "C" void vApplicationTickHook(void)
-{
-#if defined(CFG_USB_CDC_ENABLE)
-    extern void usb_cdc_monitor(void);
-    usb_cdc_monitor();
-#endif
-}
-#endif
-
-extern "C" void vApplicationSleep(TickType_t xExpectedIdleTime) {}
-
+#if CHIP_DEVICE_LAYER_TARGET_BL702L && CFG_USE_ROM_CODE
+extern "C" void user_vAssertCalled(void) { vAssertCalled(); }
+extern "C" void bflb_assert(void) { vAssertCalled(); }
+#else
 extern "C" void vAssertCalled(void)
 {
     void * ra = (void *) __builtin_return_address(0);
@@ -175,12 +201,12 @@ extern "C" void vAssertCalled(void)
 
     portABORT();
 
-    while (true)
-        ;
+    while (true) ;
 }
 
 extern "C" void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
 extern "C" void bflb_assert(void) __attribute__((weak, alias("vAssertCalled")));
+#endif
 
 // ================================================================================
 // Main Code
@@ -280,6 +306,14 @@ extern "C" void setup_heap()
     bl_sys_em_config();
 #endif
 
+#if CHIP_DEVICE_LAYER_TARGET_BL702L && CFG_USE_ROM_CODE
+    // Initialize rom data
+    extern uint8_t _rom_data_run;
+    extern uint8_t _rom_data_load;
+    extern uint8_t _rom_data_size;
+    memcpy((void *)&_rom_data_run, (void *)&_rom_data_load, (size_t)&_rom_data_size);
+#endif
+
 #if CHIP_DEVICE_LAYER_TARGET_BL702
     extern uint8_t __ocram_bss_start[], __ocram_bss_end[];
     if (NULL != __ocram_bss_start && NULL != __ocram_bss_end && __ocram_bss_end > __ocram_bss_start)
@@ -287,7 +321,7 @@ extern "C" void setup_heap()
         memset(__ocram_bss_start, 0, __ocram_bss_end - __ocram_bss_start);
     }
 #endif
-
+    
     vPortDefineHeapRegions(xHeapRegions);
 
 #ifdef CFG_USE_PSRAM
@@ -307,6 +341,10 @@ extern "C" void app_init(void)
     bl_sys_early_init();
 
 #if CHIP_DEVICE_LAYER_TARGET_BL702L
+#if CFG_USE_ROM_CODE
+    rom_hal_init();
+    rom_freertos_init(256, 400);
+#endif
     bl_flash_init();
 #endif
 
