@@ -66,8 +66,6 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     ot_alarmInit();
     ot_radioInit(opt);
 
-    ReturnErrorOnFailure(System::Clock::InitClock_RealTime());
-
 #if CHIP_SYSTEM_CONFIG_USE_LWIP
     // Initialize LwIP.
     tcpip_init(NULL, NULL);

@@ -708,6 +708,7 @@ def BuildBouffalolabTarget():
     # Apps
     target.AppendFixedTargets([
         TargetPart('light', app=BouffalolabApp.LIGHT),
+        TargetPart('contact-sensor', app=BouffalolabApp.CONTACT).OnlyIfRe('(bl704l)'),
     ])
 
     target.AppendModifier('ethernet', enable_ethernet=True)

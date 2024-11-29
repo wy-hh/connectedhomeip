@@ -688,7 +688,10 @@ template("bl_iot_sdk") {
   }
 
   config("${sdk_target_name}_config_openthread_port") {
-    defines = [ "OT_FREERTOS_ENABLE=1" ]
+    defines = [ 
+      "OT_FREERTOS_ENABLE=1", 
+      "CONFIG_LMAC154_LOG_ENABLE=0"
+    ]
 
     include_dirs = [
       "${openthread_root}/src/core",
@@ -725,6 +728,7 @@ template("bl_iot_sdk") {
         invoker.bouffalo_sdk_component_easyflash_enabled) {
       sources += [ "${bl_iot_sdk_root}/components/network/thread/openthread_port/ot_settings_easyflash.c" ]
     } else {
+      defines += [ "BL_LITTLEFS_PARTITION_NAME" ]
       sources += [ "${bl_iot_sdk_root}/components/network/thread/openthread_port/ot_settings_littlefs.c" ]
     }
 

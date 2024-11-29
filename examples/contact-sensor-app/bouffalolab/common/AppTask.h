@@ -25,19 +25,22 @@
 #include "timers.h"
 
 #include <platform/CHIPDeviceLayer.h>
+#include <app/icd/server/ICDStateObserver.h>
+
+extern "C" {
+#include <bl_gpio.h>
+#include <hal_gpio.h>
+#include <hosal_gpio.h>
+}
 
 using namespace ::chip;
 using namespace ::chip::DeviceLayer;
 
-#define APP_BUTTON_PRESSED_ITVL 50
 #define APP_BUTTON_PRESS_JITTER 100
 #define APP_BUTTON_PRESS_SHORT 1000
-#define APP_BUTTON_PRESS_LONG 4000
-#define APP_TIMER_EVENT_DEFAULT_ITVL 1000
+#define APP_BUTTON_PRESS_LONG 3000
 
 #define APP_LIGHT_ENDPOINT_ID 1
-#define APP_REBOOT_RESET_COUNT 3
-#define APP_REBOOT_RESET_COUNT_KEY "app_reset_cnt"
 
 // Application-defined error codes in the CHIP_ERROR space.
 #define APP_ERROR_EVENT_QUEUE_FAILED CHIP_APPLICATION_ERROR(0x01)
@@ -49,34 +52,34 @@ using namespace ::chip::DeviceLayer;
 
 struct Identify;
 
+#if CHIP_DETAIL_LOGGING
+class AppTask: public chip::app::ICDStateObserver
+#else
 class AppTask
+#endif
 {
 public:
     friend AppTask & GetAppTask(void);
 
     enum app_event_t
     {
-        APP_EVENT_NONE = 0x00000000,
+        APP_EVENT_NONE                  = 0x00000000,
 
-        APP_EVENT_TIMER         = 0x00000010,
-        APP_EVENT_BTN_SHORT     = 0x00000020,
-        APP_EVENT_FACTORY_RESET = 0x00000040,
-        APP_EVENT_BTN_LONG      = 0x00000080,
-        APP_EVENT_BTN_ISR       = 0x00000100,
+        APP_EVENT_BUTTON_PRESSED        = 0x00000010,
+        APP_EVENT_FACTORY_RESET         = 0x00000020,
+        APP_EVENT_COMMISSION_COMPLETE   = 0x00000080,
+        APP_EVENT_BUTTON_MASK     = APP_EVENT_BUTTON_PRESSED | APP_EVENT_FACTORY_RESET | APP_EVENT_COMMISSION_COMPLETE,
 
-        APP_EVENT_LIGHTING_ONOFF = 0x00010000,
-        APP_EVENT_LIGHTING_LEVEL = 0x00020000,
-        APP_EVENT_LIGHTING_COLOR = 0x00040000,
-        APP_EVENT_LIGHTING_MASK  = APP_EVENT_LIGHTING_ONOFF | APP_EVENT_LIGHTING_LEVEL | APP_EVENT_LIGHTING_COLOR,
-        APP_EVENT_COMMISSION_COMPLETE = APP_EVENT_LIGHTING_MASK,
-    
-        APP_EVENT_IDENTIFY_START    = 0x01000000,
-        APP_EVENT_IDENTIFY_IDENTIFY = 0x02000000,
-        APP_EVENT_IDENTIFY_STOP     = 0x04000000,
-        APP_EVENT_IDENTIFY_MASK     = APP_EVENT_IDENTIFY_START | APP_EVENT_IDENTIFY_IDENTIFY | APP_EVENT_IDENTIFY_STOP,
+        APP_EVENT_CONTACT_SENSOR_TRUE   = 0x00000100,
+        APP_EVENT_CONTACT_SENSOR_FALSE  = 0x00000200,
+        APP_EVENT_CONTACT_SENSOR_MASK   = APP_EVENT_CONTACT_SENSOR_TRUE | APP_EVENT_CONTACT_SENSOR_FALSE,
 
-        APP_EVENT_ALL_MASK = APP_EVENT_LIGHTING_MASK | APP_EVENT_TIMER | APP_EVENT_BTN_SHORT | APP_EVENT_BTN_LONG |
-            APP_EVENT_BTN_ISR | APP_EVENT_IDENTIFY_MASK,
+        APP_EVENT_IDENTIFY_START        = 0x01000000,
+        APP_EVENT_IDENTIFY_IDENTIFY     = 0x02000000,
+        APP_EVENT_IDENTIFY_STOP         = 0x04000000,
+        APP_EVENT_IDENTIFY_MASK         = APP_EVENT_IDENTIFY_START | APP_EVENT_IDENTIFY_IDENTIFY | APP_EVENT_IDENTIFY_STOP,
+
+        APP_EVENT_ALL_MASK          = APP_EVENT_BUTTON_MASK | APP_EVENT_CONTACT_SENSOR_MASK | APP_EVENT_IDENTIFY_MASK,
     };
 
     void SetEndpointId(EndpointId endpointId)
@@ -87,49 +90,37 @@ public:
 
     EndpointId GetEndpointId(void) { return mEndpointId; }
     void PostEvent(app_event_t event);
-    void ButtonEventHandler(uint8_t btnIdx, uint8_t btnAction);
 #ifdef BOOT_PIN_RESET
     static void ButtonEventHandler(void * arg);
 #endif
 
-    static void IdentifyStartHandler(Identify *);
-    static void IdentifyStopHandler(Identify *);
-    static void IdentifyHandleOp(app_event_t event);
+#if CHIP_DETAIL_LOGGING
+    void OnEnterActiveMode();
+    void OnEnterIdleMode();
+    void OnTransitionToIdle();
+    void OnICDModeChange();
+#endif
 
 private:
     friend void StartAppTask(void);
     friend PlatformManagerImpl;
 
-    static uint32_t AppRebootCheck(uint32_t time = 0);
-
-    static void LightingSetBleAdv(void);
-    static void LightingSetProvisioned(void);
-    static void LightingSetFactoryReset(void);
-
-    static void LightingUpdate(app_event_t event = APP_EVENT_NONE);
-
-    static bool StartTimer(void);
-    static void CancelTimer(void);
-    static void TimerEventHandler(app_event_t event);
-    static void TimerCallback(TimerHandle_t xTimer);
-
-#ifdef BOOT_PIN_RESET
-    static void ButtonInit(void);
-    static bool ButtonPressed(void);
-#endif
-
     static void ScheduleInit(intptr_t arg);
     static void AppTaskMain(void * pvParameter);
 
+#if CONFIG_ENABLE_CHIP_SHELL
     static CHIP_ERROR StartAppShellTask();
     static void AppShellTask(void * args);
+#endif
+
+#ifdef BOOT_PIN_RESET
+    static void ButtonInit(void);
+    uint64_t mButtonPressedTime;
+#endif
 
     EndpointId mEndpointId = (EndpointId) 1;
     TaskHandle_t sAppTaskHandle;
     QueueHandle_t sAppEventQueue;
-    TimerHandle_t sTimer;
-    uint32_t mTimerIntvl;
-    uint64_t mButtonPressedTime;
 
     static StackType_t appStack[APP_TASK_STACK_SIZE / sizeof(StackType_t)];
     static StaticTask_t appTaskStruct;
