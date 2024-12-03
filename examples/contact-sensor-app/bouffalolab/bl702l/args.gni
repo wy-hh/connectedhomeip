@@ -19,7 +19,7 @@ import("${chip_root}/src/platform/bouffalolab/BL702L/args.gni")
 
 bl_iot_sdk_target = get_label_info(":sdk", "label_no_toolchain")
 
-chip_detail_logging = true
+chip_detail_logging = false
 is_debug = false
 
 chip_enable_icd_server = true

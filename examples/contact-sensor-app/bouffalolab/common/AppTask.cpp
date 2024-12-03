@@ -45,6 +45,7 @@
 #include <plat.h>
 
 extern "C" {
+#include <bl_pds.h>
 #include <bl_gpio.h>
 #include <hal_gpio.h>
 #include <hosal_gpio.h>
@@ -107,18 +108,6 @@ void AppTask::PostEvent(app_event_t event)
     }
 }
 
-#ifdef BOOT_PIN_RESET
-static hosal_gpio_dev_t gpio_key = { .port = BOOT_PIN_RESET, .config = INPUT_PULL_DOWN, .priv = NULL };
-static hosal_gpio_dev_t gpio_contact = { .port = GPIP_CONTACT_PIN, .config = INPUT_PULL_DOWN, .priv = NULL };
-
-void AppTask::ButtonInit(void)
-{
-    hosal_gpio_init(&gpio_key);
-    hosal_gpio_init(&gpio_contact);
-    hosal_gpio_irq_set(&gpio_key, HOSAL_IRQ_TRIG_SYNC_FALLING_RISING_EDGE, GetAppTask().ButtonEventHandler, &gpio_key);
-    hosal_gpio_irq_set(&gpio_contact, HOSAL_IRQ_TRIG_SYNC_FALLING_RISING_EDGE, GetAppTask().ButtonEventHandler, &gpio_contact);
-}
-
 void AppTask::ButtonEventHandler(void * arg)
 {
     hosal_gpio_dev_t *p_gpio = (hosal_gpio_dev_t *)arg;
@@ -126,7 +115,7 @@ void AppTask::ButtonEventHandler(void * arg)
 
     hosal_gpio_input_get(p_gpio, &val);
 
-    if (p_gpio == &gpio_key) {
+    if (CHIP_RESET_PIN == p_gpio->port) {
         if (val) {
             GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
         }
@@ -145,7 +134,7 @@ void AppTask::ButtonEventHandler(void * arg)
             }
         }
     }
-    else {
+    else if (CHIP_CONTACT_PIN == p_gpio->port) {
         if (val) {
             GetAppTask().PostEvent(APP_EVENT_CONTACT_SENSOR_TRUE);
         }
@@ -153,15 +142,15 @@ void AppTask::ButtonEventHandler(void * arg)
             GetAppTask().PostEvent(APP_EVENT_CONTACT_SENSOR_FALSE);
         }
     }
-
 }
-#endif
 
 void AppTask::AppTaskMain(void * pvParameter)
 {
     app_event_t appEvent;
     bool stateValueAttrValue    = false;
     uint64_t currentHeapFree    = 0;
+
+    app_pds_init(GetAppTask().ButtonEventHandler);
 
     ChipLogProgress(NotSpecified, "Starting Platform Manager Event Loop");
     CHIP_ERROR ret = PlatformMgr().StartEventLoopTask();
@@ -174,10 +163,6 @@ void AppTask::AppTaskMain(void * pvParameter)
     vTaskSuspend(NULL);
 #if CHIP_DETAIL_LOGGING
     Server::GetInstance().GetICDManager().RegisterObserver(&sAppTask);
-#endif
-
-#ifdef BOOT_PIN_RESET
-    ButtonInit();
 #endif
 
     DiagnosticDataProviderImpl::GetDefaultInstance().GetCurrentHeapFree(currentHeapFree);

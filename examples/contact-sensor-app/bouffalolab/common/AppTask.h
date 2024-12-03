@@ -90,9 +90,7 @@ public:
 
     EndpointId GetEndpointId(void) { return mEndpointId; }
     void PostEvent(app_event_t event);
-#ifdef BOOT_PIN_RESET
     static void ButtonEventHandler(void * arg);
-#endif
 
 #if CHIP_DETAIL_LOGGING
     void OnEnterActiveMode();
@@ -113,10 +111,7 @@ private:
     static void AppShellTask(void * args);
 #endif
 
-#ifdef BOOT_PIN_RESET
-    static void ButtonInit(void);
     uint64_t mButtonPressedTime;
-#endif
 
     EndpointId mEndpointId = (EndpointId) 1;
     TaskHandle_t sAppTaskHandle;

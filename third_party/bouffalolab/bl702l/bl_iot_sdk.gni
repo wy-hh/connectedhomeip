@@ -734,6 +734,7 @@ template("bl_iot_sdk") {
     ]
 
     include_dirs = [
+      "${bl_iot_sdk_root}/components/network/lmac154/lmac154/include",
       "${openthread_root}/src/core",
       "${openthread_root}/examples/platforms",
       "${bl_iot_sdk_root}/components/network/thread/openthread_port/include",
@@ -751,7 +752,6 @@ template("bl_iot_sdk") {
     }
 
     include_dirs = [
-      "${bl_iot_sdk_root}/components/network/lmac154/lmac154/include",
       "${bl_iot_sdk_root}/components/network/thread/openthread_port",
       "${openthread_root}/examples/platforms/utils/",
       "${openthread_root}/examples",

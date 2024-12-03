@@ -24,7 +24,5 @@ default_args = {
   target_cpu = "riscv"
   target_os = "freertos"
 
-  chip_openthread_ftd = false
-
   import("//args.gni")
 }

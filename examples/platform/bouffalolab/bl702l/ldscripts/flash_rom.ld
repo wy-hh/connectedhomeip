@@ -3,7 +3,7 @@ OUTPUT_ARCH( "riscv" )
 ENTRY( bl702_start )
 
 __EM_SIZE = DEFINED(btble_controller_init) ? 16K : 0K;
-__CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
+__CACHE_SIZE = 16K;
 
 MEMORY
 {

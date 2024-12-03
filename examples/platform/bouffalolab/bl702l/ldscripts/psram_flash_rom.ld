@@ -3,7 +3,7 @@ OUTPUT_ARCH( "riscv" )
 ENTRY( bl702_start )
 
 __EM_SIZE = DEFINED(btble_controller_init) ? 16K : 0K;
-__CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
+__CACHE_SIZE = 16K;
 __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
 
 MEMORY
@@ -12,7 +12,7 @@ MEMORY
   tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 80K - __EM_SIZE - __stack_size)
   sys_stack (wxa) : ORIGIN = 0x42034000 - __EM_SIZE - __stack_size, LENGTH = __stack_size
   hbnram    (wxa) : ORIGIN = 0x40010000, LENGTH = (4K)
-  psram     (wxa) : ORIGIN = 0x24000000, LENGTH = (2M)
+  psram     (wxa) : ORIGIN = 0x26000000, LENGTH = (2M)
 }
 
 SECTIONS
@@ -297,5 +297,4 @@ SECTIONS
 
   /* rom driver */
   INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/romdriver.ld
-  INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/A0/rom_map.ld
 }

@@ -107,7 +107,6 @@ bouffalolab_executable("contact_sensor_app") {
     "APP_TASK_STACK_SIZE=2048",
     "CHIP_UART_BAUDRATE=${baudrate}",
     "START_ENTRY=bl702_main",
-    "BOOT_PIN_RESET=16"
   ]
 
   defines += [ "CONF_ENABLE_FRAME_PTR=${enable_debug_frame_ptr}" ]
@@ -121,13 +120,6 @@ bouffalolab_executable("contact_sensor_app") {
     defines += [ "XT_ZB6_DevKit" ]
   }
 
-  if (enable_low_power_pds) {
-    defines += [ "CFG_USE_ROM_CODE=1" ]
-  }
-  else {
-    defines += [ "CFG_USE_ROM_CODE=0" ]
-  }
-
   include_dirs = [
     "${chip_root}/src/platform/bouffalolab/BL702L",
     "${example_dir}/common",
@@ -137,6 +129,7 @@ bouffalolab_executable("contact_sensor_app") {
   ]
 
   sources = [
+    "${example_dir}/bl702l/app_pds.c",
     "${example_dir}/common/AppTask.cpp",
     "${example_dir}/common/ZclCallbacks.cpp",
     "${examples_plat_dir}/common/iot_sdk/aos_task.c",

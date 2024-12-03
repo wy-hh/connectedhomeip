@@ -94,7 +94,6 @@ class BouffalolabBuilder(GnBuilder):
                  use_matter_openthread: bool = False,
                  enable_easyflash: bool = False,
                  enable_littlefs: bool = False,
-                 enable_low_power_pds: bool = False
                  ):
 
         if 'BL602' == module_type:
@@ -160,9 +159,6 @@ class BouffalolabBuilder(GnBuilder):
         if enable_frame_ptr and bouffalo_chip == "bl616":
             raise Exception("BL616 does NOT support frame pointer for debug purpose.")
 
-        if enable_low_power_pds and (bouffalo_chip != "bl702l" or enable_thread == False):
-            raise Exception("Low power application only applies on BL702L Thread application.")
-
         self.argsOpt.append(f'chip_enable_ethernet={str(enable_ethernet).lower()}')
         self.argsOpt.append(f'chip_enable_wifi={str(enable_wifi).lower()}')
         self.argsOpt.append(f'chip_enable_openthread={str(enable_thread).lower()}')
@@ -191,14 +187,10 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append(f'openthread_project_core_config_file="{bouffalo_chip}-openthread-core-bl-config.h"')
             self.argsOpt.append(f'openthread_package_version="7e32165be"')
 
-            if enable_low_power_pds:
-                self.argsOpt.append(f'enable_low_power_pds={str(enable_low_power_pds).lower()}')
-                self.argsOpt.append(f'chip_openthread_ftd=false')
+            if enable_thread_type == BouffalolabThreadType.THREAD_FTD:
+                self.argsOpt.append(f'chip_openthread_ftd=true')
             else:
-                if enable_thread_type == BouffalolabThreadType.THREAD_FTD:
-                    self.argsOpt.append(f'chip_openthread_ftd=true')
-                else:
-                    self.argsOpt.append(f'chip_openthread_ftd=false')
+                self.argsOpt.append(f'chip_openthread_ftd=false')
 
             if not use_matter_openthread:
                 if bouffalo_chip in {"bl702", "bl702l"}:
