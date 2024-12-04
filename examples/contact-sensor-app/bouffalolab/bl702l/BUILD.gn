@@ -129,7 +129,7 @@ bouffalolab_executable("contact_sensor_app") {
   ]
 
   sources = [
-    "${example_dir}/bl702l/app_pds.c",
+    "${example_dir}/bl702l/app_pds.cpp",
     "${example_dir}/common/AppTask.cpp",
     "${example_dir}/common/ZclCallbacks.cpp",
     "${examples_plat_dir}/common/iot_sdk/aos_task.c",

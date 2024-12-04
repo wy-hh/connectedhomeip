@@ -115,4 +115,4 @@
 
 #define CHIP_BLE_DEVICE_NAME "ContactSensor"
 
-#define CHIP_DEVICE_CONFIG_ICD_FAST_POLL_INTERVAL chip::System::Clock::Milliseconds32(1000)
+// #define CHIP_DEVICE_CONFIG_ICD_SLOW_POLL_INTERVAL chip::System::Clock::Milliseconds32(1000)

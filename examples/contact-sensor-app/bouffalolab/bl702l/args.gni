@@ -21,6 +21,8 @@ bl_iot_sdk_target = get_label_info(":sdk", "label_no_toolchain")
 
 chip_detail_logging = false
 is_debug = false
+chip_progress_logging = true
+chip_error_logging = true
 
 chip_enable_icd_server = true
 chip_enable_icd_lit = true

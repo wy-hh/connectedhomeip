@@ -31,10 +31,10 @@ typedef void (*app_pds_gpio_irq_handler_t)(void *arg);
 void appError(CHIP_ERROR error);
 
 extern "C" void platform_port_init(void);
-extern "C" void app_pds_init(app_pds_gpio_irq_handler_t pinHandler);
 #else
 
 void appError(int err);
 void platform_port_init(void);
-void app_pds_init(app_pds_gpio_irq_handler_t pinHandler);
 #endif
+
+void app_pds_init(app_pds_gpio_irq_handler_t pinHandler);

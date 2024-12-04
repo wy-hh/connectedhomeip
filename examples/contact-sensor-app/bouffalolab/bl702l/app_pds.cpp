@@ -1,4 +1,7 @@
 
+#include <lib/support/logging/CHIPLogging.h>
+
+extern "C" {
 #include <bl_irq.h>
 #include <bl_pds.h>
 #include <bl_sec.h>
@@ -17,6 +20,7 @@
 #include <zb_timer.h>
 #include <openthread_port.h>
 #include <mboard.h>
+}
 
 #define PDS_TOLERANCE_TIME_32768CYCLE (164)
 #define PDS_MIN_TIME_32768CYCLE (PDS_WARMUP_LATENCY_CNT + 33)
@@ -39,9 +43,13 @@ static hosal_gpio_irq_handler_t app_pds_irq_handler = NULL;
 static int app_pds_wakeup_source  = -1;
 static uint32_t app_pds_wakeup_pin = -1;
 
-extern void btble_pds_fastboot_done_callback(void);
+extern "C" void btble_pds_fastboot_done_callback(void);
 
-// void vApplicationSleep( TickType_t xExpectedIdleTime )
+uint64_t wakeup_time = 0;
+uint64_t sleep_calling_time = 0;
+uint64_t sleep_time = 0;
+
+// extern "C" void vApplicationSleep( TickType_t xExpectedIdleTime )
 // {
 //     eSleepModeStatus eSleepStatus;
 //     uint32_t xExpectedSleepTime = xExpectedIdleTime;
@@ -85,7 +93,7 @@ extern void btble_pds_fastboot_done_callback(void);
 
 //         zb_timer_restore_events(true);
 
-//         bl_irq_register(M154_IRQn, lmac154_get2015InterruptHandler());
+//         // bl_irq_register(M154_IRQn, lmac154_get2015InterruptHandler());
 //         bl_irq_enable(M154_IRQn);
 //     }
 //     bl_sec_init();
@@ -97,8 +105,11 @@ extern void btble_pds_fastboot_done_callback(void);
 //     extern BaseType_t TrapNetCounter, *pTrapNetCounter;
 //     if (app_pds_wakeup_source == PDS_WAKEUP_BY_RTC) {
 //         extern void * pxCurrentTCB;
-//         printf("[%lu] wakeup source: rtc. %lu vs %lu ms.\r\n", 
-//             (uint32_t)bl_rtc_get_timestamp_ms(), xExpectedSleepTime, sleepTime);
+//         ChipLogProgress(NotSpecified, "wakeup source: rtc. %lu vs %lu ms @ %lu\r\n", 
+//             xExpectedSleepTime, sleepTime, (uint32_t)bl_rtc_get_timestamp_ms());
+
+//         ChipLogProgress(NotSpecified, "application_sleep; %lu, %lu, %lu\r\n", (uint32_t)sleep_calling_time, (uint32_t)sleep_time, (uint32_t)wakeup_time);
+
 //     } else if(app_pds_wakeup_source == PDS_WAKEUP_BY_GPIO) {
 
 //         if (((1 << CHIP_RESET_PIN) & app_pds_wakeup_pin) && app_pds_irq_handler) {
@@ -110,12 +121,48 @@ extern void btble_pds_fastboot_done_callback(void);
 //         }
 
 //         printf("[%lu] wakeup source: gpio -> 0x%08lX. %lu vs %lu ms.\r\n", 
-//             (uint32_t)bl_rtc_get_timestamp_ms(), app_pds_wakeup_pin, xExpectedSleepTime, sleepTime);
-//     } else {
-//         printf("[%lu] wakeup source: unknown. %lu vs %lu ms.\r\n", 
-//             (uint32_t)bl_rtc_get_timestamp_ms(), xExpectedSleepTime, sleepTime);
+//             app_pds_wakeup_pin, xExpectedSleepTime, sleepTime, (uint32_t)bl_rtc_get_timestamp_ms());
 //     }
+
+//     app_pds_wakeup_source = -1;
+//     app_pds_wakeup_pin = -1;
 // }
+
+extern "C" void vApplicationSleep(TickType_t xExpectedIdleTime)
+{
+    uint64_t sleep_before = bl_rtc_get_timestamp_ms();
+
+    sleep_calling_time = bl_rtc_get_timestamp_ms();
+
+    btble_vApplicationSleepExt(xExpectedIdleTime);
+
+    extern BaseType_t TrapNetCounter, *pTrapNetCounter;
+    if (app_pds_wakeup_source == PDS_WAKEUP_BY_RTC) {
+        extern void * pxCurrentTCB;
+
+        ChipLogProgress(NotSpecified, "wakeup source: rtc. %lu vs %lu ms @ %lu\r\n", 
+            xExpectedIdleTime, (uint32_t)(bl_rtc_get_timestamp_ms() - sleep_before), (uint32_t)bl_rtc_get_timestamp_ms());
+
+        ChipLogProgress(NotSpecified, "application_sleep; %lu, %lu, %lu\r\n", (uint32_t)sleep_calling_time, (uint32_t)sleep_time, (uint32_t)wakeup_time);
+
+    } else if(app_pds_wakeup_source == PDS_WAKEUP_BY_GPIO) {
+
+        if (((1 << CHIP_RESET_PIN) & app_pds_wakeup_pin) && app_pds_irq_handler) {
+            app_pds_irq_handler(&gpio_key);
+        }
+
+        if (((1 << CHIP_CONTACT_PIN) & app_pds_wakeup_pin) && app_pds_irq_handler) {
+            app_pds_irq_handler(&gpio_contact);
+        }
+
+        ChipLogProgress(NotSpecified, "wakeup source: gpio -> 0x%08lX. %lu vs %lu ms @ %lu\r\n", 
+            app_pds_wakeup_pin, xExpectedIdleTime, (uint32_t)(bl_rtc_get_timestamp_ms() - sleep_before), (uint32_t)bl_rtc_get_timestamp_ms());
+    }
+
+
+    app_pds_wakeup_source = -1;
+    app_pds_wakeup_pin = -1;
+}
 
 void app_pds_config_pin(void) 
 {
@@ -131,15 +178,19 @@ void app_pds_config_pin(void)
 
 void app_pds_fastboot_done_callback(void) 
 {
+    wakeup_time = bl_rtc_get_timestamp_ms();
+
+#if CHIP_PROGRESS_LOGGING || CHIP_ERROR_LOGGING
     extern hosal_uart_dev_t uart_stdio;
     bl_uart_init(uart_stdio.config.uart_id, uart_stdio.config.tx_pin, uart_stdio.config.rx_pin, 
         uart_stdio.config.cts_pin, uart_stdio.config.rts_pin, uart_stdio.config.baud_rate);
+#endif
 
     btble_pds_fastboot_done_callback();
 
     bl_psram_init();
 
-    app_pds_config_pin();
+    // app_pds_config_pin();
 
     app_pds_wakeup_source = bl_pds_get_wakeup_source();
     app_pds_wakeup_pin = bl_pds_get_wakeup_gpio();
@@ -152,6 +203,8 @@ int app_pds_before_sleep_callback(void)
         bl_pds_set_psram_retention(1);
         lmac154_sleepStoreRegs(low_power_pds_lmac154_backup);
         
+        sleep_time = bl_rtc_get_timestamp_ms();
+
         return 0;
     }
 
@@ -169,39 +222,9 @@ void app_pds_after_sleep_callback(void)
 
         zb_timer_restore_events(true);
 
-        bl_irq_register(M154_IRQn, lmac154_get2015InterruptHandler());
         bl_irq_enable(M154_IRQn);
     }
     bl_sec_init();
-}
-
-void vApplicationSleep(TickType_t xExpectedIdleTime)
-{
-    uint64_t sleep_before = bl_rtc_get_timestamp_ms();
-
-    btble_vApplicationSleepExt(xExpectedIdleTime);
-
-    extern BaseType_t TrapNetCounter, *pTrapNetCounter;
-    if (app_pds_wakeup_source == PDS_WAKEUP_BY_RTC) {
-        extern void * pxCurrentTCB;
-        printf("[%lu] wakeup source: rtc. %lu vs %lu ms.\r\n", 
-            (uint32_t)bl_rtc_get_timestamp_ms(), xExpectedIdleTime, (uint32_t)(bl_rtc_get_timestamp_ms() - sleep_before));
-    } else if(app_pds_wakeup_source == PDS_WAKEUP_BY_GPIO) {
-
-        if (((1 << CHIP_RESET_PIN) & app_pds_wakeup_pin) && app_pds_irq_handler) {
-            app_pds_irq_handler(&gpio_key);
-        }
-
-        if (((1 << CHIP_CONTACT_PIN) & app_pds_wakeup_pin) && app_pds_irq_handler) {
-            app_pds_irq_handler(&gpio_contact);
-        }
-
-        printf("[%lu] wakeup source: gpio -> 0x%08lX. %lu vs %lu ms.\r\n", 
-            (uint32_t)bl_rtc_get_timestamp_ms(), app_pds_wakeup_pin, xExpectedIdleTime, (uint32_t)(bl_rtc_get_timestamp_ms() - sleep_before));
-    }
-
-    app_pds_wakeup_source = -1;
-    app_pds_wakeup_pin = -1;
 }
 
 void app_pds_init(hosal_gpio_irq_handler_t pinHandler) 
