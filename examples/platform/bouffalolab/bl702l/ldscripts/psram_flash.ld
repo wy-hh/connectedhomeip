@@ -3,18 +3,20 @@ OUTPUT_ARCH( "riscv" )
 ENTRY( bl702_start )
 
 __EM_SIZE = DEFINED(btble_controller_init) ? 16K : 0K;
-__CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
+__CACHE_SIZE = 16K;
+__stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
 
 MEMORY
 {
   flash  (rxai!w) : ORIGIN = 0x23000000, LENGTH = (2M)
-  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 80K - __EM_SIZE)
+  tcm_ocram (wxa) : ORIGIN = 0x4201C000 + __CACHE_SIZE, LENGTH = (16K - __CACHE_SIZE + 80K - __EM_SIZE - __stack_size)
+  sys_stack (wxa) : ORIGIN = 0x42034000 - __EM_SIZE - __stack_size, LENGTH = __stack_size
   hbnram    (wxa) : ORIGIN = 0x40010000, LENGTH = (4K)
+  psram     (wxa) : ORIGIN = 0x26000000, LENGTH = (2M)
 }
 
 SECTIONS
 {
-  __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
   BOOT2_PT_ADDR = 0x4202e094;
 
   .init :
@@ -159,7 +161,65 @@ SECTIONS
     PROVIDE ( __boot2_flashCfg_start = . );
     *(.bss.boot2_flashCfg)
     PROVIDE ( __boot2_flashCfg_end = . );
-  } >tcm_ocram
+  } >hbnram
+
+  .bss_psram (NOLOAD) :
+  {
+    PROVIDE( __bss_psram_start = ADDR(.bss_psram) );
+    PROVIDE( __bss_psram_end = ADDR(.bss_psram) + SIZEOF(.bss_psram) );
+
+    PROVIDE ( __psram_bss_init_start = . );
+    /** put the bss data in psram between __psram_bss_init_start and __psram_bss_init_end will bet reset to 0 after psram init*/
+    . = ALIGN(16);
+    KEEP(*libCHIP.a:*(.sbss.*))
+    KEEP(*libCHIP.a:*(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*libCHIPAppServer.a:*(.sbss.*))
+    KEEP(*libCHIPAppServer.a:*(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*libMatterDeviceInfoProviderExample.a:*(.sbss.*))
+    KEEP(*libMatterDeviceInfoProviderExample.a:*(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*libopenthread-ftd.a:*(.sbss.*))
+    KEEP(*libopenthread-ftd.a:*(.bss.*))
+    KEEP(*libopenthread-mtd.a:*(.sbss.*))
+    KEEP(*libopenthread-mtd.a:*(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*src/app/clusters/*/bouffalolab*.cpp.o(.sbss.*))
+    KEEP(*src/app/clusters/*/bouffalolab*.cpp.o(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*examples/platform/bouffalolab/common/plat/chip*.c.o(.sbss.*))
+    KEEP(*examples/platform/bouffalolab/common/plat/chip*.c.o(.sbss.*))
+    KEEP(*examples/platform/bouffalolab/common/plat/chip*.cpp.o(.bss.*))
+    KEEP(*examples/platform/bouffalolab/common/plat/chip*.cpp.o(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*examples/*/bouffalolab/common/chip*.c.o(.sbss.*))
+    KEEP(*examples/*/bouffalolab/common/chip*.c.o(.sbss.*))
+    KEEP(*examples/*/bouffalolab/common/chip*.cpp.o(.bss.*))
+    KEEP(*examples/*/bouffalolab/common/chip*.cpp.o(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*sdk_lwip.*.c.o(.sbss.*))
+    KEEP(*sdk_lwip.*.c.o(.bss.*))
+    KEEP(*lwip.*.c.o(.bss.*))
+
+    . = ALIGN(16);
+    KEEP(*stack_main.o(.bss.*))
+    
+    . = ALIGN(16);
+    *(.wifi_ram*)
+    PROVIDE ( __psram_bss_init_end = . );
+  } > psram
+
+  . = ALIGN(8);
+  PROVIDE( _heap3_start = . );
+  PROVIDE( _heap3_size = ORIGIN(psram) + LENGTH(psram) - _heap3_start );
 
   .bss (NOLOAD) :
   {
@@ -173,12 +233,9 @@ SECTIONS
     *(COMMON)
   } >tcm_ocram
 
-  .stack (NOLOAD) : ALIGN(8)
+  .sha_ocram (NOLOAD) :
   {
-    PROVIDE ( _sp_base = . );
-    . = . + __stack_size;
-    PROVIDE( _sp_main = . );
-    __freertos_irq_stack_top = .;
+    *(.sha_ocram*)
   } >tcm_ocram
 
   . = ALIGN(8);
@@ -187,6 +244,27 @@ SECTIONS
 
   PROVIDE( _heap2_start = 0 );
   PROVIDE( _heap2_size = 0 );
+
+  .stack (NOLOAD) : ALIGN(8)
+  {
+    PROVIDE ( _sp_base = . );
+    . = . + __stack_size;
+    PROVIDE( _sp_main = . );
+    __freertos_irq_stack_top = .;
+  } >sys_stack
+
+  .psram (NOLOAD) :
+  {
+    . = ALIGN(16);
+    PROVIDE( _psram_start = . );
+    *(.wifi_ram*)
+    . = ALIGN(16);
+    PROVIDE( _psram_end = . );
+  } >psram
+
+  . = ALIGN(8);
+  PROVIDE( _heap3_start = . );
+  PROVIDE( _heap3_size = ORIGIN(psram) + LENGTH(psram) - _heap3_start );
 
 
   /* cli */
@@ -219,7 +297,4 @@ SECTIONS
 
   /* rom driver */
   INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/romdriver.ld
-
-  /* rom data & code */
-  INCLUDE ../..//third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/rom_map.ld
 }

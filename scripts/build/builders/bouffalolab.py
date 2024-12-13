@@ -22,22 +22,21 @@ from .gn import GnBuilder
 
 class BouffalolabApp(Enum):
     LIGHT = auto()
+    CONTACT = auto()
 
     def ExampleName(self):
         if self == BouffalolabApp.LIGHT:
             return 'lighting-app'
+        elif self == BouffalolabApp.CONTACT:
+            return 'contact-sensor-app'
         else:
             raise Exception('Unknown app type: %r' % self)
 
     def AppNamePrefix(self, chip_name):
         if self == BouffalolabApp.LIGHT:
             return ('chip-%s-lighting-example' % chip_name)
-        else:
-            raise Exception('Unknown app type: %r' % self)
-
-    def FlashBundleName(self):
-        if self == BouffalolabApp.LIGHT:
-            return 'lighting_app.flashbundle.txt'
+        elif self == BouffalolabApp.CONTACT:
+            return ('chip-%s-contact-example' % chip_name)
         else:
             raise Exception('Unknown app type: %r' % self)
 
@@ -66,6 +65,11 @@ class BouffalolabBoard(Enum):
         else:
             raise Exception('Unknown board #: %r' % self)
 
+class BouffalolabThreadType(Enum):
+    NONE = auto()
+    THREAD_FTD = auto()
+    THREAD_MTD = auto()
+
 
 class BouffalolabBuilder(GnBuilder):
 
@@ -84,12 +88,12 @@ class BouffalolabBuilder(GnBuilder):
                  enable_mfd: bool = False,
                  enable_ethernet: bool = False,
                  enable_wifi: bool = False,
-                 enable_thread: bool = False,
+                 enable_thread_type: BouffalolabThreadType = BouffalolabThreadType.NONE,
                  enable_frame_ptr: bool = False,
                  enable_heap_monitoring: bool = False,
                  use_matter_openthread: bool = False,
                  enable_easyflash: bool = False,
-                 enable_littlefs: bool = False
+                 enable_littlefs: bool = False,
                  ):
 
         if 'BL602' == module_type:
@@ -119,6 +123,8 @@ class BouffalolabBuilder(GnBuilder):
 
         self.argsOpt.append(f'board="{self.board.GnArgName()}"')
         self.argsOpt.append(f'baudrate="{baudrate}"')
+
+        enable_thread = False if enable_thread_type == BouffalolabThreadType.NONE else True
 
         if not (enable_wifi or enable_thread or enable_ethernet):
             # decide default connectivity for each chip
@@ -175,10 +181,16 @@ class BouffalolabBuilder(GnBuilder):
         self.argsOpt.append(f'bouffalo_sdk_component_easyflash_enabled={"false" if enable_littlefs else "true"}')
 
         if enable_thread:
+
             self.argsOpt.append('chip_system_config_use_open_thread_inet_endpoints=true')
             self.argsOpt.append('chip_with_lwip=false')
             self.argsOpt.append(f'openthread_project_core_config_file="{bouffalo_chip}-openthread-core-bl-config.h"')
             self.argsOpt.append(f'openthread_package_version="7e32165be"')
+
+            if enable_thread_type == BouffalolabThreadType.THREAD_FTD:
+                self.argsOpt.append(f'chip_openthread_ftd=true')
+            else:
+                self.argsOpt.append(f'chip_openthread_ftd=false')
 
             if not use_matter_openthread:
                 if bouffalo_chip in {"bl702", "bl702l"}:
@@ -211,6 +223,7 @@ class BouffalolabBuilder(GnBuilder):
         self.enable_frame_ptr = enable_frame_ptr
         self.argsOpt.append(f"enable_debug_frame_ptr={str(enable_frame_ptr).lower()}")
         self.argsOpt.append(f"enable_heap_monitoring={str(enable_heap_monitoring).lower()}")
+        self.argsOpt.append(f"chip_generate_link_map_file=true")
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])

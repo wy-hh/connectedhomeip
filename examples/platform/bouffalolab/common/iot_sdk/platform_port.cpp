@@ -42,8 +42,6 @@
 #endif
 #include <bl_timer.h>
 
-#include <hosal_uart.h>
-
 extern "C" {
 #include <bl_irq.h>
 #include <bl_rtc.h>
@@ -57,6 +55,8 @@ extern "C" {
 #include <bl_flash.h>
 #endif
 }
+
+#include <hosal_uart.h>
 
 #include <uart.h>
 
@@ -175,8 +175,7 @@ extern "C" void vAssertCalled(void)
 
     portABORT();
 
-    while (true)
-        ;
+    while (true) ;
 }
 
 extern "C" void user_vAssertCalled(void) __attribute__((weak, alias("vAssertCalled")));
@@ -327,7 +326,7 @@ extern "C" void app_init(void)
     /* board config is set after system is init*/
     hal_board_cfg(0);
 
-#if CHIP_DEVICE_LAYER_TARGET_BL702L || CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET
+#if CHIP_DEVICE_LAYER_TARGET_BL702 && (CHIP_DEVICE_CONFIG_ENABLE_WIFI || CHIP_DEVICE_CONFIG_ENABLE_ETHERNET)
     hosal_dma_init();
 #endif
 #if CHIP_DEVICE_LAYER_TARGET_BL602

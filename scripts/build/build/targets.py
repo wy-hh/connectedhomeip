@@ -15,7 +15,7 @@
 from builders.ameba import AmebaApp, AmebaBoard, AmebaBuilder
 from builders.android import AndroidApp, AndroidBoard, AndroidBuilder, AndroidProfile
 from builders.asr import ASRApp, ASRBoard, ASRBuilder
-from builders.bouffalolab import BouffalolabApp, BouffalolabBoard, BouffalolabBuilder
+from builders.bouffalolab import BouffalolabApp, BouffalolabBoard, BouffalolabThreadType, BouffalolabBuilder
 from builders.cc32xx import cc32xxApp, cc32xxBuilder
 from builders.cyw30739 import Cyw30739App, Cyw30739Board, Cyw30739Builder
 from builders.efr32 import Efr32App, Efr32Board, Efr32Builder
@@ -705,16 +705,24 @@ def BuildBouffalolabTarget():
                    module_type="BL706C-22"),
     ])
 
-    # Apps
     target.AppendFixedTargets([
         TargetPart('light', app=BouffalolabApp.LIGHT),
+        TargetPart('contact-sensor', app=BouffalolabApp.CONTACT).OnlyIfRe('(bl704l)'),
     ])
 
-    target.AppendModifier('ethernet', enable_ethernet=True)
-    target.AppendModifier('wifi', enable_wifi=True)
-    target.AppendModifier('thread', enable_thread=True)
-    target.AppendModifier('easyflash', enable_easyflash=True)
-    target.AppendModifier('littlefs', enable_littlefs=True)
+    target.AppendFixedTargets([
+        TargetPart('ethernet', enable_ethernet=True),
+        TargetPart('wifi', enable_wifi=True),
+        TargetPart('thread', enable_thread_type=BouffalolabThreadType.THREAD_FTD),
+        TargetPart('thread-ftd', enable_thread_type=BouffalolabThreadType.THREAD_FTD),
+        TargetPart('thread-mtd', enable_thread_type=BouffalolabThreadType.THREAD_MTD),
+    ])
+
+    target.AppendFixedTargets([
+        TargetPart('easyflash', enable_easyflash=True),
+        TargetPart('littlefs', enable_littlefs=True),
+    ])
+
     target.AppendModifier('shell', enable_shell=True)
     target.AppendModifier('mfd', enable_mfd=True)
     target.AppendModifier('rotating_device_id', enable_rotating_device_id=True)

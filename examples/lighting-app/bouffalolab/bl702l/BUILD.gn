@@ -257,7 +257,7 @@ bouffalolab_executable("lighting_app") {
 
   if (enable_psram) {
     defines += [ "CFG_USE_PSRAM=1" ]
-    ldscript = "${examples_plat_dir}/bl702l/ldscripts/psram_flash_rom.ld"
+    ldscript = "${examples_plat_dir}/bl702l/ldscripts/psram_flash.ld"
   } else {
     ldscript = "${examples_plat_dir}/bl702l/ldscripts/flash_rom.ld"
   }
