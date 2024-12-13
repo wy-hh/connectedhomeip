@@ -124,7 +124,7 @@ bouffalolab_executable("lighting_app") {
   }
 
   if ("BL704LDK" == board) {
-    defines += [ "XT_ZB6_DevKit" ]
+    defines += [ "BL704LDK" ]
   }
 
   sources = [
