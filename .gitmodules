@@ -349,3 +349,7 @@
 	path = third_party/re2/src
 	url = https://github.com/google/re2.git
 	platforms = linux,darwin
+[submodule "bouffalo_sdk"]
+	path = third_party/bouffalolab/bouffalo_sdk
+	url = git@github.com:bouffalolab/bouffalo_sdk_private.git
+	platforms = bouffalolab
