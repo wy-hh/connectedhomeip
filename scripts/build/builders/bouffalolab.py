@@ -48,6 +48,7 @@ class BouffalolabBoard(Enum):
     BL706_NIGHT_LIGHT = auto()
     BL706DK = auto()
     BL704LDK = auto()
+    BL616DK = auto()
 
     def GnArgName(self):
         if self == BouffalolabBoard.BL602_IoT_Matter_V1:
@@ -62,6 +63,8 @@ class BouffalolabBoard(Enum):
             return 'BL706DK'
         elif self == BouffalolabBoard.BL704LDK:
             return 'BL704LDK'
+        elif self == BouffalolabBoard.BL616DK:
+            return 'BL616DK'
         else:
             raise Exception('Unknown board #: %r' % self)
 
@@ -89,7 +92,6 @@ class BouffalolabBuilder(GnBuilder):
                  enable_ethernet: bool = False,
                  enable_wifi: bool = False,
                  enable_thread_type: BouffalolabThreadType = BouffalolabThreadType.NONE,
-                 enable_frame_ptr: bool = False,
                  enable_heap_monitoring: bool = False,
                  use_matter_openthread: bool = False,
                  enable_easyflash: bool = False,
@@ -102,6 +104,8 @@ class BouffalolabBuilder(GnBuilder):
             bouffalo_chip = 'bl702l'
         elif "BL70" in module_type:
             bouffalo_chip = 'bl702'
+        elif "BL616" == module_type:
+            bouffalo_chip = "bl616"
         else:
             raise Exception(f"module_type {module_type} is not supported")
 
@@ -134,6 +138,8 @@ class BouffalolabBuilder(GnBuilder):
                 enable_wifi, enable_thread, enable_ethernet = False, True, False
             elif bouffalo_chip == "bl702l":
                 enable_wifi, enable_thread, enable_ethernet = False, True, False
+            elif bouffalo_chip == "bl616":
+                raise Exception("Must select one of wifi and thread to build.")
 
         if [enable_wifi, enable_thread, enable_ethernet].count(True) > 1:
             raise Exception('Currently, only one of wifi, thread and ethernet supports.')
@@ -150,14 +156,14 @@ class BouffalolabBuilder(GnBuilder):
         elif bouffalo_chip == "bl702l":
             if enable_ethernet or enable_wifi:
                 raise Exception(f"SoC {bouffalo_chip} does NOT support connectivity Ethernet/Wi-Fi currently.")
+        elif bouffalo_chip == "bl616":
+            if enable_ethernet:
+                raise Exception(f"SoC {bouffalo_chip} does NOT support connectivity Ethernet currently.")
 
         if enable_thread:
             chip_mdns = "platform"
         elif enable_ethernet or enable_wifi:
             chip_mdns = "minimal"
-
-        if enable_frame_ptr and bouffalo_chip == "bl616":
-            raise Exception("BL616 does NOT support frame pointer for debug purpose.")
 
         self.argsOpt.append(f'chip_enable_ethernet={str(enable_ethernet).lower()}')
         self.argsOpt.append(f'chip_enable_wifi={str(enable_wifi).lower()}')
@@ -168,20 +174,22 @@ class BouffalolabBuilder(GnBuilder):
 
         self.argsOpt.append(f'chip_mdns="{chip_mdns}"')
         self.argsOpt.append(f'chip_inet_config_enable_ipv4={str(enable_ethernet or enable_wifi).lower()}')
-
+        
         if enable_easyflash and enable_littlefs:
             raise Exception("Only one of easyflash and littlefs can be enabled.")
-
-        if not enable_easyflash and not enable_littlefs:
-            logging.fatal('*' * 80)
-            logging.fatal('littlefs is added to support for flash storage access.')
-            logging.fatal('Please consider and select one of easyflash and littlefs to use.')
-            logging.fatal('*' * 80)
-            raise Exception("None of easyflash and littlefs select to build.")
+        if bouffalo_chip == "bl616":
+            if not enable_easyflash:
+                enable_littlefs = True
+        else:
+            if not enable_easyflash and not enable_littlefs:
+                logging.fatal('*' * 80)
+                logging.fatal('littlefs is added to support for flash storage access.')
+                logging.fatal('Please consider and select one of easyflash and littlefs to use.')
+                logging.fatal('*' * 80)
+                raise Exception("None of easyflash and littlefs select to build.")
         self.argsOpt.append(f'bouffalo_sdk_component_easyflash_enabled={"false" if enable_littlefs else "true"}')
 
         if enable_thread:
-
             self.argsOpt.append('chip_system_config_use_open_thread_inet_endpoints=true')
             self.argsOpt.append('chip_with_lwip=false')
             self.argsOpt.append(f'openthread_project_core_config_file="{bouffalo_chip}-openthread-core-bl-config.h"')
@@ -196,7 +204,10 @@ class BouffalolabBuilder(GnBuilder):
                 if bouffalo_chip in {"bl702", "bl702l"}:
                     self.argsOpt.append(
                         'openthread_root="//third_party/connectedhomeip/third_party/bouffalolab/repo/components/network/thread/openthread"')
-
+                else:
+                    self.argsOpt.append(
+                        'openthread_root="//third_party/connectedhomeip/third_party/bouffalolab/bouffalo_sdk/components/wireless/thread/openthread"')
+                    
         if enable_cdc:
             if bouffalo_chip != "bl702":
                 raise Exception(f'SoC {bouffalo_chip} does NOT support USB CDC')
@@ -220,8 +231,6 @@ class BouffalolabBuilder(GnBuilder):
         if enable_mfd:
             self.argsOpt.append("chip_enable_factory_data=true")
 
-        self.enable_frame_ptr = enable_frame_ptr
-        self.argsOpt.append(f"enable_debug_frame_ptr={str(enable_frame_ptr).lower()}")
         self.argsOpt.append(f"enable_heap_monitoring={str(enable_heap_monitoring).lower()}")
         self.argsOpt.append(f"chip_generate_link_map_file=true")
 
@@ -242,11 +251,7 @@ class BouffalolabBuilder(GnBuilder):
         logging.fatal('*' * 80)
 
     def GnBuildArgs(self):
-        if self.enable_frame_ptr:
-            debug_output_file = os.path.join(self.output_dir, '%s.out' % self.app.AppNamePrefix(self.chip_name))
-            return self.argsOpt + [f'debug_output_file="{debug_output_file}"']
-        else:
-            return self.argsOpt
+        return self.argsOpt
 
     def build_outputs(self):
         extensions = ["out"]
@@ -264,7 +269,11 @@ class BouffalolabBuilder(GnBuilder):
 
     def PostBuildCommand(self):
 
+        bouffalo_sdk_chips = [ "bl616" ]
         abs_path_fw = os.path.join(self.output_dir, self.app.AppNamePrefix(self.chip_name) + ".bin")
+
+        if self.chip_name not in bouffalo_sdk_chips:
+            abs_path_fw_raw = os.path.join(self.output_dir, self.app.AppNamePrefix(self.chip_name) + ".raw")
 
         if os.path.isfile(abs_path_fw):
             target_dir = self.output_dir.replace(self.chip_dir, "").strip("/")

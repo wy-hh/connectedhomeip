@@ -692,6 +692,7 @@ def BuildBouffalolabTarget():
     target.AppendFixedTargets([
         TargetPart('BL602DK',
                    board=BouffalolabBoard.BL602_IoT_Matter_V1, module_type="BL602"),
+        TargetPart('BL616DK', board=BouffalolabBoard.BL616DK, module_type="BL616"),
         TargetPart('BL704LDK', board=BouffalolabBoard.BL704LDK, module_type="BL704L"),
         TargetPart('BL706DK',
                    board=BouffalolabBoard.BL706DK, module_type="BL706C-22"),
@@ -732,7 +733,6 @@ def BuildBouffalolabTarget():
     target.AppendModifier('resetCnt', enable_resetCnt=True)
     target.AppendModifier('memmonitor', enable_heap_monitoring=True)
     target.AppendModifier('115200', baudrate=115200)
-    target.AppendModifier('fp', enable_frame_ptr=True)
 
     return target
 
