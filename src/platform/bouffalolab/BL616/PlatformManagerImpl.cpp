@@ -76,7 +76,11 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack(void)
     
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD
     otRadio_opt_t opt;
+#if CHIP_DEVICE_CONFIG_THREAD_FTD
     opt.bf.isFtd        = true;
+#else
+    opt.bf.isFtd        = false;
+#endif
     opt.bf.isCoexEnable = true;
 
     ot_alarmInit();

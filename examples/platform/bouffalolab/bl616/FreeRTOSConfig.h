@@ -39,7 +39,8 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
-#include "stdio.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define configMTIME_BASE_ADDRESS    (0xE0000000UL + 0xBFF8UL)
 #define configMTIMECMP_BASE_ADDRESS (0xE0000000UL + 0x4000UL)
