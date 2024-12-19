@@ -199,6 +199,7 @@ template("bl_iot_sdk") {
     defines = [
       "CFG_BLE_ENABLE",
       "CONF_BL602_USE_1M_FLASH=0",
+      "SYS_ENABLE_COREDUMP",
     ]
     sources = [
       "${bl_iot_sdk_root}/components/platform/hosal/bl602_hal/bl_adc.c",
@@ -342,6 +343,7 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/stage/yloop/include/aos",
       "${bl_iot_sdk_root}/components/stage/blfdt/inc",
       "${bl_iot_sdk_root}/components/stage/cli/cli/include",
+      "${bl_iot_sdk_root}/components/stage/coredump/inc",
     ]
 
     if (defined(invoker.bouffalo_sdk_component_easyflash_enabled) &&
@@ -360,6 +362,7 @@ template("bl_iot_sdk") {
     defines = [
       "EF_ENV_CACHE_TABLE_SIZE=64",
       "RHINO_CONFIG_WORKQUEUE=0",
+      "BFLB_COREDUMP_BINARY_ID=1734574825"
     ]
 
     sources = [
@@ -378,6 +381,7 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/stage/yloop/src/local_event.c",
       "${bl_iot_sdk_root}/components/stage/yloop/src/select.c",
       "${bl_iot_sdk_root}/components/stage/yloop/src/yloop.c",
+      "${bl_iot_sdk_root}/components/stage/coredump/bl_coredump.c",
     ]
 
     cflags_c = [ "-Wno-sign-compare" ]

@@ -185,7 +185,6 @@
 #define INCLUDE_vTaskDelay 1
 #define INCLUDE_eTaskGetState 1
 #define INCLUDE_xTimerPendFunctionCall 1
-#define INCLUDE_xTimerPendFunctionCall 1
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 
 /* Overwrite some of the stack sizes allocated to various test and demo tasks.
