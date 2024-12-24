@@ -54,7 +54,7 @@ template("bl_iot_sdk") {
       defines += invoker.defines
     }
 
-    cflags = [ "-Wundef" ]
+    cflags = [ "-Wundef", "-fstack-protector-all" ]
     cflags_c = [
       "-include",
       rebase_path("${invoker.freertos_config}", root_build_dir),

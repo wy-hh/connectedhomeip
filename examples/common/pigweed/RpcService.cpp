@@ -34,6 +34,9 @@
 
 #include <array>
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 namespace chip {
 namespace rpc {
 namespace {
@@ -89,6 +92,14 @@ pw::rpc::Server server(channels);
 
 } // namespace
 
+
+uint32_t rpc_start_task_cnt_1 = 0;
+uint32_t rpc_start_task_cnt_2 = 0;
+uint32_t rpc_start_task_cnt_3 = 0;
+uint32_t rpc_start_task_cnt_4 = 0;
+uint32_t rpc_start_task_cnt_5 = 0;
+
+extern "C" void * pxCurrentTCB;
 void Start(void (*RegisterServices)(pw::rpc::Server &), ::chip::rpc::Mutex * uart_mutex_)
 {
     PW_DASSERT(uart_mutex_ != nullptr);
@@ -107,11 +118,26 @@ void Start(void (*RegisterServices)(pw::rpc::Server &), ::chip::rpc::Mutex * uar
     while (true)
     {
         std::byte data;
+
+        rpc_start_task_cnt_2 = rpc_start_task_cnt_3 = rpc_start_task_cnt_4 = rpc_start_task_cnt_5 = rpc_start_task_cnt_1;
+        rpc_start_task_cnt_1 ++;
+
+        vTaskEnterCritical();
+        StaticTask_t * task_handle = (StaticTask_t *)pxCurrentTCB;
+
+        Logging::Log(Logging::kLogModule_NotSpecified, Logging::kLogCategory_Progress, "stack reset %s, %p, %p, %ld\r\n", 
+            (char *)task_handle->ucDummy7, task_handle->pxDummy1, task_handle->pxDummy6,
+            ((uint32_t)task_handle->pxDummy1 - (uint32_t)task_handle->pxDummy6));
+        memset(task_handle->pxDummy6, 0xa5, ((uint32_t)task_handle->pxDummy1 - (uint32_t)task_handle->pxDummy6));
+        vTaskExitCritical();
+
         if (!pw::sys_io::ReadByte(&data).ok())
         {
             // TODO: should we log?
+            rpc_start_task_cnt_2 ++;
             return;
         }
+        rpc_start_task_cnt_3 ++;
         if (auto result = decoder.Process(data); result.ok())
         {
             pw::hdlc::Frame & frame = result.value();
@@ -119,7 +145,9 @@ void Start(void (*RegisterServices)(pw::rpc::Server &), ::chip::rpc::Mutex * uar
             {
                 server.ProcessPacket(frame.data()).IgnoreError();
             }
+            rpc_start_task_cnt_4 ++;
         }
+        rpc_start_task_cnt_5 ++;
     }
 }
 
