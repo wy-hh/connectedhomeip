@@ -100,6 +100,7 @@ uint32_t rpc_start_task_cnt_4 = 0;
 uint32_t rpc_start_task_cnt_5 = 0;
 
 extern "C" void * pxCurrentTCB;
+uint32_t rpc_start_task_dummy1 = 0, rpc_start_task_dummy6 = 0;
 void Start(void (*RegisterServices)(pw::rpc::Server &), ::chip::rpc::Mutex * uart_mutex_)
 {
     PW_DASSERT(uart_mutex_ != nullptr);
@@ -124,10 +125,9 @@ void Start(void (*RegisterServices)(pw::rpc::Server &), ::chip::rpc::Mutex * uar
 
         vTaskEnterCritical();
         StaticTask_t * task_handle = (StaticTask_t *)pxCurrentTCB;
+        rpc_start_task_dummy1 = (uint32_t) task_handle->pxDummy1;
+        rpc_start_task_dummy6 = (uint32_t) task_handle->pxDummy6;
 
-        Logging::Log(Logging::kLogModule_NotSpecified, Logging::kLogCategory_Progress, "stack reset %s, %p, %p, %ld\r\n", 
-            (char *)task_handle->ucDummy7, task_handle->pxDummy1, task_handle->pxDummy6,
-            ((uint32_t)task_handle->pxDummy1 - (uint32_t)task_handle->pxDummy6));
         memset(task_handle->pxDummy6, 0xa5, ((uint32_t)task_handle->pxDummy1 - (uint32_t)task_handle->pxDummy6));
         vTaskExitCritical();
 
