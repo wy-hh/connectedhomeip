@@ -15,6 +15,17 @@
  *    limitations under the License.
  */
 
+#if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
+extern "C" {
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#include <btble_lib_api.h>
+#else
+#include <ble_lib_api.h>
+#endif
+#include <bluetooth/conn.h>
+}
+#endif
+
 #include <lib/support/CHIPMemString.h>
 
 #include <platform/internal/CHIPDeviceLayerInternal.h>

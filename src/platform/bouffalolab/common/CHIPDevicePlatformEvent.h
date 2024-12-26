@@ -21,7 +21,16 @@
 #include <system/SystemPacketBuffer.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_CHIPOBLE
+extern "C" {
+#if CHIP_DEVICE_LAYER_TARGET_BL616
+#include <btble_lib_api.h>
+#else
+#include <ble_lib_api.h>
+#endif
+}
+
 #include <bluetooth/bluetooth.h>
+#include <bluetooth/conn.h>
 #include <conn_internal.h>
 #endif
 
