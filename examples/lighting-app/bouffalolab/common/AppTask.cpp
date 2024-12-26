@@ -476,7 +476,6 @@ void AppTask::ButtonEventHandler(void * arg)
 {
     if (ButtonPressed())
     {
-        portABORT();
         GetAppTask().PostEvent(APP_EVENT_BTN_ISR);
     }
 }

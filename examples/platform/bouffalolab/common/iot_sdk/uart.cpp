@@ -38,7 +38,7 @@ extern hosal_uart_dev_t uart_stdio;
 #if CONFIG_ENABLE_CHIP_SHELL || PW_RPC_ENABLED
 
 #define CHIP_UART_RX_TIMER_ID 1
-#define MAX_BUFFER_SIZE 1536
+#define MAX_BUFFER_SIZE 256
 
 typedef struct _chipUart
 {
