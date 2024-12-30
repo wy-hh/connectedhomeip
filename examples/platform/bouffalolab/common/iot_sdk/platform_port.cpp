@@ -79,6 +79,7 @@ extern "C" unsigned int sleep(unsigned int seconds)
     return 0;
 }
 
+
 extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char * pcTaskName)
 {
     printf("Stack Overflow checked. Stack name %s", pcTaskName);
@@ -103,6 +104,17 @@ extern "C" void vApplicationIdleHook(void)
     __asm volatile("   wfi     ");
 }
 
+#if (configUSE_TICK_HOOK != 0)
+extern "C" void vApplicationTickHook(void)
+{
+#if defined(CFG_USB_CDC_ENABLE)
+    extern void usb_cdc_monitor(void);
+    usb_cdc_monitor();
+#endif
+}
+#endif
+
+static StaticTask_t xIdleTaskTCB;
 extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuffer, StackType_t ** ppxIdleTaskStackBuffer,
                                               uint32_t * pulIdleTaskStackSize)
 {
@@ -145,18 +157,6 @@ extern "C" void vApplicationGetTimerTaskMemory(StaticTask_t ** ppxTimerTaskTCBBu
     configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
-
-#if (configUSE_TICK_HOOK != 0)
-extern "C" void vApplicationTickHook(void)
-{
-#if defined(CFG_USB_CDC_ENABLE)
-    extern void usb_cdc_monitor(void);
-    usb_cdc_monitor();
-#endif
-}
-#endif
-
-extern "C" void vApplicationSleep(TickType_t xExpectedIdleTime) {}
 
 extern "C" void vAssertCalled(void)
 {
@@ -289,6 +289,8 @@ extern "C" void setup_heap()
 
     vPortDefineHeapRegions(xHeapRegions);
 
+    bl_sys_early_init();
+
 #ifdef CFG_USE_PSRAM
     bl_psram_init();
     do_psram_test();
@@ -301,15 +303,16 @@ extern "C" size_t get_heap_size(void)
     return (size_t) &_heap_size;
 }
 
+
 extern "C" void app_init(void)
 {
-    bl_sys_early_init();
-
 #if CHIP_DEVICE_LAYER_TARGET_BL702L
     bl_flash_init();
 #endif
 
     hosal_uart_init(&uart_stdio);
+
+    printf ("app_init\r\n");
 
     blog_init();
     bl_irq_init();

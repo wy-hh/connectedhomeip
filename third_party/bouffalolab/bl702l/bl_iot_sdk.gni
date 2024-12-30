@@ -217,6 +217,14 @@ template("bl_iot_sdk") {
         "-Wno-sign-compare",
         "-Wno-old-style-declaration",
       ]
+
+      if (defined(invoker.enable_debug_frame_ptr) &&
+          invoker.enable_debug_frame_ptr) {
+        cflags_c += [
+          "-Wno-incompatible-pointer-types",
+          "-Wno-int-conversion",
+        ]
+      }
     }
 
     public_configs = [
