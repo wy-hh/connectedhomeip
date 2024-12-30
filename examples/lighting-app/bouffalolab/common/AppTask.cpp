@@ -25,6 +25,7 @@
 #include <credentials/DeviceAttestationCredsProvider.h>
 #include <credentials/examples/DeviceAttestationCredsExample.h>
 #include <system/SystemClock.h>
+#include <platform/bouffalolab/common/BLConfig.h>
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #if HEAP_MONITORING
@@ -56,7 +57,6 @@ extern "C" {
 #include <hal_gpio.h>
 #include <hosal_gpio.h>
 }
-#include <easyflash.h>
 #endif
 
 #include "AppTask.h"
@@ -162,25 +162,11 @@ void AppTask::AppTaskMain(void * pvParameter)
 #ifdef BOOT_PIN_RESET
     ButtonInit();
 #else
-    /** Without RESET PIN defined, factory reset will be executed if power cycle count(resetCnt) >= APP_REBOOT_RESET_COUNT */
     uint32_t resetCnt      = 0;
-    size_t saved_value_len = 0;
-    ef_get_env_blob(APP_REBOOT_RESET_COUNT_KEY, &resetCnt, sizeof(resetCnt), &saved_value_len);
-
-    if (resetCnt > APP_REBOOT_RESET_COUNT)
-    {
-        resetCnt = 0;
-        /** To share with RESET PIN logic, mButtonPressedTime is used to recorded resetCnt increased.
-         * +1 makes sure mButtonPressedTime is not zero;
-         * a power cycle during factory reset confirm time APP_BUTTON_PRESS_LONG will cancel factoryreset */
-        GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count() + 1;
-    }
-    else
-    {
-        resetCnt++;
-        GetAppTask().mButtonPressedTime = 0;
-    }
-    ef_set_env_blob(APP_REBOOT_RESET_COUNT_KEY, &resetCnt, sizeof(resetCnt));
+    Internal::BLConfig::ReadConfigValue(APP_REBOOT_RESET_COUNT_KEY, resetCnt);
+    Internal::BLConfig::WriteConfigValue(APP_REBOOT_RESET_COUNT_KEY, resetCnt);
+    GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
+    ChipLogProgress(NotSpecified, "AppTaskMain %lld, resetCnt %ld", GetAppTask().mButtonPressedTime, resetCnt);
 #endif
 
     GetAppTask().sTimer =
@@ -240,6 +226,17 @@ void AppTask::AppTaskMain(void * pvParameter)
             {
                 /** Turn off light to indicate button long press for factory reset is confirmed */
                 sLightLED.SetOnoff(false);
+            }
+
+#else 
+            if (APP_EVENT_RESET_CNT & appEvent)
+            {
+                if (resetCnt >= APP_REBOOT_RESET_COUNT) {
+                    GetAppTask().PostEvent(APP_EVENT_FACTORY_RESET);
+                }
+                ChipLogProgress(NotSpecified, "APP_REBOOT_RESET_COUNT_KEY resetCnt %ld", resetCnt);
+                resetCnt = 0;
+                Internal::BLConfig::WriteConfigValue(APP_REBOOT_RESET_COUNT_KEY, resetCnt);
             }
 #endif
             if (APP_EVENT_IDENTIFY_MASK & appEvent)
@@ -359,12 +356,12 @@ void AppTask::TimerCallback(TimerHandle_t xTimer)
 
 void AppTask::TimerEventHandler(app_event_t event)
 {
+#ifdef BOOT_PIN_RESET
     uint32_t pressedTime = 0;
 
     if (GetAppTask().mButtonPressedTime)
     {
         pressedTime = System::SystemClock().GetMonotonicMilliseconds64().count() - GetAppTask().mButtonPressedTime;
-#ifdef BOOT_PIN_RESET
         if (ButtonPressed())
         {
             if (pressedTime > APP_BUTTON_PRESS_LONG)
@@ -400,26 +397,7 @@ void AppTask::TimerEventHandler(app_event_t event)
             GetAppTask().mTimerIntvl        = APP_BUTTON_PRESSED_ITVL;
             GetAppTask().mButtonPressedTime = 0;
         }
-#else
-        if (pressedTime > APP_BUTTON_PRESS_LONG)
-        {
-            /** factory reset confirm timeout */
-            GetAppTask().mButtonPressedTime = 0;
-            GetAppTask().PostEvent(APP_EVENT_FACTORY_RESET);
-        }
-        else
-        {
-#if defined(BL602_NIGHT_LIGHT) || defined(BL706_NIGHT_LIGHT) || defined(BL616DK)
-            /** change color to indicate to wait factory reset confirm */
-            sLightLED.SetColor(254, 0, 210);
-#else
-            /** toggle led to indicate to wait factory reset confirm */
-            sLightLED.Toggle();
-#endif
-        }
-#endif
     }
-#ifdef BOOT_PIN_RESET
     else
     {
         if (ButtonPressed())
@@ -427,6 +405,20 @@ void AppTask::TimerEventHandler(app_event_t event)
             GetAppTask().mTimerIntvl        = APP_BUTTON_PRESSED_ITVL;
             GetAppTask().mButtonPressedTime = System::SystemClock().GetMonotonicMilliseconds64().count();
         }
+    }
+#else
+    if (GetAppTask().mButtonPressedTime && System::SystemClock().GetMonotonicMilliseconds64().count() - GetAppTask().mButtonPressedTime > APP_BUTTON_PRESS_LONG)
+    {
+#if defined(BL602_NIGHT_LIGHT) || defined(BL706_NIGHT_LIGHT) || defined(BL616DK)
+        /** change color to indicate to wait factory reset confirm */
+        sLightLED.SetColor(254, 0, 210);
+#else
+        /** toggle led to indicate to wait factory reset confirm */
+        sLightLED.Toggle();
+#endif
+        /** factory reset confirm timeout */
+        GetAppTask().mButtonPressedTime = 0;
+        GetAppTask().PostEvent(APP_EVENT_RESET_CNT);
     }
 #endif
 

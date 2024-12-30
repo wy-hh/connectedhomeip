@@ -697,9 +697,9 @@ def BuildBouffalolabTarget():
         TargetPart('BL706DK',
                    board=BouffalolabBoard.BL706DK, module_type="BL706C-22"),
         TargetPart('BL602-NIGHT-LIGHT',
-                   board=BouffalolabBoard.BL602_NIGHT_LIGHT, module_type="BL602"),
+                   board=BouffalolabBoard.BL602_NIGHT_LIGHT, module_type="BL602", enable_resetCnt=True),
         TargetPart('BL706-NIGHT-LIGHT',
-                   board=BouffalolabBoard.BL706_NIGHT_LIGHT, module_type="BL706C-22"),
+                   board=BouffalolabBoard.BL706_NIGHT_LIGHT, module_type="BL706C-22", enable_resetCnt=True),
         TargetPart('BL602-IoT-Matter-V1',
                    board=BouffalolabBoard.BL602_IoT_Matter_V1, module_type="BL602"),
         TargetPart('XT-ZB6-DevKit', board=BouffalolabBoard.XT_ZB6_DevKit,
@@ -708,7 +708,7 @@ def BuildBouffalolabTarget():
 
     target.AppendFixedTargets([
         TargetPart('light', app=BouffalolabApp.LIGHT),
-        TargetPart('contact-sensor', app=BouffalolabApp.CONTACT).OnlyIfRe('(bl704l)'),
+        TargetPart('contact-sensor', app=BouffalolabApp.CONTACT).OnlyIfRe('-(bl704l)'),
     ])
 
     target.AppendFixedTargets([
@@ -727,12 +727,10 @@ def BuildBouffalolabTarget():
     target.AppendModifier('shell', enable_shell=True)
     target.AppendModifier('mfd', enable_mfd=True)
     target.AppendModifier('rotating_device_id', enable_rotating_device_id=True)
-    target.AppendModifier('rpc', enable_rpcs=True)
-    target.AppendModifier('cdc', enable_cdc=True)
-    target.AppendModifier('mot', use_matter_openthread=True)
-    target.AppendModifier('resetCnt', enable_resetCnt=True)
+    target.AppendModifier('rpc', enable_rpcs=True, baudrate=115200).OnlyIfRe('-(bl602dk|bl704ldk|bl706dk)')
+    target.AppendModifier('cdc', enable_cdc=True).OnlyIfRe('-(bl706dk)')
+    target.AppendModifier('mot', use_matter_openthread=True).OnlyIfRe('-(thread)')
     target.AppendModifier('memmonitor', enable_heap_monitoring=True)
-    target.AppendModifier('115200', baudrate=115200)
 
     return target
 

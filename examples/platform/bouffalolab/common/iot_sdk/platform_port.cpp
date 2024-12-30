@@ -114,6 +114,10 @@ extern "C" void vApplicationTickHook(void)
 }
 #endif
 
+#if (configUSE_TICKLESS_IDLE != 0)
+extern "C" __WEAK void vApplicationSleep(TickType_t xExpectedIdleTime) {}
+#endif
+
 static StaticTask_t xIdleTaskTCB;
 extern "C" void vApplicationGetIdleTaskMemory(StaticTask_t ** ppxIdleTaskTCBBuffer, StackType_t ** ppxIdleTaskStackBuffer,
                                               uint32_t * pulIdleTaskStackSize)
@@ -303,7 +307,6 @@ extern "C" size_t get_heap_size(void)
     return (size_t) &_heap_size;
 }
 
-
 extern "C" void app_init(void)
 {
 #if CHIP_DEVICE_LAYER_TARGET_BL702L
@@ -311,8 +314,6 @@ extern "C" void app_init(void)
 #endif
 
     hosal_uart_init(&uart_stdio);
-
-    printf ("app_init\r\n");
 
     blog_init();
     bl_irq_init();
