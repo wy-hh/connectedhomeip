@@ -22,7 +22,8 @@ declare_args() {
   bl_iot_sdk_root = "${chip_root}/third_party/bouffalolab/repo"
 
   enable_low_power_pds = false
-  debug_output_file = ""
+  enable_debug_coredump = false
+  coredump_binary_id = 0
 }
 
 assert(bl_iot_sdk_root != "", "bl_iot_sdk_root must be specified")
@@ -244,6 +245,10 @@ template("bl_iot_sdk") {
       defines += [ "CFG_BLE_ENABLE" ]
     }
 
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      defines += [ "SYS_ENABLE_COREDUMP" ]
+    }
+
     sources = [
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/bl_adc.c",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702l_hal/bl_boot2.c",
@@ -394,6 +399,10 @@ template("bl_iot_sdk") {
           [ "${bl_iot_sdk_root}/components/stage/littlefs/littlefs" ]
       include_dirs += [ "${bl_iot_sdk_root}/components/stage/littlefs/port" ]
     }
+
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      include_dirs += [ "${bl_iot_sdk_root}/components/stage/coredump/inc" ]
+    }
   }
 
   source_set("${sdk_target_name}_stage") {
@@ -419,6 +428,11 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/stage/yloop/src/yloop.c",
     ]
 
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      defines += [ "BFLB_COREDUMP_BINARY_ID=${invoker.coredump_binary_id}" ]
+      sources += [ "${bl_iot_sdk_root}/components/stage/coredump/bl_coredump.c" ]
+    }
+
     cflags_c = [ "-Wno-sign-compare" ]
     configs += [
       ":${sdk_target_name}_config",
@@ -427,6 +441,7 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_config_sys",
       ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config_freertos",
+      ":${sdk_target_name}_config_hosal"
     ]
 
     if (defined(invoker.bouffalo_sdk_component_easyflash_enabled) &&
@@ -448,7 +463,6 @@ template("bl_iot_sdk") {
         "${bl_iot_sdk_root}/components/stage/littlefs/littlefs/lfs_util.c",
         "${bl_iot_sdk_root}/components/stage/littlefs/port/lfs_xip_flash.c",
       ]
-      configs += [ ":${sdk_target_name}_config_hosal" ]
     }
 
     public_configs = [ ":${sdk_target_name}_config_stage" ]

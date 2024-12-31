@@ -21,6 +21,8 @@ declare_args() {
   # Location of the bl616 SDK.
   bouffalo_sdk_root = "${chip_root}/third_party/bouffalolab/bouffalo_sdk"
 
+  enable_debug_coredump = false
+  coredump_binary_id = 0
   bouffalo_sdk_coredump_version = 1
 }
 
@@ -83,8 +85,11 @@ template("bouffalo_sdk") {
       "ARCH_RISCV",
       "BFLB_USE_HAL_DRIVER",
       "CONFIG_IRQ_NUM=80",
-      "CONFIG_COREDUMP"
     ]
+
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      defines += [ "CONFIG_COREDUMP" ]
+    }
 
     include_dirs = [
       "${bouffalo_sdk_root}/drivers/soc/bl616/std/startup",
@@ -353,10 +358,6 @@ template("bouffalo_sdk") {
   }
 
   source_set("${sdk_target_name}_shell") {
-    defines = [
-      "BL616"
-    ]
-
     include_dirs = [
       "${bouffalo_sdk_root}/bsp/board/bl616dk",
     ]
@@ -376,6 +377,7 @@ template("bouffalo_sdk") {
     ]
 
     configs += [
+      ":${sdk_target_name}_config",
       ":${sdk_target_name}_config_lhal",
       ":${sdk_target_name}_config_utils",
       ":${sdk_target_name}_config_board",
@@ -714,8 +716,11 @@ template("bouffalo_sdk") {
       "CONFIG_LOG_LEVEL=0",
       "CONFIG_BFLOG",
       "CONFIG_BFLOG_DEBUG",
-      "CONFIG_COREDUMP",
     ]
+
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      defines += [ "CONFIG_COREDUMP" ]
+    }
 
     sources = [
       "${bouffalo_sdk_root}/components/utils/log/log.c",
@@ -733,19 +738,21 @@ template("bouffalo_sdk") {
       "${bouffalo_sdk_root}/components/utils/math/src/utils_hex.c",
     ]
 
-    if (bouffalo_sdk_coredump_version == 1) {
-      sources += [
-        "${bouffalo_sdk_root}/components/utils/coredump/bin_fmt_v1.c",
-        "${bouffalo_sdk_root}/components/utils/coredump/coredump.c",
-        "${bouffalo_sdk_root}/components/utils/coredump/encoder_v1.c",
-      ]
-    }
-    else if (bouffalo_sdk_coredump_version == 2) {
-      sources += [
-        "${bouffalo_sdk_root}/components/utils/coredump/bin_fmt_v2.c",
-        "${bouffalo_sdk_root}/components/utils/coredump/coredump.c",
-        "${bouffalo_sdk_root}/components/utils/coredump/encoder_v2.c",
-      ]
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      if (bouffalo_sdk_coredump_version == 1) {
+        sources += [
+          "${bouffalo_sdk_root}/components/utils/coredump/bin_fmt_v1.c",
+          "${bouffalo_sdk_root}/components/utils/coredump/coredump.c",
+          "${bouffalo_sdk_root}/components/utils/coredump/encoder_v1.c",
+        ]
+      }
+      else if (bouffalo_sdk_coredump_version == 2) {
+        sources += [
+          "${bouffalo_sdk_root}/components/utils/coredump/bin_fmt_v2.c",
+          "${bouffalo_sdk_root}/components/utils/coredump/coredump.c",
+          "${bouffalo_sdk_root}/components/utils/coredump/encoder_v2.c",
+        ]
+      }
     }
 
     cflags_c = [

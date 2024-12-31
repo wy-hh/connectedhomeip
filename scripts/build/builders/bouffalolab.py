@@ -14,6 +14,8 @@
 
 import logging
 import os
+import time
+
 from enum import Enum, auto
 
 from .builder import BuilderOutput
@@ -42,16 +44,26 @@ class BouffalolabApp(Enum):
 
 
 class BouffalolabBoard(Enum):
+    BL602DK = auto()
+    BL616DK = auto()
+    BL704LDK = auto()
+    BL706DK = auto()
     BL602_IoT_Matter_V1 = auto()
     BL602_NIGHT_LIGHT = auto()
     XT_ZB6_DevKit = auto()
     BL706_NIGHT_LIGHT = auto()
-    BL706DK = auto()
-    BL704LDK = auto()
-    BL616DK = auto()
 
     def GnArgName(self):
-        if self == BouffalolabBoard.BL602_IoT_Matter_V1:
+
+        if self == BouffalolabBoard.BL602DK:
+            return 'BL602DK'
+        elif self == BouffalolabBoard.BL616DK:
+            return 'BL616DK'
+        elif self == BouffalolabBoard.BL704LDK:
+            return 'BL704LDK'
+        elif self == BouffalolabBoard.BL706DK:
+            return 'BL706DK'
+        elif self == BouffalolabBoard.BL602_IoT_Matter_V1:
             return 'BL602-IoT-Matter-V1'
         elif self == BouffalolabBoard.BL602_NIGHT_LIGHT:
             return 'BL602-NIGHT-LIGHT'
@@ -59,12 +71,6 @@ class BouffalolabBoard(Enum):
             return 'XT-ZB6-DevKit'
         elif self == BouffalolabBoard.BL706_NIGHT_LIGHT:
             return 'BL706-NIGHT-LIGHT'
-        elif self == BouffalolabBoard.BL706DK:
-            return 'BL706DK'
-        elif self == BouffalolabBoard.BL704LDK:
-            return 'BL704LDK'
-        elif self == BouffalolabBoard.BL616DK:
-            return 'BL616DK'
         else:
             raise Exception('Unknown board #: %r' % self)
 
@@ -96,6 +102,7 @@ class BouffalolabBuilder(GnBuilder):
                  use_matter_openthread: bool = False,
                  enable_easyflash: bool = False,
                  enable_littlefs: bool = False,
+                 enable_debug_coredump: bool = False,
                  ):
 
         if 'BL602' == module_type:
@@ -233,6 +240,10 @@ class BouffalolabBuilder(GnBuilder):
             self.argsOpt.append("chip_enable_factory_data=true")
 
         self.argsOpt.append(f"enable_heap_monitoring={str(enable_heap_monitoring).lower()}")
+        if enable_debug_coredump:
+            self.argsOpt.append(f"enable_debug_coredump=true")
+            self.argsOpt.append(f"coredump_binary_id={int(time.time())}")
+
         self.argsOpt.append(f"chip_generate_link_map_file=true")
 
         try:

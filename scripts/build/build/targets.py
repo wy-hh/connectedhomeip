@@ -691,7 +691,7 @@ def BuildBouffalolabTarget():
     # Boards
     target.AppendFixedTargets([
         TargetPart('BL602DK',
-                   board=BouffalolabBoard.BL602_IoT_Matter_V1, module_type="BL602"),
+                   board=BouffalolabBoard.BL602DK, module_type="BL602"),
         TargetPart('BL616DK', board=BouffalolabBoard.BL616DK, module_type="BL616"),
         TargetPart('BL704LDK', board=BouffalolabBoard.BL704LDK, module_type="BL704L"),
         TargetPart('BL706DK',
@@ -731,6 +731,7 @@ def BuildBouffalolabTarget():
     target.AppendModifier('cdc', enable_cdc=True).OnlyIfRe('-(bl706dk)')
     target.AppendModifier('mot', use_matter_openthread=True).OnlyIfRe('-(thread)')
     target.AppendModifier('memmonitor', enable_heap_monitoring=True)
+    target.AppendModifier('coredump', enable_debug_coredump=True)
 
     return target
 

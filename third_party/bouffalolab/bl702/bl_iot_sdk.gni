@@ -21,7 +21,8 @@ import("${chip_root}/src/lib/lib.gni")
 declare_args() {
   bl_iot_sdk_root = "${chip_root}/third_party/bouffalolab/repo"
 
-  debug_output_file = ""
+  enable_debug_coredump = false
+  coredump_binary_id = 0
 }
 
 assert(bl_iot_sdk_root != "", "bl_iot_sdk_root must be specified")
@@ -248,6 +249,10 @@ template("bl_iot_sdk") {
       defines += [ "CFG_BLE_ENABLE" ]
     }
 
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      defines += [ "SYS_ENABLE_COREDUMP" ]
+    }
+
     sources = [
       "${bl_iot_sdk_root}/components/platform/hosal/bl702_hal/bl_psram_sp.S",
       "${bl_iot_sdk_root}/components/platform/hosal/bl702_hal/bl_adc.c",
@@ -395,6 +400,10 @@ template("bl_iot_sdk") {
       include_dirs += [ "${bl_iot_sdk_root}/components/stage/littlefs/port" ]
     }
 
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      include_dirs += [ "${bl_iot_sdk_root}/components/stage/coredump/inc" ]
+    }
+
     if (defined(invoker.enable_cdc_module) && invoker.enable_cdc_module) {
       cflags_cc = [ "-Wno-shadow" ]
     }
@@ -423,6 +432,11 @@ template("bl_iot_sdk") {
       "${bl_iot_sdk_root}/components/stage/yloop/src/yloop.c",
     ]
 
+    if (defined(invoker.enable_debug_coredump) && invoker.enable_debug_coredump) {
+      defines += [ "BFLB_COREDUMP_BINARY_ID=${invoker.coredump_binary_id}" ]
+      sources += [ "${bl_iot_sdk_root}/components/stage/coredump/bl_coredump.c" ]
+    }
+
     cflags_c = [ "-Wno-sign-compare" ]
     configs += [
       ":${sdk_target_name}_config",
@@ -431,10 +445,13 @@ template("bl_iot_sdk") {
       ":${sdk_target_name}_config_fs",
       ":${sdk_target_name}_config_sys",
       ":${sdk_target_name}_config_utils",
+      ":${sdk_target_name}_config_hosal"
     ]
 
     if (defined(invoker.bouffalo_sdk_component_easyflash_enabled) &&
         invoker.bouffalo_sdk_component_easyflash_enabled) {
+
+      defines += [ "EF_ENV_CACHE_TABLE_SIZE=64" ]
       sources += [
         "${bl_iot_sdk_root}/components/stage/easyflash4/src/easyflash.c",
         "${bl_iot_sdk_root}/components/stage/easyflash4/src/ef_env.c",
@@ -452,7 +469,6 @@ template("bl_iot_sdk") {
         "${bl_iot_sdk_root}/components/stage/littlefs/littlefs/lfs_util.c",
         "${bl_iot_sdk_root}/components/stage/littlefs/port/lfs_xip_flash.c",
       ]
-      configs += [ ":${sdk_target_name}_config_hosal" ]
     }
 
     public_configs = [ ":${sdk_target_name}_config_stage" ]

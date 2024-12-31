@@ -2,8 +2,8 @@ OUTPUT_ARCH( "riscv" )
 
 ENTRY( bl702_start )
 
-__EM_SIZE = DEFINED(btble_controller_init) ? 16K : 0K;
-__CACHE_SIZE = 16K;
+__EM_SIZE = DEFINED(__EM_SIZE) ? __EM_SIZE : 0K;
+__CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
 __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
 
 MEMORY
@@ -17,11 +17,17 @@ MEMORY
 
 SECTIONS
 {
-  BOOT2_PT_ADDR = 0x4202e094;
-
   .init :
   {
     KEEP (*(SORT_NONE(.init)))
+  } >flash
+
+  .ver :
+  {
+    . = ORIGIN(flash) + 0xC00;
+    LONG(0x42464c42); /* BLFB */
+    LONG(0x46524556); /* VERF */
+    KEEP(*(.blverinf))
   } >flash
 
   .text :
@@ -67,6 +73,12 @@ SECTIONS
     *(.static_blogpri_code*)
     _bl_static_blogpri_code_end = .;
 
+    /* section information for components's version */
+    . = ALIGN(4);
+    _version_info_section_start = .;
+    KEEP(*(.version.*))
+    _version_info_section_end = .;
+
     *(.gnu.linkonce.r.*)
   } >flash
 
@@ -76,6 +88,16 @@ SECTIONS
     KEEP(*(.init_array))
     __init_array_end = .;
   } >flash
+
+  .bleromro :
+  {
+    KEEP(*(.bleromro))
+  } >flash
+
+  .bleromrw (NOLOAD) :
+  {
+    KEEP(*(.bleromrw))
+  } >tcm_ocram
 
   .hbn : ALIGN(4)
   {
@@ -94,11 +116,10 @@ SECTIONS
     *(.retention_noinit)
   } >hbnram
 
-  .rsvd (NOLOAD) :
+  .tcmdata (NOLOAD) :
   {
-    *(.rsvd_data)
-    *(.ble_rsvd_mem)
-  } >hbnram
+    *(.tcm_data)
+  } >tcm_ocram
 
   .tcmcode : ALIGN(4)
   {
@@ -112,13 +133,6 @@ SECTIONS
     *(.sclock_rlt_const.*)
   } >tcm_ocram AT >flash
 
-  .romdata : ALIGN(16)
-  {
-    PROVIDE( _rom_data_run = . );
-    PROVIDE( __global_pointer$ = . + 0x800 );
-    . = . + 0xc98;
-  } >tcm_ocram
-
   .data : ALIGN(4)
   {
     PROVIDE( _data_load = LOADADDR(.data) );
@@ -130,6 +144,12 @@ SECTIONS
     *(.gnu.linkonce.d.*)
 
     . = ALIGN(8);
+    /*always put freertos under global_pointer with the following order. No change!*/
+    PROVIDE( __global_pointer$ = . + 0x7F0 );
+    KEEP(*libbl702l_freertos.a:*(.sdata.*))
+    KEEP(*libbl702l_freertos.a:*(.sbss.*))
+    KEEP(*libbl702l_freertos.a:*(.bss.*))
+    KEEP(*libbl702l_freertos.a:*(COMMON))
     *(.sdata .sdata.*)
     *(.gnu.linkonce.s.*)
 
@@ -217,10 +237,6 @@ SECTIONS
     PROVIDE ( __psram_bss_init_end = . );
   } > psram
 
-  . = ALIGN(8);
-  PROVIDE( _heap3_start = . );
-  PROVIDE( _heap3_size = ORIGIN(psram) + LENGTH(psram) - _heap3_start );
-
   .bss (NOLOAD) :
   {
     PROVIDE( __bss_start = ADDR(.bss) );
@@ -247,7 +263,7 @@ SECTIONS
 
   .stack (NOLOAD) : ALIGN(8)
   {
-    PROVIDE ( _sp_base = . );
+    PROVIDE( _sp_base = . );
     . = . + __stack_size;
     PROVIDE( _sp_main = . );
     __freertos_irq_stack_top = .;
@@ -288,12 +304,14 @@ SECTIONS
   PROVIDE( _ld_ram_addr2 = ORIGIN(hbnram) );
   PROVIDE( _ld_ram_size3 = SIZEOF(.stack) );
   PROVIDE( _ld_ram_addr3 = ADDR(.stack) );
-
-  /* BOOT2 parameter */
-  PROVIDE ( __boot2_pt_addr_src = BOOT2_PT_ADDR );
+  PROVIDE( _ld_psram_size = LENGTH(psram) );
+  PROVIDE( _ld_psram_addr = ORIGIN(psram) );
 
   /* EM size */
-  PROVIDE(__LD_CONFIG_EM_SEL = __EM_SIZE);
+  PROVIDE( __LD_CONFIG_EM_SEL = __EM_SIZE );
+
+  /* BLE_CORE_REG size */
+  PROVIDE( __LD_BLE_CORE_REG_SIZE = __EM_SIZE ? 0x214 : 0 );
 
   /* rom driver */
   INCLUDE ../../third_party/bouffalolab/repo/components/platform/soc/bl702l/bl702l/evb/ld/romdriver.ld
