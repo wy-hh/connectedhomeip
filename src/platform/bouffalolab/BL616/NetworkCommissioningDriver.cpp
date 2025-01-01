@@ -343,6 +343,10 @@ void NetworkEventHandler(const ChipDeviceEvent * event, intptr_t arg)
     case kWiFiOnScanDone:
         BLWiFiDriver::GetInstance().OnScanWiFiNetworkDone();
         break;
+    case kWiFiOnConnecting:
+        ConnectivityMgrImpl().ChangeWiFiStationState(ConnectivityManager::kWiFiStationState_Connecting);
+        ConnectivityMgrImpl().OnConnectivityChanged(deviceInterface_getNetif());
+        break;
     case kWiFiOnConnected:
         BLWiFiDriver::GetInstance().OnNetworkStatusChange();
         break;
@@ -387,6 +391,10 @@ extern "C" void wifi_event_handler(uint32_t code)
             event.Type                                 = kWiFiOnScanDone;
             PlatformMgr().PostEventOrDie(&event);
             break;
+        case CODE_WIFI_ON_CONNECTING:
+            event.Type                                 = kWiFiOnConnecting;
+            PlatformMgr().PostEventOrDie(&event);
+            break;
         case CODE_WIFI_ON_CONNECTED:
             event.Type                                 = kWiFiOnConnected;
             PlatformMgr().PostEventOrDie(&event);
@@ -421,6 +429,13 @@ extern "C" void network_netif_ext_callback(struct netif* nif, netif_nsc_reason_t
         if (netif_ip6_addr_state(nif, args->ipv6_addr_state_changed.addr_index) != args->ipv6_addr_state_changed.old_state &&
             ip6_addr_ispreferred(netif_ip6_addr_state(nif, args->ipv6_addr_state_changed.addr_index))) {
             event.Type                                 = kGotIpv6Address;
+            PlatformMgr().PostEventOrDie(&event);
+        }
+    }
+
+    if ((LWIP_NSC_IPV4_SETTINGS_CHANGED & reason) && args) {
+        if (!ip4_addr_isany(netif_ip4_addr(nif)) && !ip4_addr_isany(netif_ip4_gw(nif))) {
+            event.Type                                 = kGotIpAddress;
             PlatformMgr().PostEventOrDie(&event);
         }
     }

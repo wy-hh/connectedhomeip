@@ -3,7 +3,7 @@ OUTPUT_ARCH( "riscv" )
 ENTRY( bl702_start )
 
 __EM_SIZE = DEFINED(ble_controller_init) ? (DEFINED(em_16k_init) ? 16K : 8K) : 0K;
-__CACHE_SIZE = DEFINED(__CACHE_SIZE) ? __CACHE_SIZE : 16K;
+__CACHE_SIZE = 16K;
 __stack_size = DEFINED(__stack_size) ? __stack_size : 2K;
 __sha_ocram_size = DEFINED(__sha_ocram_size) ? __sha_ocram_size : 128;
 
