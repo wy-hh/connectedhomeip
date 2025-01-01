@@ -102,6 +102,7 @@ class BouffalolabBuilder(GnBuilder):
                  use_matter_openthread: bool = False,
                  enable_easyflash: bool = False,
                  enable_littlefs: bool = False,
+                 enable_pds: bool = False,
                  enable_debug_coredump: bool = False,
                  ):
 
@@ -238,6 +239,9 @@ class BouffalolabBuilder(GnBuilder):
 
         if enable_mfd:
             self.argsOpt.append("chip_enable_factory_data=true")
+
+        if enable_pds:
+            self.argsOpt.append("enable_pds=true")
 
         self.argsOpt.append(f"enable_heap_monitoring={str(enable_heap_monitoring).lower()}")
         if enable_debug_coredump:
