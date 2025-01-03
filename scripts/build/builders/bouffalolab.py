@@ -14,6 +14,7 @@
 
 import logging
 import os
+import time
 from enum import Enum, auto
 
 from .builder import BuilderOutput
@@ -22,36 +23,43 @@ from .gn import GnBuilder
 
 class BouffalolabApp(Enum):
     LIGHT = auto()
+    CONTACT = auto()
 
     def ExampleName(self):
         if self == BouffalolabApp.LIGHT:
             return 'lighting-app'
+        elif self == BouffalolabApp.CONTACT:
+            return 'contact-sensor-app'
         else:
             raise Exception('Unknown app type: %r' % self)
 
     def AppNamePrefix(self, chip_name):
         if self == BouffalolabApp.LIGHT:
             return ('chip-%s-lighting-example' % chip_name)
-        else:
-            raise Exception('Unknown app type: %r' % self)
-
-    def FlashBundleName(self):
-        if self == BouffalolabApp.LIGHT:
-            return 'lighting_app.flashbundle.txt'
+        elif self == BouffalolabApp.CONTACT:
+            return ('chip-%s-contact-example' % chip_name)
         else:
             raise Exception('Unknown app type: %r' % self)
 
 
 class BouffalolabBoard(Enum):
+    BL602DK = auto()
+    BL704LDK = auto()
+    BL706DK = auto()
     BL602_IoT_Matter_V1 = auto()
     BL602_NIGHT_LIGHT = auto()
     XT_ZB6_DevKit = auto()
     BL706_NIGHT_LIGHT = auto()
-    BL706DK = auto()
-    BL704LDK = auto()
 
     def GnArgName(self):
-        if self == BouffalolabBoard.BL602_IoT_Matter_V1:
+
+        if self == BouffalolabBoard.BL602DK:
+            return 'BL602DK'
+        elif self == BouffalolabBoard.BL704LDK:
+            return 'BL704LDK'
+        elif self == BouffalolabBoard.BL706DK:
+            return 'BL706DK'
+        elif self == BouffalolabBoard.BL602_IoT_Matter_V1:
             return 'BL602-IoT-Matter-V1'
         elif self == BouffalolabBoard.BL602_NIGHT_LIGHT:
             return 'BL602-NIGHT-LIGHT'
@@ -59,12 +67,14 @@ class BouffalolabBoard(Enum):
             return 'XT-ZB6-DevKit'
         elif self == BouffalolabBoard.BL706_NIGHT_LIGHT:
             return 'BL706-NIGHT-LIGHT'
-        elif self == BouffalolabBoard.BL706DK:
-            return 'BL706DK'
-        elif self == BouffalolabBoard.BL704LDK:
-            return 'BL704LDK'
         else:
             raise Exception('Unknown board #: %r' % self)
+
+
+class BouffalolabThreadType(Enum):
+    NONE = auto()
+    THREAD_FTD = auto()
+    THREAD_MTD = auto()
 
 
 class BouffalolabBuilder(GnBuilder):
@@ -84,12 +94,13 @@ class BouffalolabBuilder(GnBuilder):
                  enable_mfd: bool = False,
                  enable_ethernet: bool = False,
                  enable_wifi: bool = False,
-                 enable_thread: bool = False,
-                 enable_frame_ptr: bool = False,
+                 enable_thread_type: BouffalolabThreadType = BouffalolabThreadType.NONE,
                  enable_heap_monitoring: bool = False,
                  use_matter_openthread: bool = False,
                  enable_easyflash: bool = False,
-                 enable_littlefs: bool = False
+                 enable_littlefs: bool = False,
+                 enable_pds: bool = False,
+                 enable_debug_coredump: bool = False,
                  ):
 
         if 'BL602' == module_type:
@@ -119,6 +130,8 @@ class BouffalolabBuilder(GnBuilder):
 
         self.argsOpt.append(f'board="{self.board.GnArgName()}"')
         self.argsOpt.append(f'baudrate="{baudrate}"')
+
+        enable_thread = False if enable_thread_type == BouffalolabThreadType.NONE else True
 
         if not (enable_wifi or enable_thread or enable_ethernet):
             # decide default connectivity for each chip
@@ -150,9 +163,6 @@ class BouffalolabBuilder(GnBuilder):
         elif enable_ethernet or enable_wifi:
             chip_mdns = "minimal"
 
-        if enable_frame_ptr and bouffalo_chip == "bl616":
-            raise Exception("BL616 does NOT support frame pointer for debug purpose.")
-
         self.argsOpt.append(f'chip_enable_ethernet={str(enable_ethernet).lower()}')
         self.argsOpt.append(f'chip_enable_wifi={str(enable_wifi).lower()}')
         self.argsOpt.append(f'chip_enable_openthread={str(enable_thread).lower()}')
@@ -175,10 +185,16 @@ class BouffalolabBuilder(GnBuilder):
         self.argsOpt.append(f'bouffalo_sdk_component_easyflash_enabled={"false" if enable_littlefs else "true"}')
 
         if enable_thread:
+
             self.argsOpt.append('chip_system_config_use_open_thread_inet_endpoints=true')
             self.argsOpt.append('chip_with_lwip=false')
             self.argsOpt.append(f'openthread_project_core_config_file="{bouffalo_chip}-openthread-core-bl-config.h"')
             self.argsOpt.append(f'openthread_package_version="7e32165be"')
+
+            if enable_thread_type == BouffalolabThreadType.THREAD_FTD:
+                self.argsOpt.append(f'chip_openthread_ftd=true')
+            else:
+                self.argsOpt.append(f'chip_openthread_ftd=false')
 
             if not use_matter_openthread:
                 if bouffalo_chip in {"bl702", "bl702l"}:
@@ -208,9 +224,15 @@ class BouffalolabBuilder(GnBuilder):
         if enable_mfd:
             self.argsOpt.append("chip_enable_factory_data=true")
 
-        self.enable_frame_ptr = enable_frame_ptr
-        self.argsOpt.append(f"enable_debug_frame_ptr={str(enable_frame_ptr).lower()}")
+        if enable_pds:
+            self.argsOpt.append("enable_pds=true")
+
         self.argsOpt.append(f"enable_heap_monitoring={str(enable_heap_monitoring).lower()}")
+        if enable_debug_coredump:
+            self.argsOpt.append(f"enable_debug_coredump=true")
+            self.argsOpt.append(f"coredump_binary_id={int(time.time())}")
+
+        self.argsOpt.append(f"chip_generate_link_map_file=true")
 
         try:
             self.argsOpt.append('bouffalolab_sdk_root="%s"' % os.environ['BOUFFALOLAB_SDK_ROOT'])
@@ -229,11 +251,7 @@ class BouffalolabBuilder(GnBuilder):
         logging.fatal('*' * 80)
 
     def GnBuildArgs(self):
-        if self.enable_frame_ptr:
-            debug_output_file = os.path.join(self.output_dir, '%s.out' % self.app.AppNamePrefix(self.chip_name))
-            return self.argsOpt + [f'debug_output_file="{debug_output_file}"']
-        else:
-            return self.argsOpt
+        return self.argsOpt
 
     def build_outputs(self):
         extensions = ["out"]

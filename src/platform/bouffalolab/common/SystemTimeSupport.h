@@ -1,7 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
- *    All rights reserved.
+ *    Copyright (c) 2022 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,25 +15,10 @@
  *    limitations under the License.
  */
 
-#pragma once
+#include <lib/support/TimeUtils.h>
 
-#define APP_TASK_NAME "APP"
-#define APP_TASK_PRIORITY 15
-
-#define EXT_DISCOVERY_TIMEOUT_SECS 20
-
-typedef void (*app_pds_gpio_irq_handler_t)(void * arg);
-
-#ifdef __cplusplus
-
-#include <lib/core/CHIPError.h>
-void appError(CHIP_ERROR error);
-
-extern "C" void platform_port_init(void);
-#else
-
-void appError(int err);
-void platform_port_init(void);
-#endif
-
-void app_pds_init(app_pds_gpio_irq_handler_t pinHandler);
+namespace chip {
+namespace System {
+namespace Clock {} // namespace Clock
+} // namespace System
+} // namespace chip
