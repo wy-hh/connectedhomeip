@@ -46,3 +46,15 @@ macro(bflb_remove_lto)
     sdk_add_link_options(-fno-use-linker-plugin)
   endif()
 endmacro()
+
+macro(bflb_use_fixed_mbedtls_allocator)
+  sdk_add_compile_definitions(
+    -DMBEDTLS_PLATFORM_CALLOC_MACRO=calloc
+    -DMBEDTLS_PLATFORM_FREE_MACRO=free)
+
+  foreach(_flags_var MATTER_CFLAGS MATTER_CFLAGS_C MATTER_CFLAGS_CC)
+    list(APPEND ${_flags_var}
+      -DMBEDTLS_PLATFORM_CALLOC_MACRO=calloc
+      -DMBEDTLS_PLATFORM_FREE_MACRO=free)
+  endforeach()
+endmacro()

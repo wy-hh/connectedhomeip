@@ -28,8 +28,6 @@
 
 #include <openthread/platform/entropy.h>
 
-#include <mbedtls/platform.h>
-
 #include <openthread_port.h>
 #include <utils_list.h>
 
@@ -146,10 +144,6 @@ CHIP_ERROR ThreadStackManagerImpl::InitThreadStack(otInstance * otInst)
     SuccessOrExit(err);
 
     ot_radioSetInstance(OTInstance());
-
-#if CHIP_DEVICE_LAYER_TARGET_BL702 || CHIP_DEVICE_LAYER_TARGET_BL702L
-    mbedtls_platform_set_calloc_free(pvPortCalloc, vPortFree);
-#endif
 
 exit:
     return err;

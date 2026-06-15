@@ -144,6 +144,7 @@ list(FILTER MATTER_CFLAGS_CC EXCLUDE REGEX "^-Wno-unknown-warning-option$")
 # Matter Flags
 # =============================================================================
 
+bflb_use_fixed_mbedtls_allocator()
 matter_add_flags(-DCONFIG_ARCH_RISCV)
 matter_add_flags(-DOTA_AUTO_REBOOT_DELAY=5)
 matter_add_flags(-Wno-conversion)

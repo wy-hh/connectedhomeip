@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <FreeRTOS.h>
 
 // #include <openthread/config.h>
 // #include <openthread/platform/logging.h>
@@ -104,8 +105,8 @@
 #define MBEDTLS_ECP_FIXED_POINT_OPTIM 0 /**< Enable fixed-point speed-up */
 #define MBEDTLS_ENTROPY_MAX_SOURCES 1   /**< Maximum number of sources supported */
 
-#define MBEDTLS_PLATFORM_STD_CALLOC calloc /**< Default allocator to use, can be undefined */
-#define MBEDTLS_PLATFORM_STD_FREE free     /**< Default free to use, can be undefined */
+#define MBEDTLS_PLATFORM_CALLOC_MACRO pvPortCalloc /**< Default allocator to use, can be undefined */
+#define MBEDTLS_PLATFORM_FREE_MACRO vPortFree      /**< Default free to use, can be undefined */
 
 #define MBEDTLS_SSL_MAX_CONTENT_LEN 900 /**< Maxium fragment length in bytes */
 
