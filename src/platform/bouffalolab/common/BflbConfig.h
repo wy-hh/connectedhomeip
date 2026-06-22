@@ -69,6 +69,7 @@ public:
 
     static constexpr char kConfigKey_WiFiSSID[]     = ("bl-wifi-ssid");
     static constexpr char kConfigKey_WiFiPassword[] = ("bl-wifi-pass");
+    static constexpr char kConfigKey_SuVersion[]    = ("bflb-su-ver");
 
     /** Counter Keys, diagnostic information  */
     static constexpr char kCounterKey_RebootCount[]           = ("reboot-count");

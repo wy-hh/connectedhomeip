@@ -349,6 +349,34 @@ void DiagnosticDataProviderImpl::ReleaseNetworkInterfaces(NetworkInterface * net
     }
 }
 
+void DiagnosticDataProviderImpl::DetermineSoftwareUpdateBootFlag()
+{
+    uint32_t previousVersion = 0;
+    uint32_t currentVersion  = 0;
+
+    printf ("DetermineSoftwareUpdateBootFlag\r\n");
+
+    // kConfigKey_SuVersion holds the firmware version that was running just before the last
+    // reboot, written by OTAImageProcessorImpl::HandleApply right before an OTA-triggered
+    // reboot. When the marker is present and differs from the version running now, this is
+    // the first boot after a successful software update.
+    if (Internal::BflbConfig::ConfigValueExists(Internal::BflbConfig::kConfigKey_SuVersion))
+    {
+        if (ConfigurationManagerImpl::GetDefaultInstance().GetSuVersion(previousVersion) == CHIP_NO_ERROR &&
+            ConfigurationMgr().GetSoftwareVersion(currentVersion) == CHIP_NO_ERROR &&
+            previousVersion != currentVersion)
+        {
+            mSoftwareUpdateCompleted = true;
+        }
+
+        printf ("DetermineSoftwareUpdateBootFlag %ld %ld\r\n", previousVersion, currentVersion);
+
+        // One-shot: clear the marker so that a later, non-OTA reboot is not misreported as a
+        // software-update completion.
+        Internal::BflbConfig::ClearConfigValue(Internal::BflbConfig::kConfigKey_SuVersion);
+    }
+}
+
 DiagnosticDataProvider & GetDiagnosticDataProviderImpl()
 {
     return DiagnosticDataProviderImpl::GetDefaultInstance();

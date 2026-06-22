@@ -15,6 +15,9 @@
  *    limitations under the License.
  */
 
+#include <platform/ConfigurationManager.h>
+#include <platform/bouffalolab/common/BflbConfig.h>
+#include <platform/bouffalolab/common/ConfigurationManagerImpl.h>
 #include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #if CHIP_DEVICE_CONFIG_ENABLE_WIFI
@@ -46,7 +49,13 @@ CHIP_ERROR DiagnosticDataProviderImpl::GetBootReason(BootReasonType & bootReason
     }
     else if (BL_RST_SOFTWARE == bootCause)
     {
-        bootReason = BootReasonType::kSoftwareReset;
+        if (mSoftwareUpdateCompleted)
+        {
+            bootReason = BootReasonType::kSoftwareUpdateCompleted;
+        }
+        else {
+            bootReason = BootReasonType::kSoftwareReset;
+        }
     }
     else
     {

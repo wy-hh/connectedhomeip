@@ -64,6 +64,18 @@ public:
     CHIP_ERROR GetWiFiOverrunCount(uint64_t & overrunCount) override;
     CHIP_ERROR ResetWiFiNetworkDiagnosticsCounts() override;
 #endif
+
+
+    // Evaluate, at init time, whether this boot immediately follows a successful OTA by
+    // comparing the firmware version stored before the last reboot against the version
+    // running now. Caches the result in mSoftwareUpdateCompleted and consumes (clears)
+    // the stored marker so only the first boot after an OTA reports kSoftwareUpdateCompleted.
+    void DetermineSoftwareUpdateBootFlag();
+
+private:
+    // Set by DetermineSoftwareUpdateBootFlag() when the running firmware version differs
+    // from the one stored before the last reboot; consumed by GetBootReason().
+    bool mSoftwareUpdateCompleted = false;
 };
 
 } // namespace DeviceLayer

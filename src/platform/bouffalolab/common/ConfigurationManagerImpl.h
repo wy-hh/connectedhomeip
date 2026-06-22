@@ -36,6 +36,8 @@ public:
     CHIP_ERROR StoreRebootCount(uint32_t rebootCount);
     CHIP_ERROR GetTotalOperationalHours(uint32_t & totalOperationalHours);
     CHIP_ERROR StoreTotalOperationalHours(uint32_t totalOperationalHours);
+    CHIP_ERROR GetSuVersion(uint32_t & aSuVersion);
+    CHIP_ERROR StoreSuVersion(uint32_t aSuVersion);
     bool IsFullyProvisioned();
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD

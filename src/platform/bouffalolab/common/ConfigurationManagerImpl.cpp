@@ -18,6 +18,7 @@
 #include <platform/internal/CHIPDeviceLayerInternal.h>
 
 #include <platform/ConfigurationManager.h>
+#include <platform/bouffalolab/common/DiagnosticDataProviderImpl.h>
 
 #include <platform/internal/GenericConfigurationManagerImpl.ipp>
 
@@ -79,6 +80,12 @@ CHIP_ERROR ConfigurationManagerImpl::Init()
         SuccessOrExit(err);
     }
 
+    // Detect the first boot after a successful OTA by comparing the firmware version stored
+    // before the last reboot against the one running now. The diagnostics provider caches the
+    // result (later used by GetBootReason) and consumes the stored marker so that a later,
+    // non-OTA reboot is not misreported as a software-update completion.
+    DiagnosticDataProviderImpl::GetDefaultInstance().DetermineSoftwareUpdateBootFlag();
+
     err = CHIP_NO_ERROR;
 
 exit:
@@ -114,6 +121,15 @@ CHIP_ERROR ConfigurationManagerImpl::GetTotalOperationalHours(uint32_t & totalOp
 CHIP_ERROR ConfigurationManagerImpl::StoreTotalOperationalHours(uint32_t totalOperationalHours)
 {
     return WriteConfigValue(BflbConfig::kCounterKey_TotalOperationalHours, totalOperationalHours);
+}
+
+CHIP_ERROR ConfigurationManagerImpl::GetSuVersion(uint32_t & aSuVersion)
+{
+    return ReadConfigValue(BflbConfig::kConfigKey_SuVersion, aSuVersion);
+}
+CHIP_ERROR ConfigurationManagerImpl::StoreSuVersion(uint32_t aSuVersion)
+{
+    return WriteConfigValue(BflbConfig::kConfigKey_SuVersion, aSuVersion);
 }
 
 CHIP_ERROR ConfigurationManagerImpl::ReadPersistedStorageValue(::chip::Platform::PersistedStorage::Key key, uint32_t & value)

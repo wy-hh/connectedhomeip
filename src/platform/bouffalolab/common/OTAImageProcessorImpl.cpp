@@ -18,6 +18,7 @@
 #include <app/clusters/ota-requestor/OTADownloader.h>
 #include <app/clusters/ota-requestor/OTARequestorInterface.h>
 #include <lib/support/StringBuilder.h>
+#include <platform/bouffalolab/common/ConfigurationManagerImpl.h>
 
 extern "C" {
 #if CHIP_DEVICE_LAYER_TARGET_BFLB
@@ -211,6 +212,7 @@ void OTAImageProcessorImpl::HandleFinalize(intptr_t context)
 void OTAImageProcessorImpl::HandleApply(intptr_t context)
 {
     auto * imageProcessor = reinterpret_cast<OTAImageProcessorImpl *>(context);
+    uint32_t aCurrentVersion;
 
     if (imageProcessor == nullptr)
     {
@@ -226,6 +228,13 @@ void OTAImageProcessorImpl::HandleApply(intptr_t context)
 #else
     hosal_ota_apply(0);
 #endif
+
+    // Record the firmware version that is running right now, before the OTA-triggered
+    // reboot. On the next boot, DiagnosticDataProviderImpl compares it against the (new)
+    // running version to detect that a software update just completed.
+    DeviceLayer::ConfigurationMgr().GetSoftwareVersion(aCurrentVersion);
+    DeviceLayer::ConfigurationManagerImpl::GetDefaultInstance().StoreSuVersion(aCurrentVersion);
+
     TEMPORARY_RETURN_IGNORED DeviceLayer::SystemLayer().StartTimer(
         System::Clock::Seconds32(OTA_AUTO_REBOOT_DELAY),
         [](Layer *, void *) {
